@@ -10,8 +10,7 @@
     "strict": true,
     "baseUrl": "./",
     "paths": {
-      "~/*": ["./src/*"],
-      "@ciftlikpdf/core/*": ["../core/src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

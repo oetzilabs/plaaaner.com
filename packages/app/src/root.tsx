@@ -1,24 +1,40 @@
 // @refresh reload
-import { Suspense, createEffect, createSignal, onCleanup } from "solid-js";
-import { Body, ErrorBoundary, Head, Html, Meta, Scripts, Title } from "solid-start";
-import Content from "./components/Content";
-import { Providers } from "./components/providers";
+import { ColorModeProvider, ColorModeScript, cookieStorageManagerSSR } from "@kobalte/core";
+import { Suspense, useContext } from "solid-js";
+import { isServer } from "solid-js/web";
+import { Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title, ServerContext } from "solid-start";
+import { Header } from "@/components/Header";
+import { Providers } from "@/components/providers";
 import "./root.css";
 
 export default function Root() {
+  const event = useContext(ServerContext);
+
+  const storageManager = cookieStorageManagerSSR(
+    isServer ? event?.request.headers.get("cookie") ?? "" : document.cookie
+  );
+
   return (
     <Html lang="en">
       <Head>
-        <Title>ciftlikpdf.ch</Title>
+        <Title>plaaaner.com</Title>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Body class="bg-white dark:bg-black text-black dark:text-white">
+      <Body>
         <Suspense>
           <ErrorBoundary>
-            <Providers>
-              <Content />
-            </Providers>
+            <ColorModeScript storageType={storageManager.type} />
+            <ColorModeProvider storageManager={storageManager}>
+              <Providers>
+                <Header />
+                <div class="py-10 container flex flex-col px-4">
+                  <Routes>
+                    <FileRoutes />
+                  </Routes>
+                </div>
+              </Providers>
+            </ColorModeProvider>
           </ErrorBoundary>
         </Suspense>
         <Scripts />

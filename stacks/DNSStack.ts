@@ -1,4 +1,4 @@
-import { CnameRecord, HostedZone } from "aws-cdk-lib/aws-route53";
+import { HostedZone } from "aws-cdk-lib/aws-route53";
 import { StackContext } from "sst/constructs";
 
 const PRODUCTION = "plaaaner.com";

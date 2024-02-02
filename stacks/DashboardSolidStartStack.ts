@@ -3,17 +3,17 @@ import { ApiStack } from "./ApiStack";
 // import { DatabaseStack } from "./DatabaseStack";
 import { StorageStack } from "./StorageStack";
 import { DNSStack } from "./DNSStack";
-import { DocXToPDFStackV2 } from "./DocXToPDFStackV2";
+import { SecretsStack } from "./SecretsStack";
 
 export function DashboardSolidStartStack({ stack, app }: StackContext) {
   const dns = use(DNSStack);
-  const { api, DATABASE_AUTH_TOKEN, DATABASE_URL } = use(ApiStack);
-  const { DOCX_TO_PDF_URL } = use(DocXToPDFStackV2);
+  const api = use(ApiStack);
   // const { db } = use(DatabaseStack);
   const { bucket } = use(StorageStack);
+  const secrets = use(SecretsStack);
   const apiUrl = api.customDomainUrl || api.url;
   const dashboardSolidStartApp = new SolidStartSite(stack, `${app.name}-dashboard-app`, {
-    bind: [bucket, api, DATABASE_AUTH_TOKEN, DATABASE_URL],
+    bind: [bucket, api, secrets.DATABASE_AUTH_TOKEN, secrets.DATABASE_URL],
     path: "packages/dashboard",
     buildCommand: "pnpm build",
     environment: {
