@@ -1,58 +1,56 @@
-import { ApiHandler, useFormData, useQueryParam, useQueryParams } from "sst/node/api";
-import { error, getUser, json } from "./utils";
-import { User } from "@ciftlikpdf/core/entities/users";
-import { generateJwt } from "@ciftlikpdf/core/auth";
+import { User } from "@/core/entities/users";
+import { ApiHandler } from "sst/node/api";
+import { Config } from "sst/node/config";
+import { AuthHandler, GoogleAdapter } from "sst/node/future/auth";
+import { error, getUser, json, sessions } from "./utils";
 
-export type SessionResult =
-  | {
-      success: true;
-      user: Awaited<ReturnType<typeof User.findById>>;
-      expiresAt: Date | null;
-    }
-  | {
-      success: false;
-      error: string;
-    };
-
-export const handler = ApiHandler(async (event, ctx) => {
-  const qp = useFormData();
-  if (!qp) return error("No query params");
-  const name = qp.get("name");
-  const password = qp.get("password");
-  if (!name) return error("No name");
-  if (!password) return error("No password");
-
-  const user = await User.findByName(name);
-  if (!user) return error("No user found");
-  const valid = await User.validatePassword(user.id, password);
-  if (!valid) return error("Invalid password");
-
-  const jwtToken = await generateJwt(user.id);
-
-  return json({ jwtToken });
+export const handler = AuthHandler({
+  sessions,
+  providers: {
+    google: GoogleAdapter({
+      mode: "oauth",
+      clientID: Config.GOOGLE_CLIENT_ID,
+      clientSecret: Config.GOOGLE_CLIENT_SECRET,
+      scope: "user:email profile email",
+    }),
+  },
+  callbacks: {
+    auth: {
+      async allowClient(clientID, redirect) {
+        if (clientID !== "google") {
+          return false;
+        }
+        return true;
+      },
+      async success(input, response) {
+        if (input.provider === "google") {
+          const email = input.tokenset.claims().email;
+          if (!email) {
+            console.error("No email found in tokenset", input.tokenset);
+            return response.http({
+              statusCode: 400,
+              body: "No email found in tokenset",
+            });
+          }
+          let user_ = await User.findByEmail(email);
+          if (!user_) {
+            user_ = await User.create({ email, name: email });
+          }
+          return response.session({
+            type: "user",
+            properties: {
+              userID: user_.id,
+            },
+          });
+        }
+        throw new Error("Unknown provider");
+      },
+    },
+  },
 });
 
 export const session = ApiHandler(async () => {
   const user = await getUser();
-  if (!user)
-    return error({
-      success: false,
-      error: "No user found",
-    } as SessionResult);
-  return json({ success: true, user } as SessionResult);
-});
-
-export const register = ApiHandler(async () => {
-  const qp = useFormData();
-  if (!qp) return error("No query params");
-  const password = qp.get("password");
-  const name = qp.get("name");
-  if (!name) return error("No name");
-  if (!password) return error("No password");
-
-  const user = await User.create({ name, password });
-
-  const jwtToken = await generateJwt(user.id);
-
-  return json({ jwtToken });
+  if (!user) return error("No session");
+  return json(user);
 });

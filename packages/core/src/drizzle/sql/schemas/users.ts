@@ -5,14 +5,10 @@ import { relations } from "drizzle-orm";
 export const users = sqliteTable("users", {
   ...Entity.defaults,
   name: text("name").notNull(),
-  password: text("password").notNull(),
-  type: text("type", { enum: ["superadmin", "admin", "viewer"] })
-    .notNull()
-    .$defaultFn(() => "viewer"),
+  email: text("email").notNull(),
 });
 
-export const userRelation = relations(users, ({ many }) => ({
-}));
+export const userRelation = relations(users, ({ many }) => ({}));
 
 export type UserSelect = typeof users.$inferSelect;
 export type UserInsert = typeof users.$inferInsert;

@@ -10,5 +10,5 @@ export const session = z.function(z.tuple([z.string()])).implement(async (token)
     headers: {
       authorization: `Bearer ${token}`,
     },
-  }).then((res) => res.json() as Promise<SessionResult>)
+  }).then((res) => res.json() as Promise<SessionResult>),
 );

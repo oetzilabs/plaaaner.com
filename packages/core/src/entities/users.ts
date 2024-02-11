@@ -8,21 +8,9 @@ import { users } from "../drizzle/sql/schema";
 export * as User from "./users";
 
 export const create = z.function(z.tuple([createInsertSchema(users)])).implement(async (userInput) => {
-  const pwd = await bcrypt.hash(userInput.password, 10);
-  userInput.password = pwd;
-  const [x] = await db.insert(users).values(userInput).returning({
-    id: users.id,
-    name: users.name,
-    createdAt: users.createdAt,
-  });
+  const [x] = await db.insert(users).values(userInput).returning();
 
   return x;
-});
-
-export const validatePassword = z.function(z.tuple([z.string(), z.string()])).implement(async (input, pass) => {
-  const [u] = await db.select({ pwd: users.password }).from(users).where(eq(users.id, input));
-  const valid = await bcrypt.compare(pass, u.pwd);
-  return valid;
 });
 
 export const countAll = z.function(z.tuple([])).implement(async () => {
@@ -38,9 +26,13 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
   return db.query.users.findFirst({
     where: (users, operations) => operations.eq(users.id, input),
     with: {},
-    columns: {
-      password: false,
-    },
+  });
+});
+
+export const findByEmail = z.function(z.tuple([z.string().email()])).implement(async (input) => {
+  return db.query.users.findFirst({
+    where: (users, operations) => operations.eq(users.email, input),
+    with: {},
   });
 });
 
@@ -48,18 +40,12 @@ export const findByName = z.function(z.tuple([z.string()])).implement(async (inp
   return db.query.users.findFirst({
     where: (users, operations) => operations.eq(users.name, input),
     with: {},
-    columns: {
-      password: false,
-    },
   });
 });
 
 export const all = z.function(z.tuple([])).implement(async () => {
   return db.query.users.findMany({
     with: {},
-    columns: {
-      password: false,
-    },
   });
 });
 

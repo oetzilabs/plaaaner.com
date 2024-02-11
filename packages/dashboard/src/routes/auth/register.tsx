@@ -32,7 +32,7 @@ const AuthPage = () => {
         // save token to indexeddb -> offlineFirst
         await offlineFirst.saveUser(data.jwtToken);
         document.cookie = `session=${data.jwtToken}; path=/; expires=${new Date(
-          Date.now() + 1000 * 60 * 60 * 24 * 7 // 7 days
+          Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
         ).toUTCString()}`;
         window.location.href = sp.redirect ?? "/";
       },
@@ -40,7 +40,7 @@ const AuthPage = () => {
         // console.log(data);
         setErrors(data as Record<string, string>);
       },
-    }
+    },
   );
   const errorKeys = () => Object.keys(errors());
 

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import { Toaster } from "solid-toast";
+import { AlertCircleIcon, CheckCheck, Info, Loader2 } from "lucide-solid";
+import { Toaster } from "solid-sonner";
 
 const queryClient = new QueryClient();
 export const Providers = (props: { children: any }) => {
@@ -9,9 +10,14 @@ export const Providers = (props: { children: any }) => {
         {props.children}
         <Toaster
           position="bottom-right"
-          gutter={8}
-          toastOptions={{
-            duration: 2000,
+          duration={5000}
+          theme="system"
+          icons={{
+            info: <Info class="w-6 h-6" />,
+            success: <CheckCheck class="w-6 h-6" />,
+            error: <AlertCircleIcon class="w-6 h-6" />,
+            loading: <Loader2 class="w-6 h-6 animate-spin" />,
+            warning: <AlertCircleIcon class="w-6 h-6" />,
           }}
         />
       </QueryClientProvider>

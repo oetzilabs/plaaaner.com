@@ -31,7 +31,7 @@ export const UserMenu = () => {
         return _as.token !== null;
       },
       refetchOnWindowFocus: false,
-    }
+    },
   );
 
   createEffect(() => {
@@ -258,7 +258,7 @@ export const UserMenu = () => {
                       <DropdownMenu.Item
                         class={cn(
                           itemClass,
-                          "select-none text-red-500 hover:bg-red-50 active:bg-red-100 dark:hover:bg-red-950 dark:active:bg-red-900 dark:hover:text-white dark:active:text-white"
+                          "select-none text-red-500 hover:bg-red-50 active:bg-red-100 dark:hover:bg-red-950 dark:active:bg-red-900 dark:hover:text-white dark:active:text-white",
                         )}
                         onSelect={signOut}
                       >

@@ -23,7 +23,7 @@ export const Header = (props: { children: JSX.Element; header: JSX.Element }) =>
           "flex items-center justify-between flex-wrap bg-white/[0.01] dark:bg-black/[0.01] border-b border-black/[0.05] dark:border-white/[0.02] fixed w-screen top-0 z-50 backdrop-blur-md py-2",
           {
             "hidden !h-0": !visible(),
-          }
+          },
         )}
       >
         {props.header}
