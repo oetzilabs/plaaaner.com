@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CreateEventFormSchema } from "../schemas/event";
+import { CreateConcertFormSchema } from "../schemas/concert";
 
 export * as Mutations from "./mutations";
 
@@ -37,7 +38,7 @@ export const Events = {
           date: z.string(),
           location: z.string(),
         }),
-      ]),
+      ])
     )
     .implement(async (data) => {
       const session = document.cookie.split(";").find((c) => c.startsWith("session="));
@@ -59,6 +60,56 @@ export const Events = {
       return Promise.reject("No session found");
     }
     return fetch(`${API_BASE}/events/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.split("=")[1]}`,
+      },
+    }).then((res) => res.json());
+  }),
+};
+
+export const Concerts = {
+  create: z.function(z.tuple([CreateConcertFormSchema])).implement(async (data) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return {
+      id: "1",
+      ...data,
+    };
+  }),
+  update: z
+    .function(
+      z.tuple([
+        z.object({
+          id: z.string().uuid(),
+          name: z.string(),
+          description: z.string(),
+          date: z.string(),
+          location: z.string(),
+        }),
+      ])
+    )
+    .implement(async (data) => {
+      const session = document.cookie.split(";").find((c) => c.startsWith("session="));
+      if (!session) {
+        return Promise.reject("No session found");
+      }
+      return fetch(`${API_BASE}/concerts/${data.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.split("=")[1]}`,
+        },
+        body: JSON.stringify(data),
+      }).then((res) => res.json());
+    }),
+  delete: z.function(z.tuple([z.string().uuid()])).implement(async (id) => {
+    const session = document.cookie.split(";").find((c) => c.startsWith("session="));
+    if (!session) {
+      return Promise.reject("No session found");
+    }
+    return fetch(`${API_BASE}/concerts/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

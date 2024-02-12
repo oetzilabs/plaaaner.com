@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ConcertLocationSchema, EventLocationSchema } from "./shared";
 
 const TicketSchema = z.object({
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
@@ -9,10 +10,9 @@ const TicketSchema = z.object({
 export const CreateConcertFormSchema = z.object({
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
   description: z.string().min(3).optional(),
-  venue: z.string().min(3).optional(),
-  date: z.date().optional(),
-  time: z.string().optional(),
+  day: z.date().optional(),
   duration: z.number().optional(),
   capacity: z.number().optional(),
+  location: ConcertLocationSchema,
   tickets: z.array(TicketSchema),
 });

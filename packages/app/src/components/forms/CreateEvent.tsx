@@ -3,9 +3,19 @@ import { Mutations } from "@/utils/api/mutations";
 import { As } from "@kobalte/core";
 import { createMutation, createQuery } from "@tanstack/solid-query";
 import dayjs from "dayjs";
-import { AlertCircleIcon, ArrowLeft, CheckCheck, Loader2, MessageCircleWarning, Plus, X } from "lucide-solid";
-import { For, Match, Show, Switch, createEffect, createSignal } from "solid-js";
-import { createStore, produce, reconcile } from "solid-js/store";
+import {
+  AlertCircleIcon,
+  ArrowLeft,
+  CheckCheck,
+  Clock,
+  Library,
+  Loader2,
+  MapPin,
+  MessageCircleWarning,
+  Plus,
+  X,
+} from "lucide-solid";
+import { For, Match, Show, Switch, createSignal } from "solid-js";
 import { toast } from "solid-sonner";
 import { useNavigate } from "solid-start";
 import { clientOnly } from "solid-start/islands";
@@ -15,7 +25,7 @@ import { CreateEventFormSchema } from "../../utils/schemas/event";
 import URLPreview from "../URLPreview";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Transition, TransitionGroup } from "solid-transition-group";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import {
   RadioGroup,
   RadioGroupItem,
@@ -23,10 +33,10 @@ import {
   RadioGroupItemLabel,
   RadioGroupLabel,
 } from "../ui/radio-group";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { TextField, TextFieldInput, TextFieldLabel } from "../ui/textfield";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger, TabsIndicator } from "../ui/tabs";
+import { TextField, TextFieldInput, TextFieldLabel } from "../ui/textfield";
+import { A } from "@solidjs/router";
 
 const ClientMap = clientOnly(() => import("../ClientMap"));
 
@@ -77,7 +87,7 @@ export default function CreateEventForm() {
   const [takenFromRecommendedOrPrevious, setTakenFromRecommendedOrPrevious] = createSignal<number | undefined>();
 
   const previousEvents = createQuery(() => ({
-    queryKey: ["previousProjects"],
+    queryKey: ["previousEvents"],
     queryFn: () => {
       return Queries.Events.all();
     },
@@ -182,19 +192,35 @@ export default function CreateEventForm() {
   };
 
   return (
-    <>
+    <div class="flex flex-col gap-4 items-start w-full">
+      <div class="flex flex-col">
+        <Button
+          variant="outline"
+          size="sm"
+          class="w-max gap-2"
+          onClick={() => {
+            history.back();
+          }}
+        >
+          <ArrowLeft class="w-4 h-4" />
+          Back
+        </Button>
+      </div>
       <h1 class="text-3xl font-semibold w-full">Create Event</h1>
       <div class="flex flex-col-reverse lg:flex-row lg:justify-between gap-8 py-4 w-full">
         <form onSubmit={handleSubmit} class="flex flex-col gap-6 xl:w-1/2 lg:w-2/3 w-full self-start" ref={formRef!}>
           <Tabs defaultValue="general" value={currentTab()} onChange={(value) => setCurrentTab(value as TabValue)}>
             <TabsList>
-              <TabsTrigger value="general" class="text-sm font-medium leading-none">
+              <TabsTrigger value="general" class="text-sm font-medium leading-none gap-2 pl-3">
+                <Library class="w-3 h-3" />
                 General
               </TabsTrigger>
-              <TabsTrigger value="time" class="text-sm font-medium leading-none">
+              <TabsTrigger value="time" class="text-sm font-medium leading-none gap-2 pl-3">
+                <Clock class="w-3 h-3" />
                 Time
               </TabsTrigger>
-              <TabsTrigger value="location" class="text-sm font-medium leading-none">
+              <TabsTrigger value="location" class="text-sm font-medium leading-none gap-2 pl-3">
+                <MapPin class="w-3 h-3" />
                 Location
               </TabsTrigger>
             </TabsList>
@@ -421,7 +447,7 @@ export default function CreateEventForm() {
               <div class="flex flex-col items-start justify-between gap-2 w-full">
                 <RadioGroup
                   value={newEvent().location.location_type === "in_person" ? "in_person" : "online"}
-                  aria-label="When is the event?"
+                  aria-label="Where is the event?"
                   onChange={(value) => {
                     if (value === "online") {
                       setNewEvent((ev) => {
@@ -449,24 +475,9 @@ export default function CreateEventForm() {
                   class="w-full flex flex-col gap-2"
                 >
                   <RadioGroupLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    When is the event?
+                    Where is the event?
                   </RadioGroupLabel>
                   <div class="grid grid-cols-2 gap-2 w-full">
-                    <RadioGroupItem value="online">
-                      <RadioGroupItemControl class="hidden" />
-                      <RadioGroupItemLabel
-                        class={cn(
-                          "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-secondary rounded p-4 text-sm font-medium leading-none cursor-pointer",
-                          {
-                            "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent().location.location_type === "in_person",
-                            "bg-secondary": newEvent().location.location_type === "online",
-                          }
-                        )}
-                      >
-                        Online <RadioGroupItemControl class="hidden" />
-                      </RadioGroupItemLabel>
-                    </RadioGroupItem>
                     <RadioGroupItem value="in_person">
                       <RadioGroupItemLabel
                         class={cn(
@@ -480,6 +491,21 @@ export default function CreateEventForm() {
                       >
                         <RadioGroupItemControl class="hidden" />
                         In Person <RadioGroupItemControl class="hidden" />
+                      </RadioGroupItemLabel>
+                    </RadioGroupItem>
+                    <RadioGroupItem value="online">
+                      <RadioGroupItemControl class="hidden" />
+                      <RadioGroupItemLabel
+                        class={cn(
+                          "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-secondary rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                          {
+                            "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
+                              newEvent().location.location_type === "in_person",
+                            "bg-secondary": newEvent().location.location_type === "online",
+                          }
+                        )}
+                      >
+                        Online <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                   </div>
@@ -752,6 +778,6 @@ export default function CreateEventForm() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

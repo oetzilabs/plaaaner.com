@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { z } from "zod";
+import { EventLocationSchema } from "./shared";
 
 const DiscriminatedEventFormSchema = z.discriminatedUnion("time_type", [
   z
@@ -27,21 +28,10 @@ const DiscriminatedEventFormSchema = z.discriminatedUnion("time_type", [
     .strict(),
 ]);
 
-const LocationSchema = z.discriminatedUnion("location_type", [
-  z.object({
-    location_type: z.literal("online"),
-    url: z.string().url(),
-  }),
-  z.object({
-    location_type: z.literal("in_person"),
-    address: z.string(),
-  }),
-]);
-
 export const CreateEventFormSchema = z.object({
   name: z.string().min(3),
   description: z.string().min(3).optional(),
-  location: LocationSchema,
+  location: EventLocationSchema,
   time: DiscriminatedEventFormSchema.refine((data) => {
     if (data.time_type === "range") {
       return dayjs(data.start_time).isBefore(dayjs(data.end_time));
