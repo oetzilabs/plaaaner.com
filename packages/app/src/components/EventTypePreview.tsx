@@ -52,20 +52,20 @@ export const typesOfPlans = {
     imageUrl:
       "https://images.unsplash.com/photo-1546707012-c46675f12716?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
-  meeting: {
-    description: "A meeting, from a one-on-one to a large conference.",
+  tournaments: {
+    description: "A tournament, from a small game to a large competition.",
     attribute: (
       <div class="flex flex-row gap-1 items-center">
         Photo by
         <a
-          href="https://unsplash.com/@anniespratt?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
+          href="https://unsplash.com/@robertbye?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
           class="hover:underline"
         >
-          Annie Spratt
+          Robert Bye
         </a>
         on
         <a
-          href="https://unsplash.com/photos/group-of-people-using-laptop-computer-QckxruozjRg?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
+          href="https://unsplash.com/photos/aerial-photography-of-ballpark-m6OWr3OP4do?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
           class="hover:underline"
         >
           Unsplash
@@ -73,7 +73,7 @@ export const typesOfPlans = {
       </div>
     ),
     imageUrl:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "https://images.unsplash.com/photo-1474899452492-5eea44100ec4?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 } as const;
 

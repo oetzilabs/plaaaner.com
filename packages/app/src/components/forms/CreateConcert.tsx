@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   Calendar,
   CheckCheck,
+  CircleSlash,
   Clock,
   Library,
   Loader2,
@@ -38,6 +39,7 @@ import {
 import { Skeleton } from "../ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TextField, TextFieldInput, TextFieldLabel } from "../ui/textfield";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
 
 const ClientMap = clientOnly(() => import("../ClientMap"));
 
@@ -550,9 +552,36 @@ export default function CreateConcertForm() {
           <div>
             <Show when={createConcert.isError && createConcert.error}>
               {(e) => (
-                <div class="flex flex-row items-center gap-2 text-red-500">
-                  <MessageCircleWarning class="w-4 h-4" />
-                  <span class="text-sm font-medium leading-none">{e().message}</span>
+                <div class="flex flex-row items-center gap-2 text-red-500 justify-between w-full">
+                  <div class="w-max flex flex-row items-center gap-2">
+                    <CircleSlash class="w-4 h-4" />
+                    <span class="text-sm font-medium leading-none">{e().message}</span>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <As component={Button} variant="destructive" size="sm" class="w-max">
+                        More Info
+                      </As>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogTitle>Error Creating Concert</DialogTitle>
+                      <DialogDescription>
+                        <pre class="bg-background border border-muted rounded p-2">
+                          {JSON.stringify(e().cause, null, 2)}
+                        </pre>
+                      </DialogDescription>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            createConcert.reset();
+                          }}
+                        >
+                          Close
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               )}
             </Show>

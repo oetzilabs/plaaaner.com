@@ -37,6 +37,7 @@
     "@solidjs/meta": "0.29.3",
     "@solidjs/router": "0.8.4",
     "@tanstack/solid-query": "5.18.1",
+    "@tanstack/solid-query-devtools": "^5.20.2",
     "class-variance-authority": "0.7.0",
     "clsx": "2.1.0",
     "dayjs": "1.11.10",

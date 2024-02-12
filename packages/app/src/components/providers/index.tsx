@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { AlertCircleIcon, CheckCheck, Info, Loader2 } from "lucide-solid";
 import { Toaster } from "solid-sonner";
 
@@ -7,6 +8,7 @@ export const Providers = (props: { children: any }) => {
   return (
     <>
       <QueryClientProvider client={queryClient}>
+        <SolidQueryDevtools initialIsOpen={false} />
         {props.children}
         <Toaster
           position="bottom-right"
