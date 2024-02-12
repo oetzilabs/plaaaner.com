@@ -6,6 +6,7 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 export const Attendees = {
   all: z.function(z.tuple([])).implement(async () => {
+    await new Promise((r) => setTimeout(r, 1000));
     return [
       { id: "1", name: "Alice" },
       { id: "2", name: "Bob" },
@@ -109,10 +110,11 @@ export const Concerts = {
 
 export const Events = {
   all: z.function(z.tuple([])).implement(async () => {
+    await new Promise((r) => setTimeout(r, 10000));
     return [
-      { id: "1", name: "Event 1" },
-      { id: "2", name: "Event 2" },
-      { id: "3", name: "Event 3" },
+      { id: "1", name: "Event 1", description: "Description 1" },
+      { id: "2", name: "Event 2", description: "Description 2" },
+      { id: "3", name: "Event 3", description: "Description 3" },
     ];
     // const session = document.cookie.split(";").find((c) => c.trim().startsWith("session="));
     // if (!session) {

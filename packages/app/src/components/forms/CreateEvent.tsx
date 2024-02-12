@@ -2,16 +2,20 @@ import { cn } from "@/lib/utils";
 import { Mutations } from "@/utils/api/mutations";
 import { As } from "@kobalte/core";
 import { createMutation, createQuery } from "@tanstack/solid-query";
-import { AlertCircleIcon, ArrowLeft, CheckCheck, Loader2, MessageCircleWarning, Plus } from "lucide-solid";
-import { createSignal, For, Match, Show, Switch } from "solid-js";
-import { createStore, produce } from "solid-js/store";
+import dayjs from "dayjs";
+import { AlertCircleIcon, ArrowLeft, CheckCheck, Loader2, MessageCircleWarning, Plus, X } from "lucide-solid";
+import { For, Match, Show, Switch, createEffect, createSignal } from "solid-js";
+import { createStore, produce, reconcile } from "solid-js/store";
 import { toast } from "solid-sonner";
 import { useNavigate } from "solid-start";
 import { clientOnly } from "solid-start/islands";
+import { z } from "zod";
 import { Queries } from "../../utils/api/queries";
 import { CreateEventFormSchema } from "../../utils/schemas/event";
+import URLPreview from "../URLPreview";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Transition, TransitionGroup } from "solid-transition-group";
 import {
   RadioGroup,
   RadioGroupItem,
@@ -19,13 +23,25 @@ import {
   RadioGroupItemLabel,
   RadioGroupLabel,
 } from "../ui/radio-group";
-import { Tabs, TabsTrigger, TabsList, TabsContent } from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TextField, TextFieldInput, TextFieldLabel } from "../ui/textfield";
-import URLPreview from "../URLPreview";
-import { z } from "zod";
-import dayjs from "dayjs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Skeleton } from "../ui/skeleton";
 
 const ClientMap = clientOnly(() => import("../ClientMap"));
+
+const DEFAULT_EVENT: z.infer<typeof CreateEventFormSchema> = {
+  name: "",
+  description: "",
+  time: {
+    time_type: "full_day",
+    day: dayjs().startOf("day").toDate(),
+  },
+  location: {
+    location_type: "in_person",
+    address: "",
+  },
+};
 
 type TabValue = "general" | "time" | "location";
 
@@ -43,18 +59,8 @@ const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | un
 };
 
 export default function CreateEventForm() {
-  const [newEvent, setNewEvent] = createStore<z.infer<typeof CreateEventFormSchema>>({
-    name: "",
-    description: "",
-    time: {
-      time_type: "full_day",
-      day: dayjs().startOf("day").toDate(),
-    },
-    location: {
-      location_type: "in_person",
-      address: "",
-    },
-  });
+  let formRef: HTMLFormElement;
+  const [newEvent, setNewEvent] = createSignal<z.infer<typeof CreateEventFormSchema>>(DEFAULT_EVENT);
 
   const [currentTab, setCurrentTab] = createSignal<TabValue>("general");
 
@@ -67,56 +73,86 @@ export default function CreateEventForm() {
   };
 
   const [locationQuery, setLocationQuery] = createSignal("");
-
   const [urlQuery, setURLQuery] = createSignal("");
+  const [takenFromRecommendedOrPrevious, setTakenFromRecommendedOrPrevious] = createSignal<number | undefined>();
 
   const previousEvents = createQuery(() => ({
     queryKey: ["previousProjects"],
-    queryFn: async () => {
+    queryFn: () => {
       return Queries.Events.all();
     },
   }));
 
-  const suggestNewNames = (name: string) => {
+  const suggestNewNames = () => {
+    const name = newEvent().name;
     if (!previousEvents.isSuccess) {
+      return [];
+    }
+    if (name.length === 0) {
+      return [];
+    }
+    // is the name already in the list?
+    const existsStartingWithLowerCase = previousEvents.data.find((pEvent) =>
+      pEvent.name.toLowerCase().startsWith(name.toLowerCase())
+    );
+    const existsExactLowercase = previousEvents.data.find((pEvent) => pEvent.name.toLowerCase() === name.toLowerCase());
+
+    if (!existsExactLowercase) {
+      return [];
+    }
+    if (!existsStartingWithLowerCase) {
       return [];
     }
     const lastCounter = previousEvents.data.reduce((acc, pEvent) => {
       const pEventName = pEvent.name.toLowerCase();
-      const re = new RegExp(name + "\\s*(?:-?\\d+)?");
-      if (re.test(pEventName)) {
-        const counter = +pEventName.replace(name, "").replace("-", "");
-        if (!isNaN(counter)) {
-          return Math.max(acc, counter);
+
+      // find the last number in the name, if it exists. the name can be "name-1" or "name 1" or even "name1"
+      const lastNumber = pEventName.match(/(\d+)$/);
+
+      if (lastNumber) {
+        const counter = parseInt(lastNumber[0]);
+        if (counter > acc) {
+          return counter;
         }
       }
       return acc;
     }, 0);
+
     if (lastCounter === 0) {
       return [];
     }
     const suggestions = [];
+    const nameWithoutCounter = name.replace(/(\d+)$/, "").trim();
     for (let i = 1; i < 4; i++) {
-      suggestions.push(`${name}-${lastCounter + i}`);
+      suggestions.push(`${nameWithoutCounter} ${lastCounter + i}`);
     }
     return suggestions;
   };
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
-    const validation = CreateEventFormSchema.safeParse(newEvent);
+    const validation = CreateEventFormSchema.safeParse(newEvent());
     if (!validation.success) {
       toast.error("Error Creating Event", {
-        description: "Please fix the errors and try again",
+        description: validation.error?.message,
       });
       return;
     }
-    console.log(validation.data);
 
     return await createEvent.mutateAsync(validation.data);
   };
 
   const navigate = useNavigate();
+
+  const isAllowedToCreateEvent = () => {
+    const firstCondition = CreateEventFormSchema.safeParse(newEvent());
+    if (!firstCondition.success) {
+      return false;
+    }
+    const sn = suggestNewNames();
+    const secondCondition = sn.length === 0;
+    return firstCondition.success && secondCondition;
+  };
 
   const createEvent = createMutation(() => ({
     mutationKey: ["createEvent"],
@@ -124,7 +160,7 @@ export default function CreateEventForm() {
       return Mutations.Events.create(data);
     },
     onSuccess: (data) => {
-      toast.info(`Event  '${data.name}' Created!`, {
+      toast.info(`Event '${data.name}' Created!`, {
         action: {
           label: "View Event",
           onClick: () => {
@@ -134,20 +170,22 @@ export default function CreateEventForm() {
       });
     },
     onError: (error) => {
-      toast.custom((id) => (
-        <div class="flex flex-col p-4 gap-2 bg-red-50 dark:bg-red-950 w-full rounded-md">
-          <span class="text-red-500 text-sm font-medium leading-none">Error Creating Event</span>
-          <span class="text-sm font-medium leading-none">{error.message}</span>
-        </div>
-      ));
+      toast.error("Error Creating Event", {
+        description: error.message,
+      });
     },
   }));
+
+  const isFormEmpty = (event: z.infer<typeof CreateEventFormSchema>) => {
+    // check deep equality
+    return JSON.stringify(event) === JSON.stringify(DEFAULT_EVENT);
+  };
 
   return (
     <>
       <h1 class="text-3xl font-semibold w-full">Create Event</h1>
-      <div class="flex flex-row gap-8 py-4 xl:w-1/2 lg:w-2/3 w-full">
-        <form onSubmit={handleSubmit} class="flex flex-col gap-6 w-full">
+      <div class="flex flex-col-reverse lg:flex-row lg:justify-between gap-8 py-4 w-full">
+        <form onSubmit={handleSubmit} class="flex flex-col gap-6 xl:w-1/2 lg:w-2/3 w-full self-start" ref={formRef!}>
           <Tabs defaultValue="general" value={currentTab()} onChange={(value) => setCurrentTab(value as TabValue)}>
             <TabsList>
               <TabsTrigger value="general" class="text-sm font-medium leading-none">
@@ -166,48 +204,44 @@ export default function CreateEventForm() {
                   The Name of the Event
                 </TextFieldLabel>
                 <TextFieldInput
+                  value={newEvent().name}
                   onChange={(e) => {
                     const value = e.currentTarget.value;
-                    setNewEvent(produce((draft) => (draft.name = value)));
+                    setNewEvent((ev) => ({ ...ev, name: value }));
                   }}
                 />
-                <Show when={newEvent.name.length > 0 && newEvent.name}>
+                <Show when={suggestNewNames().length > 0 && suggestNewNames()}>
                   {(v) => (
-                    <Switch>
-                      <Match when={suggestNewNames(v().toLowerCase()).length > 0 && suggestNewNames(v().toLowerCase())}>
-                        {(data) => (
-                          <>
-                            <span class="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                              Event '{v()}' exists already! Suggested Names:
-                            </span>
-                            <div class="grid grid-cols-3 gap-2">
-                              <For
-                                each={data()}
-                                fallback={
-                                  <div class="col-span-full">
-                                    <span class="text-sm font-medium leading-none text-emerald-500">
-                                      Lucky you, the name is available!
-                                    </span>
-                                  </div>
-                                }
-                              >
-                                {(suggestion) => (
-                                  <Button
-                                    asChild
-                                    variant="secondary"
-                                    onClick={() => {
-                                      setNewEvent(produce((draft) => (draft.name = suggestion)));
-                                    }}
-                                  >
-                                    <As component={Badge}>{suggestion}</As>
-                                  </Button>
-                                )}
-                              </For>
+                    <>
+                      <span class="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Event '{newEvent().name}' exists already! Suggested Names:
+                      </span>
+                      <div class="grid grid-cols-3 gap-2">
+                        <For
+                          each={v()}
+                          fallback={
+                            <div class="col-span-full">
+                              <span class="text-sm font-medium leading-none text-emerald-500">
+                                Lucky you, the name is available!
+                              </span>
                             </div>
-                          </>
-                        )}
-                      </Match>
-                    </Switch>
+                          }
+                        >
+                          {(suggestion) => (
+                            <Button
+                              asChild
+                              type="button"
+                              variant="secondary"
+                              onClick={() => {
+                                setNewEvent((ev) => ({ ...ev, name: suggestion }));
+                              }}
+                            >
+                              <As component={Badge}>{suggestion}</As>
+                            </Button>
+                          )}
+                        </For>
+                      </div>
+                    </>
                   )}
                 </Show>
               </TextField>
@@ -216,9 +250,10 @@ export default function CreateEventForm() {
                   What is the event about?
                 </TextFieldLabel>
                 <TextFieldInput
+                  value={newEvent().description}
                   onChange={(e) => {
                     const value = e.currentTarget.value;
-                    setNewEvent(produce((draft) => (draft.description = value)));
+                    setNewEvent((ev) => ({ ...ev, description: value }));
                   }}
                 />
               </TextField>
@@ -226,11 +261,33 @@ export default function CreateEventForm() {
             <TabsContent value="time" class="flex flex-col gap-6 w-full">
               <div class="flex flex-col items-start justify-between gap-2 w-full">
                 <RadioGroup
-                  defaultValue={newEvent.time.time_type === "full_day" ? "full_day" : "range"}
+                  defaultValue={newEvent().time.time_type === "full_day" ? "full_day" : "range"}
                   aria-label="When is the event?"
-                  value={newEvent.time.time_type}
+                  value={newEvent().time.time_type}
                   onChange={(value) => {
-                    setNewEvent(produce((draft) => (draft.time.time_type = value as "full_day" | "range")));
+                    if (value === "full_day") {
+                      setNewEvent((ev) => {
+                        return {
+                          ...ev,
+                          time: {
+                            time_type: value as "full_day",
+                            day: dayjs().startOf("day").toDate(),
+                          },
+                        };
+                      });
+                    }
+                    if (value === "range") {
+                      setNewEvent((ev) => {
+                        return {
+                          ...ev,
+                          time: {
+                            time_type: value as "range",
+                            start_time: dayjs().startOf("day").toDate(),
+                            end_time: dayjs().startOf("day").toDate(),
+                          },
+                        };
+                      });
+                    }
                   }}
                   class="w-full flex flex-col gap-2"
                 >
@@ -245,12 +302,12 @@ export default function CreateEventForm() {
                           "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-secondary rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent.time.time_type === "full_day",
-                            "bg-secondary": newEvent.time.time_type === "range",
-                          },
+                              newEvent().time.time_type === "full_day",
+                            "bg-secondary": newEvent().time.time_type === "range",
+                          }
                         )}
                       >
-                        Specific Time Range <RadioGroupItemControl class="hidden" />
+                        Time Range <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                     <RadioGroupItem value="full_day">
@@ -259,9 +316,9 @@ export default function CreateEventForm() {
                           "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-secondary rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent.time.time_type === "range",
-                            "bg-secondary": newEvent.time.time_type === "full_day",
-                          },
+                              newEvent().time.time_type === "range",
+                            "bg-secondary": newEvent().time.time_type === "full_day",
+                          }
                         )}
                       >
                         <RadioGroupItemControl class="hidden" />
@@ -273,7 +330,7 @@ export default function CreateEventForm() {
               </div>
               <div class="flex flex-col items-start justify-between gap-2 w-full">
                 <Switch>
-                  <Match when={newEvent.time.time_type === "range"}>
+                  <Match when={newEvent().time.time_type === "range"}>
                     <div class="flex flex-row items-center justify-between gap-2 w-full">
                       <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
                         <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -282,19 +339,22 @@ export default function CreateEventForm() {
                         <TextFieldInput
                           type="date"
                           value={
-                            newEvent.time.time_type === "range"
-                              ? dayjs(newEvent.time.start_time).format("YYYY-MM-DD")
+                            newEvent().time.time_type === "range"
+                              ? // @ts-ignore
+                                dayjs(newEvent().time.start_time).format("YYYY-MM-DD")
                               : undefined
                           }
                           onChange={(e) => {
                             const value = e.currentTarget.value;
-                            setNewEvent(
-                              produce((draft) => {
-                                if (draft.time.time_type === "range") {
-                                  draft.time.start_time = dayjs(value).toDate();
-                                }
-                              }),
-                            );
+                            setNewEvent((ev) => {
+                              return {
+                                ...ev,
+                                time: {
+                                  ...ev.time,
+                                  start_time: dayjs(value).startOf("day").toDate(),
+                                },
+                              };
+                            });
                           }}
                         />
                       </TextField>
@@ -302,11 +362,31 @@ export default function CreateEventForm() {
                         <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                           End Time
                         </TextFieldLabel>
-                        <TextFieldInput type="date" required />
+                        <TextFieldInput
+                          type="date"
+                          value={
+                            newEvent().time.time_type === "range"
+                              ? // @ts-ignore
+                                dayjs(newEvent().time.end_time).format("YYYY-MM-DD")
+                              : undefined
+                          }
+                          onChange={(e) => {
+                            const value = e.currentTarget.value;
+                            setNewEvent((ev) => {
+                              return {
+                                ...ev,
+                                time: {
+                                  ...ev.time,
+                                  end_time: dayjs(value).startOf("day").toDate(),
+                                },
+                              };
+                            });
+                          }}
+                        />
                       </TextField>
                     </div>
                   </Match>
-                  <Match when={newEvent.time.time_type === "full_day"}>
+                  <Match when={newEvent().time.time_type === "full_day"}>
                     <TextField class="w-full flex flex-col gap-2" aria-label="Date">
                       <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         Date
@@ -314,19 +394,22 @@ export default function CreateEventForm() {
                       <TextFieldInput
                         type="date"
                         value={
-                          newEvent.time.time_type === "full_day"
-                            ? dayjs(newEvent.time.day).format("YYYY-MM-DD")
+                          newEvent().time.time_type === "full_day"
+                            ? // @ts-ignore
+                              dayjs(newEvent().time.day).format("YYYY-MM-DD")
                             : undefined
                         }
                         onChange={(e) => {
                           const value = e.currentTarget.value;
-                          setNewEvent(
-                            produce((draft) => {
-                              if (draft.time.time_type === "full_day") {
-                                draft.time.day = dayjs(value).startOf("day").toDate();
-                              }
-                            }),
-                          );
+                          setNewEvent((ev) => {
+                            return {
+                              ...ev,
+                              time: {
+                                ...ev.time,
+                                day: dayjs(value).startOf("day").toDate(),
+                              },
+                            };
+                          });
                         }}
                       />
                     </TextField>
@@ -337,10 +420,31 @@ export default function CreateEventForm() {
             <TabsContent value="location" class="flex flex-col gap-6 w-full">
               <div class="flex flex-col items-start justify-between gap-2 w-full">
                 <RadioGroup
-                  value={newEvent.location.location_type === "in_person" ? "in_person" : "online"}
+                  value={newEvent().location.location_type === "in_person" ? "in_person" : "online"}
                   aria-label="When is the event?"
                   onChange={(value) => {
-                    setNewEvent(produce((draft) => (draft.location.location_type = value as "in_person" | "online")));
+                    if (value === "online") {
+                      setNewEvent((ev) => {
+                        return {
+                          ...ev,
+                          location: {
+                            location_type: value as "online",
+                            url: "",
+                          },
+                        };
+                      });
+                    }
+                    if (value === "in_person") {
+                      setNewEvent((ev) => {
+                        return {
+                          ...ev,
+                          location: {
+                            location_type: value as "in_person",
+                            address: "",
+                          },
+                        };
+                      });
+                    }
                   }}
                   class="w-full flex flex-col gap-2"
                 >
@@ -355,9 +459,9 @@ export default function CreateEventForm() {
                           "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-secondary rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent.location.location_type === "in_person",
-                            "bg-secondary": newEvent.location.location_type === "online",
-                          },
+                              newEvent().location.location_type === "in_person",
+                            "bg-secondary": newEvent().location.location_type === "online",
+                          }
                         )}
                       >
                         Online <RadioGroupItemControl class="hidden" />
@@ -369,9 +473,9 @@ export default function CreateEventForm() {
                           "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-secondary rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent.location.location_type === "online",
-                            "bg-secondary": newEvent.location.location_type === "in_person",
-                          },
+                              newEvent().location.location_type === "online",
+                            "bg-secondary": newEvent().location.location_type === "in_person",
+                          }
                         )}
                       >
                         <RadioGroupItemControl class="hidden" />
@@ -383,53 +487,61 @@ export default function CreateEventForm() {
               </div>
               <div class="flex flex-col items-start justify-between gap-2 w-full">
                 <Switch>
-                  <Match when={newEvent.location.location_type === "online"}>
+                  <Match when={newEvent().location.location_type === "online"}>
                     <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                       <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         What is the URL of the event?
                       </TextFieldLabel>
                       <TextFieldInput
                         value={
-                          newEvent.location.location_type === "online" && newEvent.location.url
-                            ? newEvent.location.url
+                          // @ts-ignore
+                          newEvent().location.location_type === "online" && newEvent().location.url
+                            ? // @ts-ignore
+                              newEvent().location.url
                             : urlQuery()
                         }
                         onChange={(e) => {
                           const value = e.currentTarget.value;
                           setURLQuery(value);
-                          setNewEvent(
-                            produce((draft) => {
-                              if (draft.location.location_type === "online") {
-                                draft.location.url = value;
-                              }
-                            }),
-                          );
+                          setNewEvent((ev) => {
+                            return {
+                              ...ev,
+                              location: {
+                                ...ev.location,
+                                url: value,
+                              },
+                            };
+                          });
                         }}
                       />
                     </TextField>
                     <URLPreview query={urlQuery} />
                   </Match>
-                  <Match when={newEvent.location.location_type === "in_person"}>
+                  <Match when={newEvent().location.location_type === "in_person"}>
                     <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                       <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         Where is the event going to take place?
                       </TextFieldLabel>
                       <TextFieldInput
                         value={
-                          newEvent.location.location_type === "in_person" && newEvent.location.address
-                            ? newEvent.location.address
+                          // @ts-ignore
+                          newEvent().location.location_type === "in_person" && newEvent().location.address
+                            ? // @ts-ignore
+                              newEvent().location.address
                             : locationQuery()
                         }
                         onChange={(e) => {
                           const value = e.currentTarget.value;
                           setLocationQuery(value);
-                          setNewEvent(
-                            produce((draft) => {
-                              if (draft.location.location_type === "in_person") {
-                                draft.location.address = value;
-                              }
-                            }),
-                          );
+                          setNewEvent((ev) => {
+                            return {
+                              ...ev,
+                              location: {
+                                ...ev.location,
+                                address: value,
+                              },
+                            };
+                          });
                         }}
                       />
                     </TextField>
@@ -439,21 +551,39 @@ export default function CreateEventForm() {
               </div>
             </TabsContent>
           </Tabs>
+          <div>
+            <Show when={createEvent.isError && createEvent.error}>
+              {(e) => (
+                <div class="flex flex-row items-center gap-2 text-red-500">
+                  <MessageCircleWarning class="w-4 h-4" />
+                  <span class="text-sm font-medium leading-none">{e().message}</span>
+                </div>
+              )}
+            </Show>
+          </div>
           <div class="flex flex-row items-center justify-between gap-2 w-full">
             <div>
-              <Show when={createEvent.isError && createEvent.error}>
-                {(e) => (
-                  <div class="flex flex-row items-center gap-2 text-red-500">
-                    <MessageCircleWarning class="w-4 h-4" />
-                    <span class="text-sm font-medium leading-none">{e().message}</span>
-                  </div>
-                )}
-              </Show>
+              <Button
+                type="button"
+                variant="outline"
+                aria-label="Clear Form"
+                class="gap-2"
+                onClick={(e) => {
+                  if (!formRef) return;
+                  setNewEvent(DEFAULT_EVENT);
+                  setTakenFromRecommendedOrPrevious(undefined);
+                  formRef.reset();
+                }}
+                disabled={createEvent.isPending || isFormEmpty(newEvent())}
+              >
+                Clear
+                <X class="w-4 h-4" />
+              </Button>
             </div>
             <div class="flex flex-row gap-2">
               <Button
                 size="icon"
-                variant={currentTab() === "general" ? "secondary" : "default"}
+                variant={currentTab() === "general" ? "outline" : "default"}
                 disabled={createEvent.isPending || currentTab() === "general"}
                 aria-label="Previous Tab"
                 onClick={() => handleTabChange("backward")}
@@ -462,7 +592,7 @@ export default function CreateEventForm() {
               </Button>
               <Button
                 size="icon"
-                variant={currentTab() === "location" ? "secondary" : "default"}
+                variant={currentTab() === "location" ? "outline" : "default"}
                 disabled={createEvent.isPending || currentTab() === "location"}
                 aria-label="Next Tab"
                 onClick={() => handleTabChange("forward")}
@@ -473,7 +603,7 @@ export default function CreateEventForm() {
                 type="submit"
                 aria-label="Create Event"
                 class="flex flex-row items-center justify-between gap-2"
-                disabled={createEvent.isPending}
+                disabled={createEvent.isPending || !isAllowedToCreateEvent()}
               >
                 <Switch>
                   <Match when={createEvent.isPending}>
@@ -509,6 +639,118 @@ export default function CreateEventForm() {
             </div>
           </div>
         </form>
+        <div class="lg:w-max w-full flex flex-col gap-4">
+          <div class="w-full flex flex-row items-center justify-between w-min-60">
+            <h3
+              class={cn("text-base font-medium", {
+                "opacity-50": takenFromRecommendedOrPrevious() !== undefined,
+              })}
+            >
+              Previous Events
+            </h3>
+            <Button
+              size="sm"
+              class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
+              variant="secondary"
+              onClick={() => {
+                if (!formRef) return;
+                setTakenFromRecommendedOrPrevious(undefined);
+                setNewEvent(DEFAULT_EVENT);
+                formRef.reset();
+              }}
+              aria-label="Clear Previous Event and Form"
+              disabled={takenFromRecommendedOrPrevious() === undefined}
+            >
+              Clear
+              <X class="w-3 h-3" />
+            </Button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-max w-full self-end ">
+            <Switch>
+              <Match when={previousEvents.isPending}>
+                <For each={[1, 2, 3]}>
+                  {(i) => (
+                    <Skeleton>
+                      <Card class="rounded-md shadow-sm lg:w-max w-full min-w-60">
+                        <CardHeader class="flex flex-col p-3 pb-2 ">
+                          <CardTitle class="text-sm">Loading...</CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-3 pt-0 pb-2">
+                          <CardDescription class="text-xs">Loading...</CardDescription>
+                        </CardContent>
+                        <CardFooter class="flex flex-row items-center justify-between p-3 pt-0">
+                          <div></div>
+                          <Button size="sm" variant="outline">
+                            Use Event
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    </Skeleton>
+                  )}
+                </For>
+              </Match>
+              <Match when={previousEvents.isError}>
+                <div class="flex flex-col gap-2 w-full">
+                  <span class="text-sm font-medium leading-none text-red-500">Error Fetching Previous Events</span>
+                  <span class="text-sm font-medium leading-none">{previousEvents.error?.message}</span>
+                </div>
+              </Match>
+              <Match when={previousEvents.isSuccess && previousEvents.data}>
+                {(data) => (
+                  <For each={data().slice(0, 3)}>
+                    {(event, index) => (
+                      <Card
+                        class={cn("rounded-md shadow-sm lg:w-max w-full min-w-60 cursor-pointer ", {
+                          "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
+                            index() === takenFromRecommendedOrPrevious(),
+                          "hover:bg-neutral-100 dark:hover:bg-neutral-900":
+                            takenFromRecommendedOrPrevious() === undefined,
+                          "opacity-100": takenFromRecommendedOrPrevious() === index(),
+                          "opacity-50":
+                            takenFromRecommendedOrPrevious() !== undefined &&
+                            takenFromRecommendedOrPrevious() !== index(),
+                          "cursor-default": takenFromRecommendedOrPrevious() !== undefined,
+                        })}
+                        onClick={() => {
+                          if (takenFromRecommendedOrPrevious() !== undefined) return;
+                          setNewEvent((ev) => ({
+                            ...ev,
+                            name: event.name,
+                            description: event.description,
+                          }));
+                          setTakenFromRecommendedOrPrevious(index());
+                        }}
+                      >
+                        <CardHeader class="flex flex-col p-3 pb-2 ">
+                          <CardTitle
+                            class={cn("text-sm", {
+                              "text-white": index() === takenFromRecommendedOrPrevious(),
+                            })}
+                          >
+                            {event.name}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-3 pt-0 pb-4">
+                          <CardDescription
+                            class={cn("text-xs", {
+                              "text-white": index() === takenFromRecommendedOrPrevious(),
+                            })}
+                          >
+                            <p>{event.description}</p>
+                          </CardDescription>
+                        </CardContent>
+                        {/* <CardFooter class="flex flex-row items-center justify-between p-3 pt-0">
+                          <div></div>
+                          <div></div>
+                        </CardFooter> */}
+                      </Card>
+                    )}
+                  </For>
+                )}
+              </Match>
+            </Switch>
+          </div>
+        </div>
       </div>
     </>
   );

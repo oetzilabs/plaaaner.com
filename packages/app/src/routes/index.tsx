@@ -9,15 +9,15 @@ import { For } from "solid-js";
 export default function IndexPage() {
   return (
     <div class="relative flex flex-col gap-2 items-center">
-      <div class="absolute w-full -top-16 h-32 bg-[#4F46E4] -z-[1] rounded-3xl blur-[150px]"></div>
-      <div class="absolute w-full -bottom-36 h-32 bg-[#4F46E4] -z-[1] rounded-3xl blur-[300px]"></div>
+      <div class="absolute w-full -top-16 h-32 bg-[#4F46E4] -z-[10] rounded-3xl blur-[150px]"></div>
+      <div class="absolute w-full -bottom-36 h-32 bg-[#4F46E4] -z-[10] rounded-3xl blur-[300px]"></div>
       <div class="py-20 pb-24 flex flex-col gap-28 items-center">
         <div class="flex flex-col gap-6 items-center pt-10 pb-4">
           <h1 class="text-4xl font-bold capitalize text-center">The AAA event planning platform</h1>
           <h2 class="text-2xl font-semibold text-center">Events, Concerts and Meetings.</h2>
         </div>
         <div class="flex flex-col items-center overflow-x-clip px-10 ">
-          <Card>
+          <Card class="dark:bg-black/[0.1] bg-black/[0.1] backdrop-blur-md">
             <CardHeader class="flex flex-col">
               <CardTitle>Create a plan</CardTitle>
               <CardDescription>

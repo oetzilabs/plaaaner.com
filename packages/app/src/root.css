@@ -76,3 +76,16 @@
     @apply bg-background text-foreground flex flex-col flex-grow min-h-screen;
   }
 }
+
+.slide-fade-up-enter-active,
+.slide-fade-up-exit-active {
+  transition: opacity 0.1s, transform 0.1s;
+}
+.slide-fade-up-enter,
+.slide-fade-up-exit-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+.slide-fade-up-enter {
+  transform: translateY(10px);
+}
