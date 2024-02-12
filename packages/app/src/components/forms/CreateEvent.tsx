@@ -247,7 +247,7 @@ export default function CreateEventForm() {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent.time.time_type === "full_day",
                             "bg-secondary": newEvent.time.time_type === "range",
-                          }
+                          },
                         )}
                       >
                         Specific Time Range <RadioGroupItemControl class="hidden" />
@@ -261,7 +261,7 @@ export default function CreateEventForm() {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent.time.time_type === "range",
                             "bg-secondary": newEvent.time.time_type === "full_day",
-                          }
+                          },
                         )}
                       >
                         <RadioGroupItemControl class="hidden" />
@@ -293,7 +293,7 @@ export default function CreateEventForm() {
                                 if (draft.time.time_type === "range") {
                                   draft.time.start_time = dayjs(value).toDate();
                                 }
-                              })
+                              }),
                             );
                           }}
                         />
@@ -325,7 +325,7 @@ export default function CreateEventForm() {
                               if (draft.time.time_type === "full_day") {
                                 draft.time.day = dayjs(value).startOf("day").toDate();
                               }
-                            })
+                            }),
                           );
                         }}
                       />
@@ -357,7 +357,7 @@ export default function CreateEventForm() {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent.location.location_type === "in_person",
                             "bg-secondary": newEvent.location.location_type === "online",
-                          }
+                          },
                         )}
                       >
                         Online <RadioGroupItemControl class="hidden" />
@@ -371,7 +371,7 @@ export default function CreateEventForm() {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent.location.location_type === "online",
                             "bg-secondary": newEvent.location.location_type === "in_person",
-                          }
+                          },
                         )}
                       >
                         <RadioGroupItemControl class="hidden" />
@@ -402,7 +402,7 @@ export default function CreateEventForm() {
                               if (draft.location.location_type === "online") {
                                 draft.location.url = value;
                               }
-                            })
+                            }),
                           );
                         }}
                       />
@@ -428,7 +428,7 @@ export default function CreateEventForm() {
                               if (draft.location.location_type === "in_person") {
                                 draft.location.address = value;
                               }
-                            })
+                            }),
                           );
                         }}
                       />
