@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Select as SelectPrimitive } from "@kobalte/core";
-import { SelectIcon } from "@kobalte/core/dist/types/select/select-icon";
-import { Check } from "lucide-solid";
+import { Check, ChevronDown } from "lucide-solid";
 import type { VoidComponent } from "solid-js";
 import { splitProps, type ParentComponent } from "solid-js";
 
@@ -18,13 +17,13 @@ export const SelectTrigger: ParentComponent<SelectPrimitive.SelectTriggerProps> 
     <SelectPrimitive.Trigger
       class={cn(
         "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus-visible:ring focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-        local.class,
+        local.class
       )}
       {...rest}
     >
       {local.children}
       <SelectPrimitive.Icon class="flex h-3.5 w-3.5 items-center justify-center">
-        <SelectIcon class="w-4 h-4" />
+        <ChevronDown class="w-4 h-4" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -37,7 +36,7 @@ export const SelectContent: VoidComponent<SelectPrimitive.SelectContentProps> = 
       <SelectPrimitive.Content
         class={cn(
           "relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95",
-          local.class,
+          local.class
         )}
         {...rest}
       >
@@ -53,7 +52,7 @@ export const SelectItem: ParentComponent<SelectPrimitive.SelectItemProps> = (pro
     <SelectPrimitive.Item
       class={cn(
         "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        local.class,
+        local.class
       )}
       {...rest}
     >

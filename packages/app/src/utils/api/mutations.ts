@@ -71,6 +71,7 @@ export const Events = {
 
 export const Concerts = {
   create: z.function(z.tuple([CreateConcertFormSchema])).implement(async (data) => {
+    console.log("data", data);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     // return Promise.reject(
     //   new Error("Mutations.Concerts.create has not been implemented yet", {

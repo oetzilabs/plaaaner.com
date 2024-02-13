@@ -89,3 +89,15 @@
 .slide-fade-up-enter {
   transform: translateY(10px);
 }
+.slide-fade-down-enter-active,
+.slide-fade-down-exit-active {
+  transition: opacity 0.1s, transform 0.1s;
+}
+.slide-fade-down-enter,
+.slide-fade-down-exit-to {
+  transform: translateY(10px);
+  opacity: 0;
+}
+.slide-fade-down-enter {
+  transform: translateY(-10px);
+}

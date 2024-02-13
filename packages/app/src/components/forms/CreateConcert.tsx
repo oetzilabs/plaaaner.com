@@ -1,7 +1,9 @@
+import DatePicker from "@/components/ui/custom/DatePicker";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCaption, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Mutations } from "@/utils/api/mutations";
 import { As } from "@kobalte/core";
-import DatePicker from "@/components/ui/custom/DatePicker";
 import { createMutation, createQuery } from "@tanstack/solid-query";
 import dayjs from "dayjs";
 import {
@@ -14,21 +16,24 @@ import {
   Library,
   Loader2,
   MapPin,
-  MessageCircleWarning,
+  Minus,
+  Pen,
   Plus,
+  Ticket,
   X,
 } from "lucide-solid";
-import { For, Match, Show, Switch, createEffect, createSignal } from "solid-js";
+import { For, Match, Show, Switch, createSignal } from "solid-js";
 import { toast } from "solid-sonner";
 import { useNavigate } from "solid-start";
 import { clientOnly } from "solid-start/islands";
 import { z } from "zod";
 import { Queries } from "../../utils/api/queries";
-import { CreateConcertFormSchema } from "../../utils/schemas/concert";
+import { CreateConcertFormSchema, TicketSchema } from "../../utils/schemas/concert";
 import URLPreview from "../URLPreview";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
 import {
   RadioGroup,
   RadioGroupItem,
@@ -39,7 +44,9 @@ import {
 import { Skeleton } from "../ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TextField, TextFieldInput, TextFieldLabel } from "../ui/textfield";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { EditTicketForm } from "./EditTicketForm";
+import { Transition } from "solid-transition-group";
 
 const ClientMap = clientOnly(() => import("../ClientMap"));
 
@@ -48,7 +55,10 @@ const DEFAULT_CONCERT: z.infer<typeof CreateConcertFormSchema> = {
   description: "",
   day: dayjs().startOf("day").toDate(),
   tickets: [],
-  capacity: 50,
+  capacity: {
+    capacity_type: "none",
+    value: "none",
+  },
   duration: 60,
   location: {
     location_type: "venue",
@@ -56,18 +66,20 @@ const DEFAULT_CONCERT: z.infer<typeof CreateConcertFormSchema> = {
   },
 };
 
-type TabValue = "general" | "time" | "location";
+type TabValue = "general" | "time" | "location" | "tickets";
 
 const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | undefined>> = {
   forward: {
     general: "time",
     time: "location",
-    location: undefined,
+    location: "tickets",
+    tickets: undefined,
   },
   backward: {
     general: undefined,
     time: "general",
     location: "time",
+    tickets: "location",
   },
 };
 
@@ -227,6 +239,10 @@ export default function CreateConcertForm() {
               <TabsTrigger value="location" class="text-sm font-medium leading-none gap-2 pl-3">
                 <MapPin class="w-3 h-3" />
                 Location
+              </TabsTrigger>
+              <TabsTrigger value="tickets" class="text-sm font-medium leading-none gap-2 pl-3">
+                <Ticket class="w-3 h-3" />
+                Tickets
               </TabsTrigger>
             </TabsList>
             <TabsContent value="general" class="flex flex-col gap-6 w-full">
@@ -548,6 +564,231 @@ export default function CreateConcertForm() {
                 </Switch>
               </div>
             </TabsContent>
+            <TabsContent value="tickets" class="flex flex-col gap-6 w-full">
+              <RadioGroup
+                class="w-full flex flex-col gap-2"
+                aria-label="Recommended Ticket Capacity"
+                onChange={(v) => {
+                  if (v === "custom") {
+                    setNewConcert((ev) => ({
+                      ...ev,
+                      capacity: {
+                        capacity_type: "custom",
+                        value: 1,
+                      },
+                    }));
+                    return;
+                  }
+                  if (v === "none") {
+                    setNewConcert((ev) => ({
+                      ...ev,
+                      capacity: {
+                        capacity_type: "none",
+                        value: "none",
+                      },
+                    }));
+                    return;
+                  }
+                  const x = parseInt(v);
+                  if (!isNaN(x) && [50, 100, 200, 300].includes(x)) {
+                    type CapacityRecommended = Exclude<
+                      Exclude<ReturnType<typeof newConcert>["capacity"]["value"], "custom" | "none">,
+                      number
+                    >;
+                    setNewConcert((ev) => ({
+                      ...ev,
+                      capacity: {
+                        capacity_type: "recommended",
+                        value: String(x) as CapacityRecommended,
+                      },
+                    }));
+                  }
+                }}
+              >
+                <RadioGroupLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  How many tickets are you planning to sell?
+                </RadioGroupLabel>
+                <div class="grid grid-cols-3 gap-2 w-full">
+                  <For each={["none", 50, 100, 200, 300, "custom"] as const}>
+                    {(value) => (
+                      <RadioGroupItem value={String(value)}>
+                        <RadioGroupItemLabel
+                          class={cn(
+                            "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-secondary rounded p-4 text-sm font-medium leading-none cursor-pointer capitalize",
+                            {
+                              "bg-secondary":
+                                (newConcert().capacity.capacity_type === "recommended" &&
+                                  newConcert().capacity.value === String(value)) ||
+                                (newConcert().capacity.capacity_type === "custom" && value === "custom") ||
+                                (newConcert().capacity.capacity_type === "none" && value === "none"),
+                            }
+                          )}
+                        >
+                          {value} <RadioGroupItemControl class="hidden" />
+                        </RadioGroupItemLabel>
+                      </RadioGroupItem>
+                    )}
+                  </For>
+                </div>
+              </RadioGroup>
+              <Show when={newConcert().capacity.capacity_type === "custom"}>
+                <TextField class="w-full flex flex-col gap-2" aria-label="Tickets">
+                  <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Or choose a custom capacity
+                  </TextFieldLabel>
+                  <TextFieldInput
+                    type="number"
+                    min={0}
+                    step="1"
+                    value={newConcert().capacity.value}
+                    onChange={(e) => {
+                      const value = e.currentTarget.value;
+                      if (!value) return;
+                      const capacity = parseInt(value);
+                      if (isNaN(capacity)) return;
+
+                      setNewConcert((ev) => ({
+                        ...ev,
+                        capacity: {
+                          capacity_type: "custom",
+                          value: capacity,
+                        },
+                      }));
+                    }}
+                  />
+                </TextField>
+              </Show>
+              <Transition name="slide-fade-down">
+                <Show when={["recommended", "custom"].includes(newConcert().capacity.capacity_type)}>
+                  <div class="flex flex-col gap-2">
+                    <Separator />
+                    <div class="flex flex-col gap-2">
+                      <span class="text-sm font-medium leading-none">Type of Tickets</span>
+                      <div class="w-full border border-muted rounded-md p-2">
+                        <Table class="rounded-sm overflow-clip">
+                          <TableCaption class="text-xs">Type of Tickets (e.g. VIP, Regular, etc.)</TableCaption>
+                          <TableHeader>
+                            <TableRow>
+                              <For each={["Type", "Name", "Price", "Quantity", "Actions"] as const}>
+                                {(header) => <TableCell class="text-sm font-medium leading-none">{header}</TableCell>}
+                              </For>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            <For each={newConcert().tickets}>
+                              {(ticket, index) => (
+                                <TableRow class="last:rounded-b-sm last:overflow-clip">
+                                  <TableCell class="uppercase">{ticket.ticket_type}</TableCell>
+                                  <TableCell>{ticket.name}</TableCell>
+                                  <TableCell>
+                                    {ticket.ticket_type.startsWith("free") ? (
+                                      "Free"
+                                    ) : (
+                                      <div>
+                                        {ticket.price.toFixed(2)}{" "}
+                                        <Switch>
+                                          <Match
+                                            when={
+                                              ticket.currency.currency_type === "other" &&
+                                              (ticket.currency as Exclude<
+                                                z.infer<typeof TicketSchema>["currency"],
+                                                Exclude<
+                                                  z.infer<typeof TicketSchema>["currency"],
+                                                  { currency_type: "other" }
+                                                >
+                                              >)
+                                            }
+                                          >
+                                            {(c) => c().value}
+                                          </Match>
+                                          <Match when={ticket.currency.currency_type !== "other"}>
+                                            {ticket.currency.currency_type.toUpperCase()}
+                                          </Match>
+                                        </Switch>
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>{ticket.quantity}</TableCell>
+                                  <TableCell class="w-max">
+                                    <div class="flex flex-row justify-end w-max gap-2">
+                                      <EditTicketForm
+                                        ticket={ticket}
+                                        tickets={() => newConcert().tickets}
+                                        onChange={(newTicket) => {
+                                          setNewConcert((ev) => {
+                                            return {
+                                              ...ev,
+                                              tickets: ev.tickets.map((t, i) => {
+                                                if (i === index()) {
+                                                  return newTicket;
+                                                }
+                                                return t;
+                                              }),
+                                            };
+                                          });
+                                        }}
+                                      />
+                                      <Button
+                                        size="icon"
+                                        variant="destructive"
+                                        aria-label="Remove Ticket"
+                                        class="w-6 h-6"
+                                        onClick={() => {
+                                          setNewConcert((ev) => {
+                                            return {
+                                              ...ev,
+                                              tickets: ev.tickets.filter((_, i) => i !== index()),
+                                            };
+                                          });
+                                        }}
+                                      >
+                                        <Minus class="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </For>
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                    <div class="flex flex-row items-center justify-between gap-2 w-full">
+                      <div></div>
+                      <div class="flex flex-row gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          aria-label="Add Ticket"
+                          onClick={() => {
+                            setNewConcert((ev) => {
+                              return {
+                                ...ev,
+                                tickets: [
+                                  ...ev.tickets,
+                                  {
+                                    ticket_type: "free",
+                                    name: "",
+                                    price: 0,
+                                    currency: {
+                                      currency_type: "usd",
+                                    },
+                                    quantity: 1,
+                                  },
+                                ],
+                              };
+                            });
+                          }}
+                        >
+                          Add Ticket
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Show>
+              </Transition>
+            </TabsContent>
           </Tabs>
           <div>
             <Show when={createConcert.isError && createConcert.error}>
@@ -618,7 +859,7 @@ export default function CreateConcertForm() {
               <Button
                 size="icon"
                 variant={currentTab() === "location" ? "outline" : "default"}
-                disabled={createConcert.isPending || currentTab() === "location"}
+                disabled={createConcert.isPending || currentTab() === "tickets"}
                 aria-label="Next Tab"
                 onClick={() => handleTabChange("forward")}
               >
