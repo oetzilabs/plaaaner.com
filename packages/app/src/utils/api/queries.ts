@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CreateEventFormSchema, EventType } from "../schemas/event";
 
 export * as Queries from "./queries";
 
@@ -73,7 +74,7 @@ export const Sessions = {
   }),
 };
 
-export const Concerts = {
+export const Events = {
   suggestName: z.function(z.tuple([z.string()])).implement(async (name) => {
     if (name === "asdf") {
       return ["asdf-2", "hjkl"];
@@ -89,51 +90,93 @@ export const Concerts = {
     //   },
     // }).then((res) => res.json() as Promise<string[]>);
   }),
-  all: z.function(z.tuple([])).implement(async () => {
-    return [
-      { id: "1", name: "asdf", description: "Description 1" },
-      { id: "2", name: "asdff", description: "Description 2" },
-      { id: "3", name: "hjkl", description: "Description 3" },
-    ];
-    // const session = document.cookie.split(";").find((c) => c.trim().startsWith("session="));
-    // if (!session) {
-    //   return Promise.reject("No session found");
-    // }
-    // return fetch(`${API_BASE}/concerts`, {
-    //   headers: {
-    //     Authorization: `Bearer ${session.split("=")[1]}`,
-    //   },
-    // }).then((res) => res.json() as Promise<{ id: string; name: string }[]>);
-  }),
-};
-
-export const Events = {
-  all: z.function(z.tuple([])).implement(async () => {
-    await new Promise((r) => setTimeout(r, 1000));
-    return [
-      { id: "1", name: "Event 1", description: "Description 1" },
-      { id: "2", name: "Event 2", description: "Description 2" },
-      { id: "3", name: "Event 3", description: "Description 3" },
-    ];
-    // const session = document.cookie.split(";").find((c) => c.trim().startsWith("session="));
-    // if (!session) {
-    //   return Promise.reject("No session found");
-    // }
-    // return fetch(`${API_BASE}/events`, {
-    //   headers: {
-    //     Authorization: `Bearer ${session.split("=")[1]}`,
-    //   },
-    // }).then((res) => res.json() as Promise<{ id: string; name: string }[]>);
-  }),
-  byId: z.function(z.tuple([z.string()])).implement(async (id) => {
-    const session = document.cookie.split(";").find((c) => c.trim().startsWith("session="));
-    if (!session) {
-      return Promise.reject("No session found");
-    }
-    return fetch(`${API_BASE}/events/${id}`, {
-      headers: {
-        Authorization: `Bearer ${session.split("=")[1]}`,
-      },
-    }).then((res) => res.json());
-  }),
+  all: z
+    .function(
+      z.tuple([
+        z.object({
+          event_type: EventType,
+        }),
+      ])
+    )
+    .implement(async () => {
+      return [
+        {
+          id: "1",
+          name: "test-1",
+          description: "Description 1",
+          capacity: { capacity_type: "custom", value: 20 },
+          location: {
+            location_type: "venue",
+            address: "1234 Main St",
+          },
+          tickets: [
+            {
+              currency: { currency_type: "eur" },
+              price: 20,
+              quantity: 10,
+              name: "VIP",
+              ticket_type: "paid:vip",
+            },
+            {
+              currency: { currency_type: "eur" },
+              price: 10,
+              quantity: 5,
+              name: "Regular",
+              ticket_type: "paid:regular",
+            },
+            {
+              currency: { currency_type: "free" },
+              price: 0,
+              quantity: 5,
+              name: "FREE",
+              ticket_type: "free",
+            },
+          ],
+        },
+        {
+          id: "2",
+          name: "test-2",
+          description: "Description 2",
+          capacity: { capacity_type: "recommended", value: "200" },
+          location: {
+            location_type: "online",
+            url: "https://example.com",
+          },
+          tickets: [
+            {
+              currency: { currency_type: "eur" },
+              price: 20,
+              quantity: 10,
+              name: "VIP",
+              ticket_type: "paid:vip",
+            },
+            {
+              currency: { currency_type: "eur" },
+              price: 10,
+              quantity: 50,
+              name: "Regular",
+              ticket_type: "paid:regular",
+            },
+            {
+              currency: { currency_type: "free" },
+              price: 0,
+              quantity: 140,
+              name: "FREE",
+              ticket_type: "free",
+            },
+          ],
+        },
+      ] as (z.infer<typeof CreateEventFormSchema> & {
+        id: string;
+      })[];
+      // const session = document.cookie.split(";").find((c) => c.trim().startsWith("session="));
+      // if (!session) {
+      //   return Promise.reject("No session found");
+      // }
+      // return fetch(`${API_BASE}/concerts`, {
+      //   headers: {
+      //     Authorization: `Bearer ${session.split("=")[1]}`,
+      //   },
+      // }).then((res) => res.json() as Promise<{ id: string; name: string }[]>);
+    }),
 };

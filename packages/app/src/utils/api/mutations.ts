@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { CreateEventFormSchema } from "../schemas/event";
-import { CreateConcertFormSchema } from "../schemas/concert";
 
 export * as Mutations from "./mutations";
 
@@ -70,8 +69,7 @@ export const Events = {
 };
 
 export const Concerts = {
-  create: z.function(z.tuple([CreateConcertFormSchema])).implement(async (data) => {
-    console.log("data", data);
+  create: z.function(z.tuple([CreateEventFormSchema])).implement(async (data) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     // return Promise.reject(
     //   new Error("Mutations.Concerts.create has not been implemented yet", {

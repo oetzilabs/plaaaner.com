@@ -30,11 +30,11 @@ const footer = {
   Legal: [
     {
       name: "Privacy",
-      href: "#",
+      href: "/privacy",
     },
     {
-      name: "Terms",
-      href: "#",
+      name: "Terms of Service",
+      href: "/terms-of-service",
     },
   ],
   Project: [

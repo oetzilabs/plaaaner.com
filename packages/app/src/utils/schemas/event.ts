@@ -1,41 +1,93 @@
-import dayjs from "dayjs";
 import { z } from "zod";
-import { EventLocationSchema } from "./shared";
+import { ConcertLocationSchema } from "./shared";
 
-const DiscriminatedEventFormSchema = z.discriminatedUnion("time_type", [
-  z
-    .object({
-      time_type: z.literal("range"),
-      start_time: z
-        .string()
-        .or(z.date())
-        .transform((v) => dayjs(v).toDate()),
-      // check if end_time is after start_time
-      end_time: z
-        .string()
-        .or(z.date())
-        .transform((v) => dayjs(v).toDate()),
-    })
-    .strict(),
-  z
-    .object({
-      time_type: z.literal("full_day"),
-      day: z
-        .string()
-        .or(z.date())
-        .transform((v) => dayjs(v).startOf("day").toDate()),
-    })
-    .strict(),
+const TicketPrice = z.number({ required_error: "Price is required" }).min(0).step(0.01);
+const TicketCurrency = z.discriminatedUnion("currency_type", [
+  z.object({ currency_type: z.literal("free") }),
+  z.object({ currency_type: z.literal("usd") }),
+  z.object({ currency_type: z.literal("eur") }),
+  z.object({ currency_type: z.literal("chf") }),
+  z.object({ currency_type: z.literal("other"), value: z.string({ required_error: "Value is required" }) }),
 ]);
 
-export const CreateEventFormSchema = z.object({
-  name: z.string().min(3),
-  description: z.string().min(3).optional(),
-  location: EventLocationSchema,
-  time: DiscriminatedEventFormSchema.refine((data) => {
-    if (data.time_type === "range") {
-      return dayjs(data.start_time).isBefore(dayjs(data.end_time));
-    }
-    return true;
+const BaseTicketSchema = z.object({
+  name: z.string({ required_error: "Name is required" }).min(3).max(50),
+  price: TicketPrice,
+  currency: TicketCurrency,
+  quantity: z.number({ required_error: "Quantity is required" }).min(0),
+});
+
+export const TicketSchema = z.discriminatedUnion("ticket_type", [
+  BaseTicketSchema.merge(
+    z.object({
+      ticket_type: z.literal("free"),
+    })
+  ),
+  BaseTicketSchema.merge(
+    z.object({
+      ticket_type: z.literal("free:vip"),
+    })
+  ),
+  BaseTicketSchema.merge(
+    z.object({
+      ticket_type: z.literal("paid:vip"),
+    })
+  ),
+  BaseTicketSchema.merge(
+    z.object({
+      ticket_type: z.literal("paid:regular"),
+    })
+  ),
+  BaseTicketSchema.merge(
+    z.object({
+      ticket_type: z.literal("paid:student"),
+    })
+  ),
+]);
+
+const CapacitySchema = z.discriminatedUnion("capacity_type", [
+  z.object({ capacity_type: z.literal("none"), value: z.literal("none") }),
+  z.object({ capacity_type: z.literal("custom"), value: z.number({ required_error: "Value is required" }).min(0) }),
+  z.object({
+    capacity_type: z.literal("recommended"),
+    value: z.union([z.literal("50"), z.literal("100"), z.literal("200"), z.literal("300")]),
   }),
+]);
+
+const BaseEventSchema = z.object({
+  name: z.string({ required_error: "Name is required" }).min(3).max(50),
+  description: z.string().min(3).optional(),
+  day: z.date().optional(),
+  duration: z.number().optional(),
+  capacity: CapacitySchema,
+  location: ConcertLocationSchema,
+  tickets: z.array(TicketSchema),
+});
+
+export const CreateEventFormSchema = z.discriminatedUnion("event_type", [
+  BaseEventSchema.merge(
+    z.object({
+      event_type: z.literal("event"),
+    })
+  ),
+  BaseEventSchema.merge(
+    z.object({
+      event_type: z.literal("concert"),
+    })
+  ),
+  BaseEventSchema.merge(
+    z.object({
+      event_type: z.literal("tournaments"),
+    })
+  ),
+]);
+
+export const EventType = z.union([z.literal("event"), z.literal("concert"), z.literal("tournaments")]);
+
+export const RefinedCreateEventFormSchema = CreateEventFormSchema.refine((data) => {
+  if (data.capacity.capacity_type === "none") {
+    return true;
+  }
+  const cp = parseInt(String(data.capacity.value));
+  return cp > 0 && data.tickets.length > 0 && data.tickets.reduce((acc, t) => acc + t.quantity, 0) === cp;
 });

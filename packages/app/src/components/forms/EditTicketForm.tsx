@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TicketSchema } from "../../utils/schemas/concert";
+import { TicketSchema } from "../../utils/schemas/event";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "../ui/select";
 import { TextField, TextFieldErrorMessage, TextFieldInput, TextFieldLabel, labelVariants } from "../ui/textfield";
 import { Accessor, createEffect, createSignal } from "solid-js";
