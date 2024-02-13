@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TicketSchema } from "../../utils/schemas/concert";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "../ui/select";
-import { TextField, TextFieldInput, TextFieldLabel, labelVariants } from "../ui/textfield";
+import { TextField, TextFieldErrorMessage, TextFieldInput, TextFieldLabel, labelVariants } from "../ui/textfield";
 import { Accessor, createEffect, createSignal } from "solid-js";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
@@ -9,17 +9,29 @@ import { As } from "@kobalte/core";
 import { Pen } from "lucide-solid";
 import { cn } from "../../lib/utils";
 import { Show } from "solid-js";
+import { toast } from "solid-sonner";
 
 export const EditTicketForm = (props: {
   ticket: z.infer<typeof TicketSchema>;
   onChange: (ticket: z.infer<typeof TicketSchema>) => void;
   tickets: Accessor<z.infer<typeof TicketSchema>[]>;
+  freeAllowedTickets: Accessor<number>;
 }) => {
   const [ticket, setTicket] = createSignal(props.ticket);
 
   const isDisabledTicket = (ticket_type: z.infer<typeof TicketSchema>["ticket_type"]) => {
     return props.tickets().some((a) => a.ticket_type === ticket_type);
   };
+
+  const stepsPerCurrency = (currency: z.infer<typeof TicketSchema>["currency"]["currency_type"]) =>
+    ((
+      {
+        usd: 0.01,
+        eur: 0.01,
+        chf: 0.05,
+        other: 0.01,
+      } as Record<z.infer<typeof TicketSchema>["currency"]["currency_type"], number>
+    )[currency]);
 
   const getTickets = () => {
     return [
@@ -39,7 +51,7 @@ export const EditTicketForm = (props: {
     return [
       { value: "usd", label: "USD" },
       { value: "eur", label: "EUR" },
-      { value: "gbp", label: "GBP" },
+      { value: "chf", label: "CHF" },
       { value: "other", label: "Other" },
     ] as {
       value: z.infer<typeof TicketSchema>["currency"]["currency_type"];
@@ -64,7 +76,7 @@ export const EditTicketForm = (props: {
                 optionValue="value"
                 optionTextValue="label"
                 options={getTickets()}
-                placeholder="Select an attendee"
+                placeholder="Select a ticket type"
                 optionDisabled="disabled"
                 itemComponent={(props) => <SelectItem item={props.item}>{props.item.rawValue.label}</SelectItem>}
                 value={getTickets().find((t) => t.value === ticket().ticket_type)}
@@ -115,7 +127,7 @@ export const EditTicketForm = (props: {
                     <TextFieldInput
                       type="number"
                       min={0}
-                      step="0.01"
+                      step={stepsPerCurrency(ticket().currency.currency_type)}
                       value={ticket().price}
                       onChange={(e) => {
                         const value = e.currentTarget.value;
@@ -140,7 +152,7 @@ export const EditTicketForm = (props: {
                       optionValue="value"
                       optionTextValue="label"
                       options={getCurrencies()}
-                      placeholder="Select an attendee"
+                      placeholder="Select a currency"
                       itemComponent={(props) => <SelectItem item={props.item}>{props.item.rawValue.label}</SelectItem>}
                       value={getCurrencies().find((t) => t.value === ticket().currency.currency_type)}
                       onChange={(value) => {
@@ -218,9 +230,10 @@ export const EditTicketForm = (props: {
                 <span>Quantity</span>
                 <TextFieldInput
                   type="number"
-                  min={1}
+                  min={0}
                   step="1"
                   value={ticket().quantity}
+                  max={props.freeAllowedTickets()}
                   onChange={(e) => {
                     const value = e.currentTarget.value;
                     if (!value) return;
@@ -235,6 +248,11 @@ export const EditTicketForm = (props: {
                     });
                   }}
                 />
+                <Show when={ticket().quantity > props.freeAllowedTickets()}>
+                  <TextFieldErrorMessage>
+                    Quantity can't be greater than {props.freeAllowedTickets()}
+                  </TextFieldErrorMessage>
+                </Show>
               </TextFieldLabel>
             </TextField>
           </div>
@@ -243,6 +261,11 @@ export const EditTicketForm = (props: {
           <Button
             variant="default"
             onClick={() => {
+              const quantity = ticket().quantity;
+              if (quantity > props.freeAllowedTickets()) {
+                toast.info("Quantity can't be greater than available tickets");
+                return;
+              }
               props.onChange(ticket());
             }}
           >

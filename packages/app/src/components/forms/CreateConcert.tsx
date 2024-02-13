@@ -160,8 +160,17 @@ export default function CreateConcertForm() {
     event.preventDefault();
     const validation = CreateConcertFormSchema.safeParse(newConcert());
     if (!validation.success) {
+      const niceError = Object.entries(validation.error.flatten().fieldErrors).map(([key, value]) => {
+        return `${key}: ${value}`;
+      });
       toast.error("Error Creating Concert", {
-        description: validation.error?.message,
+        description: niceError,
+        action: {
+          label: "Fix",
+          onClick: () => {
+            formRef?.reportValidity();
+          },
+        },
       });
       return;
     }
@@ -206,6 +215,46 @@ export default function CreateConcertForm() {
   const isFormEmpty = (concert: z.infer<typeof CreateConcertFormSchema>) => {
     // check deep equality
     return JSON.stringify(concert) === JSON.stringify(DEFAULT_CONCERT);
+  };
+
+  const calculateRemainingTicketsQuantity = (ticket: z.infer<typeof TicketSchema>): number => {
+    // calculate the remaining tickets quantity.
+    // how can I determine the remaining tickets, when I change the quantity of that exact ticket?
+    // If I check how many have been set up, I can calculate the remaining tickets of that type.
+    // Issue: A ticket type is already in the list and I want to change the quantity.
+    const totalTickets = newConcert()
+      .tickets.filter((x) => x.ticket_type !== ticket.ticket_type)
+      .reduce((acc, t) => acc + t.quantity, 0);
+    const remainingTickets =
+      newConcert().capacity.capacity_type === "none"
+        ? 0
+        : parseInt(
+            newConcert().capacity.value as Exclude<
+              z.infer<typeof CreateConcertFormSchema>["capacity"]["value"],
+              "none" | number
+            >
+          ) - totalTickets;
+    if (ticket.ticket_type.startsWith("free")) {
+      return remainingTickets;
+    }
+    const paidTickets = newConcert().tickets.filter((t) => t.ticket_type.startsWith("paid"));
+    const remainingPaidTickets = paidTickets.reduce((acc, t) => acc + t.quantity, 0);
+    return remainingPaidTickets;
+  };
+
+  const tooManyTicketsCheck = () => {
+    const totalTickets = newConcert().tickets.reduce((acc, t) => acc + t.quantity, 0);
+    const nc = newConcert();
+    const cp = nc.capacity;
+    const cpt = cp.capacity_type;
+    if (cpt === "none") {
+      return "You have not set a capacity for the concert.";
+    }
+    const cpv = parseInt(String(cp.value));
+    if (totalTickets >= cpv) {
+      return "You have reached the maximum capacity of tickets for this concert.";
+    }
+    return null;
   };
 
   return (
@@ -660,9 +709,9 @@ export default function CreateConcertForm() {
               </Show>
               <Transition name="slide-fade-down">
                 <Show when={["recommended", "custom"].includes(newConcert().capacity.capacity_type)}>
-                  <div class="flex flex-col gap-2">
+                  <div class="flex flex-col gap-4 ">
                     <Separator />
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-2 py-2 w-full">
                       <span class="text-sm font-medium leading-none">Type of Tickets</span>
                       <div class="w-full border border-muted rounded-md p-2">
                         <Table class="rounded-sm overflow-clip">
@@ -714,6 +763,7 @@ export default function CreateConcertForm() {
                                       <EditTicketForm
                                         ticket={ticket}
                                         tickets={() => newConcert().tickets}
+                                        freeAllowedTickets={() => calculateRemainingTicketsQuantity(ticket)}
                                         onChange={(newTicket) => {
                                           setNewConcert((ev) => {
                                             return {
@@ -754,14 +804,33 @@ export default function CreateConcertForm() {
                       </div>
                     </div>
                     <div class="flex flex-row items-center justify-between gap-2 w-full">
-                      <div></div>
+                      <div class="text-sm font-medium leading-none">{tooManyTicketsCheck()}</div>
                       <div class="flex flex-row gap-2">
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           aria-label="Add Ticket"
+                          class="flex flex-row items-center justify-center gap-2 w-max"
+                          disabled={createConcert.isPending}
                           onClick={() => {
+                            const totalTickets = newConcert().tickets.reduce((acc, t) => acc + t.quantity, 0);
+                            const nc = newConcert();
+                            const cp = nc.capacity;
+                            const cpt = cp.capacity_type;
+                            if (cpt === "none") {
+                              toast.error("Error Adding Ticket", {
+                                description: "You have not set a capacity for the concert.",
+                              });
+                              return;
+                            }
+                            const cpv = parseInt(String(cp.value));
+                            if (totalTickets >= cpv) {
+                              toast.error("Error Adding Ticket", {
+                                description: "You have reached the maximum capacity of tickets for this concert.",
+                              });
+                              return;
+                            }
                             setNewConcert((ev) => {
                               return {
                                 ...ev,
@@ -772,15 +841,16 @@ export default function CreateConcertForm() {
                                     name: "",
                                     price: 0,
                                     currency: {
-                                      currency_type: "usd",
+                                      currency_type: "free",
                                     },
-                                    quantity: 1,
+                                    quantity: 0,
                                   },
                                 ],
                               };
                             });
                           }}
                         >
+                          <Plus class="w-4 h-4" />
                           Add Ticket
                         </Button>
                       </div>
@@ -849,7 +919,7 @@ export default function CreateConcertForm() {
             <div class="flex flex-row gap-2">
               <Button
                 size="icon"
-                variant={currentTab() === "general" ? "outline" : "default"}
+                variant={currentTab() === "general" ? "secondary" : "default"}
                 disabled={createConcert.isPending || currentTab() === "general"}
                 aria-label="Previous Tab"
                 onClick={() => handleTabChange("backward")}
@@ -858,7 +928,7 @@ export default function CreateConcertForm() {
               </Button>
               <Button
                 size="icon"
-                variant={currentTab() === "location" ? "outline" : "default"}
+                variant={currentTab() === "tickets" ? "secondary" : "default"}
                 disabled={createConcert.isPending || currentTab() === "tickets"}
                 aria-label="Next Tab"
                 onClick={() => handleTabChange("forward")}
@@ -921,13 +991,11 @@ export default function CreateConcertForm() {
               onClick={() => {
                 if (!formRef) return;
                 setTakenFromRecommendedOrPrevious(undefined);
-                setNewConcert(DEFAULT_CONCERT);
-                formRef.reset();
               }}
-              aria-label="Clear Previous Concert and Form"
+              aria-label="Undo Fill From Previous Concerts"
               disabled={takenFromRecommendedOrPrevious() === undefined}
             >
-              Clear
+              Undo
               <X class="w-3 h-3" />
             </Button>
           </div>
