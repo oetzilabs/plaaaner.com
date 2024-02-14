@@ -55,7 +55,7 @@ const CapacitySchema = z.discriminatedUnion("capacity_type", [
 ]);
 
 const BaseEventSchema = z.object({
-  referenced_from: z.string().uuid().optional(),
+  referenced_from: z.string().optional(),
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
   description: z.string().min(3).optional(),
   day: z.date().optional(),
@@ -81,9 +81,19 @@ export const CreateEventFormSchema = z.discriminatedUnion("event_type", [
       event_type: z.literal("tournaments"),
     })
   ),
+  BaseEventSchema.merge(
+    z.object({
+      event_type: z.literal("custom-event"),
+    })
+  ),
 ]);
 
-export const EventType = z.union([z.literal("event"), z.literal("concert"), z.literal("tournaments")]);
+export const EventType = z.union([
+  z.literal("event"),
+  z.literal("concert"),
+  z.literal("tournaments"),
+  z.literal("custom-event"),
+]);
 
 export const RefinedCreateEventFormSchema = CreateEventFormSchema.refine((data) => {
   if (data.capacity.capacity_type === "none") {

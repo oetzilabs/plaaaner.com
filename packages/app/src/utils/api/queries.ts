@@ -102,7 +102,7 @@ export const Events = {
       return [
         {
           id: "r:1",
-          name: "reccomended-test-1",
+          name: "recommended-test-1",
           description: "Description 1",
           capacity: { capacity_type: "custom", value: 20 },
           location: {

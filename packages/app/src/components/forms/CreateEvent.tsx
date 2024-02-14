@@ -237,6 +237,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
           },
         },
       });
+      clearEventHistory();
     },
     onError: (error) => {
       toast.error("Error Creating Concert", {
@@ -281,20 +282,35 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     const cp = nc.capacity;
     const cpt = cp.capacity_type;
     if (cpt === "none") {
-      return "You have not set a capacity for the concert.";
+      return {
+        message: "You have not set a capacity for the concert.",
+        type: "error",
+      };
     }
     const cpv = parseInt(String(cp.value));
-    if (totalTickets >= cpv) {
-      return "You have reached the maximum capacity of tickets for this concert.";
+    if (totalTickets === cpv) {
+      return {
+        message: "You have reached the maximum capacity of tickets for this concert.",
+        type: "success:done",
+      } as const;
     }
-    return null;
+    if (totalTickets > cpv) {
+      return {
+        message: "You have exceeded the maximum capacity of tickets for this concert.\nPlease reduce the quantity.",
+        type: "error",
+      } as const;
+    }
+    return {
+      message: `Note: You have ${cpv - totalTickets} ticket(s) left to sell.`,
+      type: "success:unfinished",
+    } as const;
   };
 
   return (
     <div class="flex flex-col gap-4 items-start w-full">
       <div class="flex flex-col">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           class="w-max gap-2"
           onClick={() => {
@@ -837,7 +853,23 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       </div>
                     </div>
                     <div class="flex flex-row items-center justify-between gap-2 w-full">
-                      <div class="text-sm font-medium leading-none">{tooManyTicketsCheck()}</div>
+                      <div class="text-sm font-medium leading-none">
+                        <Switch>
+                          <Match when={tooManyTicketsCheck().type === "error"}>
+                            <div class="flex flex-col gap-1 text-rose-500">
+                              <For each={tooManyTicketsCheck().message.split("\n")}>{(line) => <p>{line}</p>}</For>
+                            </div>
+                          </Match>
+                          <Match when={tooManyTicketsCheck().type === "success:unfinished"}>
+                            <div class="flex flex-col gap-1">
+                              <For each={tooManyTicketsCheck().message.split("\n")}>{(line) => <p>{line}</p>}</For>
+                            </div>
+                          </Match>
+                          <Match when={tooManyTicketsCheck().type === "success:done"}>
+                            {tooManyTicketsCheck().message}
+                          </Match>
+                        </Switch>
+                      </div>
                       <div class="flex flex-row gap-2">
                         <Button
                           type="button"
@@ -845,7 +877,11 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           size="sm"
                           aria-label="Add Ticket"
                           class="flex flex-row items-center justify-center gap-2 w-max"
-                          disabled={createEvent.isPending || tooManyTicketsCheck() !== null}
+                          disabled={
+                            createEvent.isPending ||
+                            tooManyTicketsCheck().type === "error" ||
+                            tooManyTicketsCheck().type === "success:done"
+                          }
                           onClick={() => {
                             const totalTickets = newEvent().tickets.reduce((acc, t) => acc + t.quantity, 0);
                             const nc = newEvent();

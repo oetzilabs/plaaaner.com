@@ -15,10 +15,10 @@ export default function PlanCreateEventPage() {
       learnMore: "/plan/info/event",
     },
     {
-      title: "Concerts",
+      title: "Concert",
       description: "The concerts plan is for giant events with multiple stages, artists, and a lot of people.",
-      link: "/plan/create/concerts",
-      learnMore: "/plan/info/concerts",
+      link: "/plan/create/concert",
+      learnMore: "/plan/info/concert",
     },
     {
       title: "Tournament",
@@ -30,8 +30,13 @@ export default function PlanCreateEventPage() {
   ];
 
   return (
-    <div class="flex flex-col py-10 h-[calc(100svh-200px)] items-center justify-center">
+    <div class="flex flex-col py-10 gap-8">
+      <h1 class="text-3xl font-medium">Create your event</h1>
       <div class="p-4 pb-8 w-full border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col gap-8">
+        <h2 class="text-2xl font-semibold">Choose a plan</h2>
+        <p class="text-neutral-500 dark:text-neutral-400">
+          Choose the type of event you want to create and get started.
+        </p>
         <div class="w-full grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ">
           <For each={typesOfEvents}>
             {(plan) => (
@@ -61,7 +66,7 @@ export default function PlanCreateEventPage() {
           </For>
         </div>
         <Separator />
-        <div class="flex flex-row items-center justify-center gap-10 w-full">
+        <div class="flex flex-row items-center justify-center gap-4 w-full">
           <div class="">
             <span class="text-neutral-500 dark:text-neutral-400 text-sm">Want to create a custom plan?</span>
           </div>
