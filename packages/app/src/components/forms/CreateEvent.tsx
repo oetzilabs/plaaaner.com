@@ -22,11 +22,13 @@ import {
   Minus,
   Pen,
   Plus,
+  Redo,
   Ticket,
   Undo,
   X,
 } from "lucide-solid";
-import { For, Match, Show, Switch, createSignal, onMount } from "solid-js";
+import { createUndoHistory } from "@solid-primitives/history";
+import { For, Match, Show, Switch, createEffect, createMemo, createSignal, onMount } from "solid-js";
 import { toast } from "solid-sonner";
 import { useNavigate } from "solid-start";
 import { clientOnly } from "solid-start/islands";
@@ -55,23 +57,6 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 const ClientMap = clientOnly(() => import("../ClientMap"));
 
-const DEFAULT_EVENT: z.infer<typeof CreateEventFormSchema> = {
-  event_type: "event",
-  name: "",
-  description: "",
-  day: dayjs().startOf("day").toDate(),
-  tickets: [],
-  capacity: {
-    capacity_type: "none",
-    value: "none",
-  },
-  duration: 60,
-  location: {
-    location_type: "venue",
-    address: "",
-  },
-};
-
 type TabValue = "general" | "time" | "location" | "tickets";
 
 const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | undefined>> = {
@@ -90,16 +75,40 @@ const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | un
 };
 
 export default function CreateConcertForm(props: { event_type: z.infer<typeof CreateEventFormSchema>["event_type"] }) {
+  const DEFAULT_EVENT: z.infer<typeof CreateEventFormSchema> = {
+    event_type: props.event_type,
+    name: "",
+    description: "",
+    day: dayjs().startOf("day").toDate(),
+    tickets: [],
+    capacity: {
+      capacity_type: "none",
+      value: "none",
+    },
+    duration: 60,
+    location: {
+      location_type: "venue",
+      address: "",
+    },
+  };
   let formRef: HTMLFormElement;
   const [newEvent, setNewEvent] = createSignal<z.infer<typeof CreateEventFormSchema>>(DEFAULT_EVENT);
+  const [trackClearEvent, clearEventHistory] = createSignal(undefined, { equals: false });
 
-  onMount(() => {
-    setNewEvent((ev) => {
-      return {
-        ...ev,
-        event_type: props.event_type,
-      };
-    });
+  const eventHistory = createMemo(() => {
+    // track what should rerun the memo
+    trackClearEvent();
+    return createUndoHistory(
+      () => {
+        const v = newEvent();
+        return () => {
+          setNewEvent(v);
+        };
+      },
+      {
+        limit: 1000,
+      }
+    );
   });
 
   const [currentTab, setCurrentTab] = createSignal<TabValue>("general");
@@ -114,7 +123,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
 
   const [locationQuery, setLocationQuery] = createSignal("");
   const [urlQuery, setURLQuery] = createSignal("");
-  const [takenFromRecommendedOrPrevious, setTakenFromRecommendedOrPrevious] = createSignal<number | undefined>();
 
   const previousEvents = createQuery(() => ({
     queryKey: ["previousEvents", newEvent().event_type],
@@ -868,8 +876,8 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                             });
                           }}
                         >
-                          <Plus class="w-4 h-4" />
                           Add Ticket
+                          <Plus class="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -916,7 +924,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
             </Show>
           </div>
           <div class="flex flex-row items-center justify-between gap-2 w-full">
-            <div>
+            <div class="flex flex-row items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -925,19 +933,47 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                 onClick={(e) => {
                   if (!formRef) return;
                   setNewEvent(DEFAULT_EVENT);
-                  setTakenFromRecommendedOrPrevious(undefined);
                   formRef.reset();
+                  clearEventHistory();
                 }}
                 disabled={createEvent.isPending || isFormEmpty(newEvent())}
               >
                 Reset Form
                 <Eraser class="w-4 h-4" />
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Undo last action"
+                class="gap-2"
+                onClick={(e) => {
+                  const eH = eventHistory();
+                  eH.undo();
+                }}
+                disabled={createEvent.isPending || isFormEmpty(newEvent())}
+              >
+                <Undo class="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                aria-label="Redo last action"
+                class="gap-2"
+                size="icon"
+                onClick={(e) => {
+                  const eH = eventHistory();
+                  eH.redo();
+                }}
+                disabled={createEvent.isPending || isFormEmpty(newEvent()) || !eventHistory().canRedo()}
+              >
+                <Redo class="w-4 h-4" />
+              </Button>
             </div>
             <div class="flex flex-row gap-2">
               <Button
                 size="icon"
-                variant={currentTab() === "general" ? "secondary" : "default"}
+                variant={currentTab() === "general" ? "outline" : "secondary"}
                 disabled={createEvent.isPending || currentTab() === "general"}
                 aria-label="Previous Tab"
                 onClick={() => handleTabChange("backward")}
@@ -946,7 +982,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               </Button>
               <Button
                 size="icon"
-                variant={currentTab() === "tickets" ? "secondary" : "default"}
+                variant={currentTab() === "tickets" ? "outline" : "secondary"}
                 disabled={createEvent.isPending || currentTab() === "tickets"}
                 aria-label="Next Tab"
                 onClick={() => handleTabChange("forward")}
@@ -997,7 +1033,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
           <div class="w-full flex flex-row items-center justify-between w-min-72">
             <div
               class={cn("flex flex-row gap-2 items-center", {
-                "opacity-50": takenFromRecommendedOrPrevious() !== undefined,
+                "opacity-50": newEvent().referenced_from !== undefined,
               })}
             >
               <History class="w-4 h-4" />
@@ -1012,7 +1048,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   if (!formRef) return;
                   formRef.reset();
                   setNewEvent(DEFAULT_EVENT);
-                  setTakenFromRecommendedOrPrevious(undefined);
                 }}
                 aria-label="Resets the Form"
                 disabled={createEvent.isPending || isFormEmpty(newEvent())}
@@ -1025,11 +1060,11 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                 class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
                 variant="secondary"
                 onClick={() => {
-                  if (!formRef) return;
-                  setTakenFromRecommendedOrPrevious(undefined);
+                  const eH = eventHistory();
+                  eH.undo();
                 }}
                 aria-label={`Undo Fill From Previous ${newEvent().event_type}`}
-                disabled={takenFromRecommendedOrPrevious() === undefined}
+                disabled={newEvent().referenced_from === undefined || createEvent.isPending || isFormEmpty(newEvent())}
               >
                 Undo
                 <Undo class="w-3 h-3" />
@@ -1038,11 +1073,11 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
           </div>
           <Alert
             class={cn("lg:max-w-72 w-full flex flex-col gap-2 bg-muted rounded", {
-              "opacity-50": takenFromRecommendedOrPrevious() !== undefined,
+              "opacity-50": newEvent().referenced_from !== undefined,
             })}
           >
             <AlertDescription class="text-xs">
-              Select a concert from the list to fill the form with its details.
+              You can also fill the form with a previous {newEvent().event_type} to save time.
             </AlertDescription>
           </Alert>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-max w-full self-end ">
@@ -1084,28 +1119,26 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       <Card
                         class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
                           "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
-                            index() === takenFromRecommendedOrPrevious(),
-                          "hover:bg-neutral-100 dark:hover:bg-neutral-900":
-                            takenFromRecommendedOrPrevious() === undefined,
-                          "opacity-100": takenFromRecommendedOrPrevious() === index(),
+                            concert.id === newEvent().referenced_from,
+                          "hover:bg-neutral-100 dark:hover:bg-neutral-900": newEvent().referenced_from === undefined,
+                          "opacity-100": newEvent().referenced_from === concert.id,
                           "opacity-50":
-                            takenFromRecommendedOrPrevious() !== undefined &&
-                            takenFromRecommendedOrPrevious() !== index(),
-                          "cursor-default": takenFromRecommendedOrPrevious() !== undefined,
+                            newEvent().referenced_from !== undefined && newEvent().referenced_from !== concert.id,
+                          "cursor-default": newEvent().referenced_from !== undefined,
                         })}
                         onClick={() => {
-                          if (takenFromRecommendedOrPrevious() !== undefined) return;
+                          if (newEvent().referenced_from !== undefined) return;
                           setNewEvent((ev) => ({
                             ...ev,
                             ...concert,
+                            referenced_from: concert.id,
                           }));
-                          setTakenFromRecommendedOrPrevious(index());
                         }}
                       >
                         <CardHeader class="flex flex-col p-3 pb-2 ">
                           <CardTitle
                             class={cn("text-sm", {
-                              "text-white": index() === takenFromRecommendedOrPrevious(),
+                              "text-white": concert.id === newEvent().referenced_from,
                             })}
                           >
                             {concert.name}
@@ -1114,16 +1147,12 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                         <CardContent class="p-3 pt-0 pb-4">
                           <CardDescription
                             class={cn("text-xs", {
-                              "text-white": index() === takenFromRecommendedOrPrevious(),
+                              "text-white": concert.id === newEvent().referenced_from,
                             })}
                           >
                             <p>{concert.description}</p>
                           </CardDescription>
                         </CardContent>
-                        {/* <CardFooter class="flex flex-row items-center justify-between p-3 pt-0">
-                          <div></div>
-                          <div></div>
-                        </CardFooter> */}
                       </Card>
                     )}
                   </For>

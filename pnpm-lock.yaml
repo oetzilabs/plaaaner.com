@@ -59,6 +59,9 @@ importers:
       '@solid-primitives/event-bus':
         specifier: 1.0.9
         version: 1.0.9(solid-js@1.8.12)
+      '@solid-primitives/history':
+        specifier: ^0.1.3
+        version: 0.1.3(solid-js@1.8.12)
       '@solid-primitives/idle':
         specifier: 0.1.1
         version: 0.1.1(solid-js@1.8.12)
@@ -6612,6 +6615,15 @@ packages:
     dependencies:
       '@solid-primitives/utils': 6.2.1(solid-js@1.8.5)
       solid-js: 1.8.5
+    dev: false
+
+  /@solid-primitives/history@0.1.3(solid-js@1.8.12):
+    resolution: {integrity: sha512-5faJZclWLeGDkFlTjcJgGyHXDgBMFRq244kRz3MhGfgyrtYa4U0ugTmeXAoctFfXEQDTSmnrcwvMebctOhunVQ==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      '@solid-primitives/utils': 6.2.2(solid-js@1.8.12)
+      solid-js: 1.8.12
     dev: false
 
   /@solid-primitives/idle@0.0.105(solid-js@1.8.5):

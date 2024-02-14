@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { A } from "solid-start";
 import { Button } from "../../../components/ui/button";
 import { As } from "@kobalte/core";
+import { Separator } from "../../../components/ui/separator";
 
 export default function PlanCreateEventPage() {
   const typesOfEvents = [
@@ -13,37 +14,63 @@ export default function PlanCreateEventPage() {
       link: "/plan/create/event",
       learnMore: "/plan/info/event",
     },
+    {
+      title: "Concerts",
+      description: "The concerts plan is for giant events with multiple stages, artists, and a lot of people.",
+      link: "/plan/create/concerts",
+      learnMore: "/plan/info/concerts",
+    },
+    {
+      title: "Tournament",
+      description:
+        "The festival plan is for those who need to manage multiple events and need a way to keep track of all of them.",
+      link: "/plan/create/tournaments",
+      learnMore: "/plan/info/tournaments",
+    },
   ];
 
   return (
-    <div class="flex flex-col py-10">
-      <div class="px-4 lg:px-0 w-full">
-        <For each={typesOfEvents}>
-          {(plan) => (
-            <Card>
-              <CardHeader>
-                <CardTitle>{plan.title}</CardTitle>
-              </CardHeader>
-              <CardContent class="flex flex-col gap-4">
-                <CardDescription>{plan.description}</CardDescription>
-              </CardContent>
-              <CardFooter>
-                <div class="flex flex-row items-center justify-between gap-2 w-full">
-                  <Button size="sm" variant="secondary" asChild>
-                    <As component={A} href={plan.learnMore}>
-                      Learn more
-                    </As>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <As component={A} href={plan.link}>
-                      Get started
-                    </As>
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-          )}
-        </For>
+    <div class="flex flex-col py-10 h-[calc(100svh-200px)] items-center justify-center">
+      <div class="p-4 pb-8 w-full border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col gap-8">
+        <div class="w-full grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ">
+          <For each={typesOfEvents}>
+            {(plan) => (
+              <Card class="shadow-none hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle>{plan.title}</CardTitle>
+                </CardHeader>
+                <CardContent class="flex flex-col gap-4">
+                  <CardDescription>{plan.description}</CardDescription>
+                </CardContent>
+                <CardFooter>
+                  <div class="flex flex-row items-center justify-between gap-2 w-full">
+                    <Button size="sm" variant="secondary" asChild>
+                      <As component={A} href={plan.learnMore}>
+                        Learn more
+                      </As>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <As component={A} href={plan.link}>
+                        Create {plan.title}
+                      </As>
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            )}
+          </For>
+        </div>
+        <Separator />
+        <div class="flex flex-row items-center justify-center gap-10 w-full">
+          <div class="">
+            <span class="text-neutral-500 dark:text-neutral-400 text-sm">Want to create a custom plan?</span>
+          </div>
+          <Button size="sm" asChild>
+            <As component={A} href="/plan/create/custom-event">
+              Create custom plan
+            </As>
+          </Button>
+        </div>
       </div>
     </div>
   );
