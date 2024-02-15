@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { CreateEventFormSchema, EventType } from "../schemas/event";
+// import { env } from "../../env";
 
 export * as Queries from "./queries";
 
-const API_BASE = import.meta.env.VITE_API_URL;
+const API_BASE = process.env.VITE_API_URL ?? "http://localhost:3000";
+const AUTH_BASE = process.env.VITE_AUTH_URL ?? "http://localhost:3000";
 
 export const Attendees = {
   all: z.function(z.tuple([])).implement(async () => {
@@ -282,18 +284,18 @@ export const Events = {
     }),
 };
 
+const generateAuthUrl = (provider: string) =>
+  `${AUTH_BASE}/authorize?provider=${provider}&response_type=code&client_id=${provider}&redirect_uri=${
+    window.location.origin
+  }/auth${encodeURIComponent(`?redirect=${window.location.pathname}`)}`;
+
 export const Auth = {
   loginProviders: z.function(z.tuple([])).implement(async () => {
     return [
       {
         name: "Google",
-        logo: "https://via.placeholder.com/150",
-        url: "/auth/google",
-      },
-      {
-        name: "Facebook",
-        logo: "https://via.placeholder.com/150",
-        url: "/auth/facebook",
+        logo: "https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/motion-tailwind/img/logos/logo-google.png",
+        url: generateAuthUrl("google"),
       },
     ];
     // return fetch(`${API_BASE}/auth/login-providers`).then((res) => res.json());
