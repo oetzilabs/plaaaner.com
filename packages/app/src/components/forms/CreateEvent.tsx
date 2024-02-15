@@ -1,12 +1,32 @@
-import DatePicker from "@/components/ui/custom/DatePicker";
+// import DatePicker from "@/components/ui/custom/DatePicker";
+import {
+  DatePicker,
+  DatePickerContent,
+  DatePickerInput,
+  DatePickerInputRange,
+  DatePickerRangeText,
+  DatePickerTable,
+  DatePickerTableBody,
+  DatePickerTableCell,
+  DatePickerTableCellTrigger,
+  DatePickerTableHead,
+  DatePickerTableHeader,
+  DatePickerTableRow,
+  DatePickerView,
+  DatePickerViewControl,
+  DatePickerViewTrigger,
+} from "@/components/ui/date-picker";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCaption, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Mutations } from "@/utils/api/mutations";
-import { As } from "@kobalte/core";
+import { today } from "@internationalized/date";
+import { As, useLocale } from "@kobalte/core";
 import { createUndoHistory } from "@solid-primitives/history";
 import { createMutation, createQuery } from "@tanstack/solid-query";
 import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
+import tz from "dayjs/plugin/timezone";
 import {
   AlertCircleIcon,
   ArrowLeft,
@@ -26,7 +46,7 @@ import {
   Ticket,
   Undo,
 } from "lucide-solid";
-import { For, Match, Show, Switch, createMemo, createSignal } from "solid-js";
+import { For, Match, Show, Switch, createMemo, createSignal, onMount } from "solid-js";
 import { toast } from "solid-sonner";
 import { useNavigate } from "solid-start";
 import { clientOnly } from "solid-start/islands";
@@ -51,6 +71,8 @@ import { Skeleton } from "../ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TextField, TextFieldInput, TextFieldLabel } from "../ui/textfield";
 import { EditTicketForm } from "./EditTicketForm";
+dayjs.extend(tz);
+dayjs.extend(advancedFormat);
 
 const ClientMap = clientOnly(() => import("../ClientMap"));
 
@@ -76,7 +98,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     event_type: props.event_type,
     name: "",
     description: "",
-    day: dayjs().startOf("day").toDate(),
+    days: [dayjs().startOf("day").toDate(), dayjs().startOf("day").add(1, "day").toDate()],
     tickets: [],
     capacity: {
       capacity_type: "none",
@@ -91,6 +113,12 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
   let formRef: HTMLFormElement;
   const [newEvent, setNewEvent] = createSignal<z.infer<typeof CreateEventFormSchema>>(DEFAULT_EVENT);
   const [trackClearEvent, clearEventHistory] = createSignal(undefined, { equals: false });
+  const [timezone, setTimeZone] = createSignal("UTC");
+  const locale = useLocale().locale;
+  onMount(() => {
+    setTimeZone(dayjs.tz.guess());
+    toast.info("Timezone detected: " + dayjs.tz.guess());
+  });
 
   const eventHistory = createMemo(() => {
     // track what should rerun the memo
@@ -340,6 +368,15 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               </TabsTrigger>
               <TabsTrigger value="tickets" class="text-sm font-medium leading-none gap-2 pl-3">
                 <Ticket class="w-3 h-3" />
+                {newEvent().capacity.capacity_type !== "none" &&
+                parseInt(
+                  newEvent().capacity.value as Exclude<
+                    z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
+                    "none"
+                  > as string
+                ) > 0
+                  ? newEvent().capacity.value
+                  : ""}{" "}
                 Tickets
               </TabsTrigger>
             </TabsList>
@@ -411,7 +448,9 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   </TextFieldLabel>
                   <Button
                     size="sm"
-                    variant={dayjs(newEvent().day).isSame(dayjs().startOf("day"), "day") ? "secondary" : "outline"}
+                    variant={
+                      dayjs(newEvent().days?.[0]).isSame(dayjs().startOf("day"), "day") ? "secondary" : "outline"
+                    }
                     class="w-max gap-2 items-center justify-center"
                     type="button"
                     onClick={() => {
@@ -428,16 +467,155 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   </Button>
                 </div>
                 <DatePicker
-                  value={dayjs(newEvent().day).format("YYYY-MM-DD")}
-                  onChange={(date) => {
+                  numOfMonths={2}
+                  selectionMode="range"
+                  min={today(timezone())}
+                  timeZone={timezone()}
+                  value={(newEvent().days ?? []).map((d) => dayjs(d).format("YYYY-MM-DD"))}
+                  onValueChange={(date) => {
+                    const tz = timezone();
+                    const days = date.value.map((d) => dayjs(d.toDate(tz)).startOf("day").toDate());
                     setNewEvent((ev) => {
                       return {
                         ...ev,
-                        day: dayjs(date).startOf("day").toDate(),
+                        days,
                       };
                     });
                   }}
-                ></DatePicker>
+                >
+                  <DatePickerInput />
+                  <DatePickerContent>
+                    <DatePickerView view="day">
+                      {(api) => {
+                        const offset = api().getOffset({ months: 1 });
+                        return (
+                          <>
+                            <DatePickerViewControl>
+                              <DatePickerViewTrigger>
+                                <DatePickerRangeText />
+                              </DatePickerViewTrigger>
+                            </DatePickerViewControl>
+                            <div class="flex gap-4">
+                              <DatePickerTable>
+                                <DatePickerTableHead>
+                                  <DatePickerTableRow>
+                                    <For each={api().weekDays}>
+                                      {(weekDay) => <DatePickerTableHeader>{weekDay.short}</DatePickerTableHeader>}
+                                    </For>
+                                  </DatePickerTableRow>
+                                </DatePickerTableHead>
+                                <DatePickerTableBody>
+                                  <For each={api().weeks}>
+                                    {(week) => (
+                                      <DatePickerTableRow>
+                                        <For each={week}>
+                                          {(day) => (
+                                            <DatePickerTableCell value={day}>
+                                              <DatePickerTableCellTrigger>{day.day}</DatePickerTableCellTrigger>
+                                            </DatePickerTableCell>
+                                          )}
+                                        </For>
+                                      </DatePickerTableRow>
+                                    )}
+                                  </For>
+                                </DatePickerTableBody>
+                              </DatePickerTable>
+                              <DatePickerTable>
+                                <DatePickerTableHead>
+                                  <DatePickerTableRow>
+                                    <For each={api().weekDays}>
+                                      {(weekDay) => <DatePickerTableHeader>{weekDay.short}</DatePickerTableHeader>}
+                                    </For>
+                                  </DatePickerTableRow>
+                                </DatePickerTableHead>
+                                <DatePickerTableBody>
+                                  <For each={offset.weeks}>
+                                    {(week) => (
+                                      <DatePickerTableRow>
+                                        <For each={week}>
+                                          {(day) => (
+                                            <DatePickerTableCell value={day} visibleRange={offset.visibleRange}>
+                                              <DatePickerTableCellTrigger>{day.day}</DatePickerTableCellTrigger>
+                                            </DatePickerTableCell>
+                                          )}
+                                        </For>
+                                      </DatePickerTableRow>
+                                    )}
+                                  </For>
+                                </DatePickerTableBody>
+                              </DatePickerTable>
+                            </div>
+                          </>
+                        );
+                      }}
+                    </DatePickerView>
+                    <DatePickerView view="month">
+                      {(api) => (
+                        <>
+                          <DatePickerViewControl>
+                            <DatePickerViewTrigger>
+                              <DatePickerRangeText />
+                            </DatePickerViewTrigger>
+                          </DatePickerViewControl>
+                          <DatePickerTable class="w-[calc(var(--reference-width)-26px)]">
+                            <DatePickerTableBody>
+                              <For
+                                each={api().getMonthsGrid({
+                                  columns: 4,
+                                  format: "short",
+                                })}
+                              >
+                                {(months) => (
+                                  <DatePickerTableRow>
+                                    <For each={months}>
+                                      {(month) => (
+                                        <DatePickerTableCell value={month.value}>
+                                          <DatePickerTableCellTrigger>{month.label}</DatePickerTableCellTrigger>
+                                        </DatePickerTableCell>
+                                      )}
+                                    </For>
+                                  </DatePickerTableRow>
+                                )}
+                              </For>
+                            </DatePickerTableBody>
+                          </DatePickerTable>
+                        </>
+                      )}
+                    </DatePickerView>
+                    <DatePickerView view="year">
+                      {(api) => (
+                        <>
+                          <DatePickerViewControl>
+                            <DatePickerViewTrigger>
+                              <DatePickerRangeText />
+                            </DatePickerViewTrigger>
+                          </DatePickerViewControl>
+                          <DatePickerTable class="w-[calc(var(--reference-width)-26px)]">
+                            <DatePickerTableBody>
+                              <For
+                                each={api().getYearsGrid({
+                                  columns: 4,
+                                })}
+                              >
+                                {(years) => (
+                                  <DatePickerTableRow>
+                                    <For each={years}>
+                                      {(year) => (
+                                        <DatePickerTableCell value={year.value}>
+                                          <DatePickerTableCellTrigger>{year.label}</DatePickerTableCellTrigger>
+                                        </DatePickerTableCell>
+                                      )}
+                                    </For>
+                                  </DatePickerTableRow>
+                                )}
+                              </For>
+                            </DatePickerTableBody>
+                          </DatePickerTable>
+                        </>
+                      )}
+                    </DatePickerView>
+                  </DatePickerContent>
+                </DatePicker>
               </TextField>
             </TabsContent>
             <TabsContent value="location" class="flex flex-col gap-6 w-full">
@@ -515,12 +693,10 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           }
                         )}
                       >
-                        <RadioGroupItemControl class="hidden" />
                         Venue <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                     <RadioGroupItem value="festival">
-                      <RadioGroupItemControl class="hidden" />
                       <RadioGroupItemLabel
                         class={cn(
                           "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
@@ -535,7 +711,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                     <RadioGroupItem value="other">
-                      <RadioGroupItemControl class="hidden" />
                       <RadioGroupItemLabel
                         class={cn(
                           "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
@@ -550,7 +725,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                     <RadioGroupItem value="online">
-                      <RadioGroupItemControl class="hidden" />
                       <RadioGroupItemLabel
                         class={cn(
                           "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
@@ -767,7 +941,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           <TableCaption class="text-xs">Type of Tickets (e.g. VIP, Regular, etc.)</TableCaption>
                           <TableHeader>
                             <TableRow>
-                              <For each={["Type", "Name", "Price", "Quantity", "Actions"] as const}>
+                              <For each={["Shape", "Type", "Name", "Price", "Quantity", "Actions"] as const}>
                                 {(header) => <TableCell class="text-sm font-medium leading-none">{header}</TableCell>}
                               </For>
                             </TableRow>
@@ -776,6 +950,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                             <For each={newEvent().tickets}>
                               {(ticket, index) => (
                                 <TableRow class="last:rounded-b-sm last:overflow-clip">
+                                  <TableCell class="uppercase">{ticket.shape}</TableCell>
                                   <TableCell class="uppercase">{ticket.ticket_type}</TableCell>
                                   <TableCell>{ticket.name}</TableCell>
                                   <TableCell>
@@ -907,6 +1082,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                                   ...ev.tickets,
                                   {
                                     ticket_type: "free",
+                                    shape: "default",
                                     name: "",
                                     price: 0,
                                     currency: {

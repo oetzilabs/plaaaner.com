@@ -1,15 +1,21 @@
-import { z } from "zod";
-import { TicketSchema } from "../../utils/schemas/event";
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "../ui/select";
-import { TextField, TextFieldErrorMessage, TextFieldInput, TextFieldLabel, labelVariants } from "../ui/textfield";
-import { Accessor, createEffect, createSignal } from "solid-js";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { Button } from "../ui/button";
 import { As } from "@kobalte/core";
 import { Pen } from "lucide-solid";
-import { cn } from "../../lib/utils";
-import { Show } from "solid-js";
+import { Accessor, Show, createSignal } from "solid-js";
 import { toast } from "solid-sonner";
+import { z } from "zod";
+import { cn } from "../../lib/utils";
+import { TicketSchema } from "../../utils/schemas/event";
+import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
+import {
+  RadioGroup,
+  RadioGroupItem,
+  RadioGroupItemControl,
+  RadioGroupItemLabel,
+  RadioGroupLabel,
+} from "../ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { TextField, TextFieldErrorMessage, TextFieldInput, TextFieldLabel, labelVariants } from "../ui/textfield";
 
 export const EditTicketForm = (props: {
   ticket: z.infer<typeof TicketSchema>;
@@ -70,6 +76,80 @@ export const EditTicketForm = (props: {
         <DialogTitle>Edit Ticket</DialogTitle>
         <DialogDescription>
           <div class="flex flex-col gap-2 w-full">
+            <div class="flex flex-col gap-2 w-full">
+              <RadioGroup
+                value={ticket().shape}
+                aria-label="What shape do you want the ticket to look like?"
+                onChange={(value) => {
+                  const v = value as ReturnType<typeof ticket>["shape"];
+                  setTicket((ev) => {
+                    return {
+                      ...ev,
+                      shape: v,
+                    };
+                  });
+                }}
+                class="w-full flex flex-col gap-2"
+              >
+                <RadioGroupLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  What shape do you want the ticket to look like?
+                </RadioGroupLabel>
+                <div class="grid grid-cols-2 gap-2 w-full">
+                  <RadioGroupItem value="default">
+                    <RadioGroupItemLabel
+                      class={cn(
+                        "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                        {
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default",
+                          "bg-secondary": ticket().shape === "default",
+                        }
+                      )}
+                    >
+                      Default <RadioGroupItemControl class="hidden" />
+                    </RadioGroupItemLabel>
+                  </RadioGroupItem>
+                  <RadioGroupItem value="default-1">
+                    <RadioGroupItemLabel
+                      class={cn(
+                        "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                        {
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default-1",
+                          "bg-secondary": ticket().shape === "default-1",
+                        }
+                      )}
+                    >
+                      Default 1 <RadioGroupItemControl class="hidden" />
+                    </RadioGroupItemLabel>
+                  </RadioGroupItem>
+                  <RadioGroupItem value="default-2">
+                    <RadioGroupItemLabel
+                      class={cn(
+                        "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                        {
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default-2",
+                          "bg-secondary": ticket().shape === "default-2",
+                        }
+                      )}
+                    >
+                      Default 2<RadioGroupItemControl class="hidden" />
+                    </RadioGroupItemLabel>
+                  </RadioGroupItem>
+                  <RadioGroupItem value="custom">
+                    <RadioGroupItemLabel
+                      class={cn(
+                        "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                        {
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "custom",
+                          "bg-secondary": ticket().shape === "custom",
+                        }
+                      )}
+                    >
+                      Custom <RadioGroupItemControl class="hidden" />
+                    </RadioGroupItemLabel>
+                  </RadioGroupItem>
+                </div>
+              </RadioGroup>
+            </div>
             <div class="flex flex-col gap-2 w-full">
               <span>Ticket Type</span>
               <Select

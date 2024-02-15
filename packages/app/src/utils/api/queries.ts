@@ -111,6 +111,7 @@ export const Events = {
           },
           tickets: [
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 20,
               quantity: 10,
@@ -118,6 +119,7 @@ export const Events = {
               ticket_type: "paid:vip",
             },
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 10,
               quantity: 5,
@@ -125,6 +127,7 @@ export const Events = {
               ticket_type: "paid:regular",
             },
             {
+              shape: "default",
               currency: { currency_type: "free" },
               price: 0,
               quantity: 5,
@@ -144,6 +147,7 @@ export const Events = {
           },
           tickets: [
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 20,
               quantity: 10,
@@ -151,6 +155,7 @@ export const Events = {
               ticket_type: "paid:vip",
             },
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 10,
               quantity: 50,
@@ -158,6 +163,7 @@ export const Events = {
               ticket_type: "paid:regular",
             },
             {
+              shape: "default",
               currency: { currency_type: "free" },
               price: 0,
               quantity: 140,
@@ -200,6 +206,7 @@ export const Events = {
           },
           tickets: [
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 20,
               quantity: 10,
@@ -207,6 +214,7 @@ export const Events = {
               ticket_type: "paid:vip",
             },
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 10,
               quantity: 5,
@@ -214,6 +222,7 @@ export const Events = {
               ticket_type: "paid:regular",
             },
             {
+              shape: "default",
               currency: { currency_type: "free" },
               price: 0,
               quantity: 5,
@@ -233,6 +242,7 @@ export const Events = {
           },
           tickets: [
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 20,
               quantity: 10,
@@ -240,6 +250,7 @@ export const Events = {
               ticket_type: "paid:vip",
             },
             {
+              shape: "default",
               currency: { currency_type: "eur" },
               price: 10,
               quantity: 50,
@@ -247,6 +258,7 @@ export const Events = {
               ticket_type: "paid:regular",
             },
             {
+              shape: "default",
               currency: { currency_type: "free" },
               price: 0,
               quantity: 140,
@@ -268,4 +280,22 @@ export const Events = {
       //   },
       // }).then((res) => res.json() as Promise<{ id: string; name: string }[]>);
     }),
+};
+
+export const Auth = {
+  loginProviders: z.function(z.tuple([])).implement(async () => {
+    return [
+      {
+        name: "Google",
+        logo: "https://via.placeholder.com/150",
+        url: "/auth/google",
+      },
+      {
+        name: "Facebook",
+        logo: "https://via.placeholder.com/150",
+        url: "/auth/facebook",
+      },
+    ];
+    // return fetch(`${API_BASE}/auth/login-providers`).then((res) => res.json());
+  }),
 };

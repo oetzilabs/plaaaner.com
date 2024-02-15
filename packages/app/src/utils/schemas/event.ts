@@ -10,8 +10,16 @@ const TicketCurrency = z.discriminatedUnion("currency_type", [
   z.object({ currency_type: z.literal("other"), value: z.string({ required_error: "Value is required" }) }),
 ]);
 
+export const TicketShape = z.union([
+  z.literal("default"),
+  z.literal("default-1"),
+  z.literal("default-2"),
+  z.literal("custom"),
+]);
+
 const BaseTicketSchema = z.object({
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
+  shape: TicketShape,
   price: TicketPrice,
   currency: TicketCurrency,
   quantity: z.number({ required_error: "Quantity is required" }).min(0),
@@ -58,7 +66,7 @@ const BaseEventSchema = z.object({
   referenced_from: z.string().optional(),
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
   description: z.string().min(3).optional(),
-  day: z.date().optional(),
+  days: z.array(z.date()).optional(),
   duration: z.number().optional(),
   capacity: CapacitySchema,
   location: ConcertLocationSchema,
