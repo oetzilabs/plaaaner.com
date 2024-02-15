@@ -7,6 +7,7 @@ export function SecretsStack({ stack }: StackContext) {
     "DATABASE_AUTH_TOKEN",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
+    "BOTPOISON_SECRET_KEY"
   );
   return secrets;
 }

@@ -2,15 +2,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { AlertCircleIcon, CheckCheck, Info, Loader2 } from "lucide-solid";
 import { Toaster } from "solid-sonner";
-import { Authentication } from "./Authentication";
+import { JSX } from "solid-js";
 
 const queryClient = new QueryClient();
-export const Providers = (props: { children: any }) => {
+
+export const Providers = (props: { children: JSX.Element }) => {
   return (
     <>
       <QueryClientProvider client={queryClient}>
         <SolidQueryDevtools initialIsOpen={false} />
-        <Authentication>{props.children}</Authentication>
+        {props.children}
         <Toaster
           position="bottom-right"
           duration={5000}

@@ -1305,6 +1305,28 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
             </Alert>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-max w-full self-end ">
               <Switch>
+                <Match when={previousEvents.isLoading}>
+                  <For each={[1, 2, 3]}>
+                    {(i) => (
+                      <Skeleton>
+                        <Card class="rounded-md shadow-sm lg:w-max w-full min-w-72">
+                          <CardHeader class="flex flex-col p-3 pb-2 ">
+                            <CardTitle class="text-sm">Loading...</CardTitle>
+                          </CardHeader>
+                          <CardContent class="p-3 pt-0 pb-2">
+                            <CardDescription class="text-xs">Loading...</CardDescription>
+                          </CardContent>
+                          <CardFooter class="flex flex-row items-center justify-between p-3 pt-0">
+                            <div></div>
+                            <Button size="sm" variant="outline">
+                              Use Concert
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      </Skeleton>
+                    )}
+                  </For>
+                </Match>
                 <Match when={previousEvents.isPending}>
                   <For each={[1, 2, 3]}>
                     {(i) => (

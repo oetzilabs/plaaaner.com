@@ -7,12 +7,13 @@ import { isServer } from "solid-js/web";
 import { Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, ServerContext, Title } from "solid-start";
 import { Footer } from "./components/Footer";
 import "./root.css";
+import { Layout } from "@/components/providers/Layout";
 
 export default function Root() {
   const event = useContext(ServerContext);
 
   const storageManager = cookieStorageManagerSSR(
-    isServer ? event?.request.headers.get("cookie") ?? "" : document.cookie,
+    isServer ? event?.request.headers.get("cookie") ?? "" : document.cookie
   );
 
   return (
@@ -28,18 +29,11 @@ export default function Root() {
             <ColorModeScript storageType={storageManager.type} />
             <ColorModeProvider storageManager={storageManager}>
               <Providers>
-                <Header />
-                <div
-                  class="container w-full flex flex-col px-4"
-                  style={{
-                    "flex-grow": "1",
-                  }}
-                >
+                <Layout>
                   <Routes>
                     <FileRoutes />
                   </Routes>
-                </div>
-                <Footer />
+                </Layout>
               </Providers>
             </ColorModeProvider>
           </ErrorBoundary>

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CreateEventFormSchema, EventType } from "../schemas/event";
+import { UserSchema } from "../../components/providers/Authentication";
 // import { env } from "../../env";
 
 export * as Queries from "./queries";
@@ -299,5 +300,54 @@ export const Auth = {
       },
     ];
     // return fetch(`${API_BASE}/auth/login-providers`).then((res) => res.json());
+  }),
+  loginViaEmail: z.function(z.tuple([z.string().email()])).implement(async (email) => {
+    return {
+      user: {
+        email,
+        id: "1",
+        image: "https://via.placeholder.com/150",
+        username: "alice",
+      },
+      token: "EXAMPLE_TOKEN", // TODO!: Implement token
+    } as {
+      user: z.infer<typeof UserSchema>;
+      token: string;
+    };
+    // return fetch(`${API_BASE}/auth/login-via-email`, {
+    //   method: "POST",
+    //   body: JSON.stringify({ email }),
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // }).then((res) => res.json());
+  }),
+  session: z.function(z.tuple([z.string()])).implement(async (token) => {
+    return {
+      id: "1",
+      username: "alice",
+      email: "alice@example.com",
+      image: "https://via.placeholder.com/150",
+    } as z.infer<typeof UserSchema>;
+    // const session = document.cookie.split(";").find((c) => c.trim().startsWith("session="));
+    // if (!session) {
+    //   return Promise.reject("No session found");
+    // }
+    // return fetch(`${API_BASE}/session`, {
+    //   headers: {
+    //     Authorization: `Bearer ${session.split("=")[1]}`,
+    //   },
+    // }).then((res) => res.json());
+  }),
+};
+
+export const Testimonials = {
+  getRandom: z.function(z.tuple([])).implement(async () => {
+    return {
+      name: "Özgür Isbert",
+      title: "CEO",
+      testimonial: "I might be biased, but it works as if I made it myself - It's that good.",
+    };
+    // return fetch(`${API_BASE}/testimonials/random`).then((res) => res.json());
   }),
 };

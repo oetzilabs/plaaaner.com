@@ -1,111 +1,48 @@
-import { Accessor, JSX, createContext, createSignal, useContext } from "solid-js";
+import { createSignal } from "solid-js";
 import { isServer } from "solid-js/web";
+import { createCookie, parseCookie } from "solid-start";
 import { z } from "zod";
 
-const AuthenticationSchema = z.discriminatedUnion("isAuthenticated", [
-  z.object({
-    isAuthenticated: z.literal(true),
-    user: z.object({
-      id: z.string(),
-      username: z.string(),
-      image: z.string(),
-      email: z.string(),
-    }),
-  }),
-  z.object({
-    isAuthenticated: z.literal(false),
-  }),
-]);
-
-type AuthenticationCtx = z.infer<typeof AuthenticationSchema>;
-
-const AuthenticationContext = createContext<
-  AuthenticationCtx & {
-    loggin: (user: Exclude<AuthenticationCtx, { isAuthenticated: false }>["user"], provider: string) => void;
-    loggout: () => void;
-    session: Accessor<string | null>;
-    lastUsedProvider: Accessor<string | null>;
-  }
->({
-  isAuthenticated: false,
-  loggin: () => {
-    throw new Error("Not implemented");
-  },
-  loggout: () => {
-    throw new Error("Not implemented");
-  },
-  session: () => {
-    throw new Error("Not implemented");
-  },
-  lastUsedProvider: () => {
-    throw new Error("Not implemented");
-  },
+export const UserSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  image: z.string(),
+  email: z.string(),
 });
 
-export const useAuthentication = () => {
-  const ctx = useContext(AuthenticationContext);
-  if (!ctx) {
-    throw new Error("useAuthentication must be used within a AuthenticationProvider");
-  }
-  return ctx;
+export const [authLoggedin, setAuthLoggedin] = createSignal<boolean>(false);
+
+export const [auth, setAuth] = createSignal<z.infer<typeof UserSchema> | null>(null);
+
+export const logout = async () => {
+  setAuthLoggedin(false);
+  setAuth(null);
+  const sessionCookie = createCookie("session", {
+    maxAge: 0,
+    expires: new Date(0),
+    path: "/",
+  });
+  const c = await sessionCookie.serialize("");
+  document.cookie = c;
 };
 
-export const Authentication = (props: { children: JSX.Element }) => {
-  const [state, setState] = createSignal<AuthenticationCtx>({
-    isAuthenticated: false,
-  });
+export const session = () => {
+  const sessionCookie = parseCookie(document.cookie).session;
 
-  const loggin = (user: Exclude<AuthenticationCtx, { isAuthenticated: false }>["user"], provider: string) => {
-    if (isServer) {
-      return;
-    }
-    setState({ isAuthenticated: true, user });
-    // set cookie for `lastUsedProvider`
-    document.cookie = `lastUsedProvider=${provider} ;path=/ ;max-age=31536000 ;samesite=strict`;
-  };
+  if (!sessionCookie) {
+    console.log("No session cookie found");
+    return null;
+  }
+  return sessionCookie;
+};
 
-  const loggout = () => {
-    if (isServer) {
-      return;
-    }
-    setState({ isAuthenticated: false });
-  };
-
-  const session = () => {
-    if (isServer) {
-      return null;
-    }
-    const cookies = document.cookie.split(";");
-    const session = cookies.find((cookie) => cookie.startsWith("session="));
-    if (!session) {
-      return null;
-    }
-    return session.split("=")[1];
-  };
-
-  const lastUsedProvider = () => {
-    if (isServer) {
-      return null;
-    }
-    const cookies = document.cookie.split(";");
-    const provider = cookies.find((cookie) => cookie.startsWith("lastUsedProvider="));
-    if (!provider) {
-      return null;
-    }
-    return provider.split("=")[1];
-  };
-
-  return (
-    <AuthenticationContext.Provider
-      value={{
-        ...state(),
-        loggin,
-        loggout,
-        session,
-        lastUsedProvider,
-      }}
-    >
-      {props.children}
-    </AuthenticationContext.Provider>
-  );
+export const lastUsedProvider = () => {
+  if (isServer) {
+    return null;
+  }
+  const provider = parseCookie(document.cookie).lastUsedProvider;
+  if (!provider) {
+    return "";
+  }
+  return provider;
 };

@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
-import { useAuthentication } from "../components/providers/Authentication";
+import { authLoggedin } from "../components/providers/Authentication";
+import { Show } from "solid-js";
+import { cn } from "../lib/utils";
 
 export default function IndexPage() {
-  const authentication = useAuthentication();
   return (
     <div class="relative flex flex-col gap-2 items-center">
       <div class="absolute w-full -top-16 h-32 bg-[#4F46E4] -z-[10] rounded-3xl blur-[150px]"></div>
@@ -21,11 +22,9 @@ export default function IndexPage() {
             <p>you can get started or learn more.</p>
           </div>
           <div class="flex flex-row gap-2 items-center">
-            <Button variant="default" size="lg" asChild>
-              <As component={A} href={authentication.isAuthenticated ? "/plan/create" : "/auth/login"}>
-                {authentication.isAuthenticated ? "Get started" : "Create Account"}
-              </As>
-            </Button>
+            <A class={cn(buttonVariants({ size: "lg", variant: "default" }))} href="/plan/create">
+              Get started
+            </A>
             <Button variant="secondary" size="lg" asChild>
               <As component={A} href="/plan/create">
                 Learn more
