@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { SVGAttributes } from "lucide-solid/dist/types/types";
 import { toast } from "solid-sonner";
 import { loginViaEmail } from "@/lib/api/user";
-import { useSubmission, useAction } from "@solidjs/router"
+import { useSubmission, useAction } from "@solidjs/router";
 
 const generateAuthUrl = (provider: string) => {
   const url = new URL("/authorize", import.meta.env.VITE_AUTH_URL);
@@ -18,7 +18,7 @@ const generateAuthUrl = (provider: string) => {
   url.searchParams.set(
     "redirect_uri",
     (import.meta.env.NODE_ENV === "production" ? "https://plaaaner.com" : "http://localhost:3000") +
-      "/api/auth/callback",
+      "/api/auth/callback"
   );
   return url.toString();
 };
@@ -45,13 +45,10 @@ const randomPersonTesimonial = {
 };
 
 export default function LoginPage() {
-
   const loginWithEmail = useAction(loginViaEmail);
   const isLogginInViaEmail = useSubmission(loginViaEmail);
 
-
   const navigate = useNavigate();
-
 
   const [email, setEmail] = createSignal("");
 
@@ -61,7 +58,6 @@ export default function LoginPage() {
     toast.info("Login via Email is not implemented yet");
     // const result = await loginWithEmail(_email);
   };
-
 
   return (
     <div class="container h-screen flex flex-col items-center justify-center px-10">

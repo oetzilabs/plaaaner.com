@@ -26,4 +26,3 @@ export const URLPreviews = {
     // }).then((res) => res.json());
   }),
 };
-
