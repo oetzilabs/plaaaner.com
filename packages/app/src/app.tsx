@@ -11,15 +11,15 @@ import { AlertCircleIcon, CheckCheck, Info, Loader2 } from "lucide-solid";
 import { Suspense } from "solid-js";
 import { isServer } from "solid-js/web";
 import { Toaster } from "solid-sonner";
-import { getCookie } from "vinxi/http";
+// import { getCookie } from "vinxi/http";
 import "./app.css";
 
-const getServerCookies = () => {
-  "use server";
+// const getServerCookies = () => {
+//   "use server";
 
-  const colorMode = getCookie("kb-color-mode");
-  return colorMode ? `kb-color-mode=${colorMode}` : "";
-};
+//   const colorMode = getCookie("kb-color-mode");
+//   return colorMode ? `kb-color-mode=${colorMode}` : "";
+// };
 
 export default function App() {
   const queryClient = new QueryClient({
@@ -31,11 +31,10 @@ export default function App() {
     },
   });
 
-  const storageManager = cookieStorageManagerSSR(isServer ? getServerCookies() : document.cookie);
+  const storageManager = cookieStorageManagerSSR(isServer ? "kb-color-mode=dark" : document.cookie);
   return (
     <QueryClientProvider client={queryClient}>
       <SolidQueryDevtools initialIsOpen={false} />
-
       <Router
         root={(props) => (
           <>

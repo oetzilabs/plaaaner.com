@@ -160,7 +160,6 @@ export const DatePickerContent = (props: DatePickerContentProps) => {
 
 export const DatePickerInput = (props: DatePickerInputProps) => {
   const [local, rest] = splitProps(props, ["class", "children"]);
-  console.log("rest.value", rest.value);
 
   return (
     <DatePickerPrimitive.Control class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
@@ -168,33 +167,6 @@ export const DatePickerInput = (props: DatePickerInputProps) => {
         class={cn("w-full appearance-none bg-transparent outline-none", local.class)}
         {...rest}
       />
-      <DatePickerPrimitive.Trigger>
-        <Calendar class="w-4 h-4" />
-      </DatePickerPrimitive.Trigger>
-    </DatePickerPrimitive.Control>
-  );
-};
-
-export const DatePickerInputRange = (
-  props: DatePickerInputProps & {
-    range: number;
-  }
-) => {
-  const [local, rest] = splitProps(props, ["class", "children", "range"]);
-
-  return (
-    <DatePickerPrimitive.Control class="flex justify-between h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
-      <div class="flex flex-row items-center gap-2 w-full">
-        <For each={Array.from({ length: local.range })}>
-          {(value, index) => (
-            <DatePickerPrimitive.Input
-              index={index()}
-              class={cn("min-w-0 appearance-none bg-transparent outline-none", local.class)}
-              value={rest.value}
-            />
-          )}
-        </For>
-      </div>
       <DatePickerPrimitive.Trigger>
         <Calendar class="w-4 h-4" />
       </DatePickerPrimitive.Trigger>

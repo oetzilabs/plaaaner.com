@@ -1,9 +1,11 @@
-// import DatePicker from "@/components/ui/custom/DatePicker";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DatePicker,
   DatePickerContent,
   DatePickerInput,
-  DatePickerInputRange,
   DatePickerRangeText,
   DatePickerTable,
   DatePickerTableBody,
@@ -16,14 +18,36 @@ import {
   DatePickerViewControl,
   DatePickerViewTrigger,
 } from "@/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  RadioGroup,
+  RadioGroupItem,
+  RadioGroupItemControl,
+  RadioGroupItemLabel,
+  RadioGroupLabel,
+} from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCaption, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
 import { cn } from "@/lib/utils";
 import { Mutations } from "@/utils/api/mutations";
+import { Queries } from "@/utils/api/queries";
+import { CreateEventFormSchema, EventType, TicketSchema } from "@/utils/schemas/event";
 import { today } from "@internationalized/date";
-import { As, useLocale } from "@kobalte/core";
+import { As } from "@kobalte/core";
 import { createUndoHistory } from "@solid-primitives/history";
-import { createMutation, createQuery } from "@tanstack/solid-query";
+import { useNavigate } from "@solidjs/router";
+import { clientOnly } from "@solidjs/start";
+import { createMutation, createQuery, isServer } from "@tanstack/solid-query";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import tz from "dayjs/plugin/timezone";
@@ -46,30 +70,12 @@ import {
   Ticket,
   Undo,
 } from "lucide-solid";
-import { For, Match, Show, Switch, createMemo, createSignal, onMount } from "solid-js";
+import { For, Match, Show, Suspense, Switch, createEffect, createMemo, createSignal, onMount } from "solid-js";
 import { toast } from "solid-sonner";
-import { useNavigate } from "@solidjs/router";
-import { clientOnly } from "@solidjs/start";
 import { Transition } from "solid-transition-group";
 import { z } from "zod";
-import { Queries } from "../../utils/api/queries";
-import { CreateEventFormSchema, TicketSchema } from "../../utils/schemas/event";
+import { QueryBoundary } from "../QueryBoundary";
 import URLPreview from "../URLPreview";
-import { Alert, AlertDescription } from "../ui/alert";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
-import {
-  RadioGroup,
-  RadioGroupItem,
-  RadioGroupItemControl,
-  RadioGroupItemLabel,
-  RadioGroupLabel,
-} from "../ui/radio-group";
-import { Skeleton } from "../ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { TextField, TextFieldInput, TextFieldLabel } from "../ui/textfield";
 import { EditTicketForm } from "./EditTicketForm";
 dayjs.extend(tz);
 dayjs.extend(advancedFormat);
@@ -114,11 +120,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
   const [newEvent, setNewEvent] = createSignal<z.infer<typeof CreateEventFormSchema>>(DEFAULT_EVENT);
   const [trackClearEvent, clearEventHistory] = createSignal(undefined, { equals: false });
   const [timezone, setTimeZone] = createSignal("UTC");
-  const locale = useLocale().locale;
-  onMount(() => {
-    setTimeZone(dayjs.tz.guess());
-    toast.info("Timezone detected: " + dayjs.tz.guess());
-  });
 
   const eventHistory = createMemo(() => {
     // track what should rerun the memo
@@ -150,27 +151,57 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
   const [urlQuery, setURLQuery] = createSignal("");
 
   const previousEvents = createQuery(() => ({
-    queryKey: ["previousEvents", newEvent().event_type],
-    queryFn: () => {
-      const event_type = newEvent().event_type;
+    queryKey: ["previousEvents", newEvent().event_type || props.event_type],
+    queryFn: async (k) => {
+      const event_type = k.queryKey[1];
+      const v = EventType.safeParse(event_type);
+      if (!v.success) {
+        return Promise.resolve<Awaited<ReturnType<typeof Queries.Events.all>>>([]);
+      }
       return Queries.Events.all({
-        event_type,
+        event_type: v.data,
       });
+    },
+    initialData: [],
+    get enabled() {
+      return !isServer;
     },
   }));
 
   const recommendedEvents = createQuery(() => ({
-    queryKey: ["recommendedEvents", newEvent().event_type],
-    queryFn: () => {
-      const event_type = newEvent().event_type;
+    queryKey: ["recommendedEvents", newEvent().event_type || props.event_type],
+    queryFn: async (k) => {
+      const event_type = k.queryKey[1];
+      const v = EventType.safeParse(event_type);
+      if (!v.success) {
+        return Promise.resolve<Awaited<ReturnType<typeof Queries.Events.recommended>>>([]);
+      }
       return Queries.Events.recommended({
-        event_type,
+        event_type: v.data,
       });
     },
+    initialData: [],
+    get enabled() {
+      return !isServer;
+    },
   }));
-
+  onMount(() => {
+    setTimeZone(dayjs.tz.guess());
+    previousEvents.refetch();
+    recommendedEvents.refetch();
+  });
   const suggestNewNames = () => {
-    const name = newEvent().name;
+    const ne = newEvent();
+    if (!ne) {
+      return [];
+    }
+    const name = ne.name;
+    if (previousEvents.isPending || previousEvents.fetchStatus === "fetching") {
+      return [];
+    }
+    if (previousEvents.isFetching) {
+      return [];
+    }
     if (!previousEvents.isSuccess) {
       return [];
     }
@@ -305,8 +336,14 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
   };
 
   const tooManyTicketsCheck = () => {
-    const totalTickets = newEvent().tickets.reduce((acc, t) => acc + t.quantity, 0);
     const nc = newEvent();
+    if (!nc) {
+      return {
+        message: "You have not set a capacity for the concert.",
+        type: "error",
+      };
+    }
+    const totalTickets = nc.tickets.reduce((acc, t) => acc + t.quantity, 0);
     const cp = nc.capacity;
     const cpt = cp.capacity_type;
     if (cpt === "none") {
@@ -392,39 +429,41 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                     setNewEvent((ev) => ({ ...ev, name: value }));
                   }}
                 />
-                <Show when={suggestNewNames().length > 0 && suggestNewNames()}>
-                  {(v) => (
-                    <>
-                      <span class="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Concert '{newEvent().name}' exists already! Suggested Names:
-                      </span>
-                      <div class="grid grid-cols-3 gap-2">
-                        <For
-                          each={v()}
-                          fallback={
-                            <div class="col-span-full">
-                              <span class="text-sm font-medium leading-none text-emerald-500">
-                                Lucky you, the name is available!
-                              </span>
-                            </div>
-                          }
-                        >
-                          {(suggestion) => (
-                            <Button
-                              asChild
-                              type="button"
-                              variant="secondary"
-                              onClick={() => {
-                                setNewEvent((ev) => ({ ...ev, name: suggestion }));
-                              }}
-                            >
-                              <As component={Badge}>{suggestion}</As>
-                            </Button>
-                          )}
-                        </For>
-                      </div>
-                    </>
-                  )}
+                <Show when={previousEvents.isSuccess} fallback={<Loader2 class="w-4 h-4 animate-spin" />}>
+                  <Show when={suggestNewNames().length > 0 && suggestNewNames()}>
+                    {(v) => (
+                      <>
+                        <span class="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                          Concert '{newEvent().name}' exists already! Suggested Names:
+                        </span>
+                        <div class="grid grid-cols-3 gap-2">
+                          <For
+                            each={v()}
+                            fallback={
+                              <div class="col-span-full">
+                                <span class="text-sm font-medium leading-none text-emerald-500">
+                                  Lucky you, the name is available!
+                                </span>
+                              </div>
+                            }
+                          >
+                            {(suggestion) => (
+                              <Button
+                                asChild
+                                type="button"
+                                variant="secondary"
+                                onClick={() => {
+                                  setNewEvent((ev) => ({ ...ev, name: suggestion }));
+                                }}
+                              >
+                                <As component={Badge}>{suggestion}</As>
+                              </Button>
+                            )}
+                          </For>
+                        </div>
+                      </>
+                    )}
+                  </Show>
                 </Show>
               </TextField>
               <TextField class="w-full flex flex-col gap-2" aria-label="Concert Description">
@@ -672,7 +711,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                         break;
                       default:
                         const s: never = v;
-                        console.log(s);
                         break;
                     }
                   }}
@@ -1304,8 +1342,9 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               </AlertDescription>
             </Alert>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-max w-full self-end ">
-              <Switch>
-                <Match when={previousEvents.isLoading}>
+              <QueryBoundary
+                query={previousEvents}
+                loadingFallback={
                   <For each={[1, 2, 3]}>
                     {(i) => (
                       <Skeleton>
@@ -1326,84 +1365,68 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       </Skeleton>
                     )}
                   </For>
-                </Match>
-                <Match when={previousEvents.isPending}>
-                  <For each={[1, 2, 3]}>
-                    {(i) => (
-                      <Skeleton>
-                        <Card class="rounded-md shadow-sm lg:w-max w-full min-w-72">
-                          <CardHeader class="flex flex-col p-3 pb-2 ">
-                            <CardTitle class="text-sm">Loading...</CardTitle>
-                          </CardHeader>
-                          <CardContent class="p-3 pt-0 pb-2">
-                            <CardDescription class="text-xs">Loading...</CardDescription>
-                          </CardContent>
-                          <CardFooter class="flex flex-row items-center justify-between p-3 pt-0">
-                            <div></div>
-                            <Button size="sm" variant="outline">
-                              Use Concert
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      </Skeleton>
-                    )}
-                  </For>
-                </Match>
-                <Match when={previousEvents.isError}>
+                }
+                errorFallback={
                   <div class="flex flex-col gap-2 w-full">
                     <span class="text-sm font-medium leading-none text-red-500">
                       Error Fetching Previous {newEvent().event_type}
                     </span>
                     <span class="text-sm font-medium leading-none">{previousEvents.error?.message}</span>
                   </div>
-                </Match>
-                <Match when={previousEvents.isSuccess && previousEvents.data}>
-                  {(data) => (
-                    <For each={data().slice(0, 3)}>
-                      {(concert, index) => (
-                        <Card
-                          class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
-                            "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
-                              concert.id === newEvent().referenced_from,
-                            "hover:bg-neutral-100 dark:hover:bg-neutral-900": newEvent().referenced_from === undefined,
-                            "opacity-100": newEvent().referenced_from === concert.id,
-                            "opacity-50":
-                              newEvent().referenced_from !== undefined && newEvent().referenced_from !== concert.id,
-                            "cursor-default": newEvent().referenced_from !== undefined,
-                          })}
-                          onClick={() => {
-                            if (newEvent().referenced_from !== undefined) return;
-                            setNewEvent((ev) => ({
-                              ...ev,
-                              ...concert,
-                              referenced_from: concert.id,
-                            }));
-                          }}
-                        >
-                          <CardHeader class="flex flex-col p-3 pb-2 ">
-                            <CardTitle
-                              class={cn("text-sm", {
-                                "text-white": concert.id === newEvent().referenced_from,
-                              })}
-                            >
-                              {concert.name}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent class="p-3 pt-0 pb-4">
-                            <CardDescription
-                              class={cn("text-xs", {
-                                "text-white": concert.id === newEvent().referenced_from,
-                              })}
-                            >
-                              <p>{concert.description}</p>
-                            </CardDescription>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </For>
-                  )}
-                </Match>
-              </Switch>
+                }
+                notFoundFallback={
+                  <div class="flex flex-col gap-2 w-full">
+                    <span class="text-sm font-medium leading-none text-neutral-500">
+                      No Previous {newEvent().event_type} Found
+                    </span>
+                  </div>
+                }
+              >
+                {(pE) => (
+                  <For each={pE.slice(0, 3)}>
+                    {(concert, index) => (
+                      <Card
+                        class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
+                          "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
+                            concert.id === newEvent().referenced_from,
+                          "hover:bg-neutral-100 dark:hover:bg-neutral-900": newEvent().referenced_from === undefined,
+                          "opacity-100": newEvent().referenced_from === concert.id,
+                          "opacity-50":
+                            newEvent().referenced_from !== undefined && newEvent().referenced_from !== concert.id,
+                          "cursor-default": newEvent().referenced_from !== undefined,
+                        })}
+                        onClick={() => {
+                          if (newEvent().referenced_from !== undefined) return;
+                          setNewEvent((ev) => ({
+                            ...ev,
+                            ...concert,
+                            referenced_from: concert.id,
+                          }));
+                        }}
+                      >
+                        <CardHeader class="flex flex-col p-3 pb-2 ">
+                          <CardTitle
+                            class={cn("text-sm", {
+                              "text-white": concert.id === newEvent().referenced_from,
+                            })}
+                          >
+                            {concert.name}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-3 pt-0 pb-4">
+                          <CardDescription
+                            class={cn("text-xs", {
+                              "text-white": concert.id === newEvent().referenced_from,
+                            })}
+                          >
+                            <p>{concert.description}</p>
+                          </CardDescription>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </For>
+                )}
+              </QueryBoundary>
             </div>
           </div>
           <div class="w-full flex flex-col gap-4">
@@ -1460,9 +1483,10 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               </AlertDescription>
             </Alert>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-max w-full self-end ">
-              <Switch>
-                <Match when={recommendedEvents.isPending}>
-                  <For each={[1, 2]}>
+              <QueryBoundary
+                query={recommendedEvents}
+                loadingFallback={
+                  <For each={[1, 2, 3]}>
                     {(i) => (
                       <Skeleton>
                         <Card class="rounded-md shadow-sm lg:w-max w-full min-w-72">
@@ -1482,62 +1506,68 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       </Skeleton>
                     )}
                   </For>
-                </Match>
-                <Match when={recommendedEvents.isError}>
+                }
+                errorFallback={
                   <div class="flex flex-col gap-2 w-full">
                     <span class="text-sm font-medium leading-none text-red-500">
                       Error Fetching Recommended {newEvent().event_type}
                     </span>
                     <span class="text-sm font-medium leading-none">{recommendedEvents.error?.message}</span>
                   </div>
-                </Match>
-                <Match when={recommendedEvents.isSuccess && recommendedEvents.data}>
-                  {(data) => (
-                    <For each={data().slice(0, 2)}>
-                      {(concert, index) => (
-                        <Card
-                          class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
-                            "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
-                              concert.id === newEvent().referenced_from,
-                            "hover:bg-neutral-100 dark:hover:bg-neutral-900": newEvent().referenced_from === undefined,
-                            "opacity-100": newEvent().referenced_from === concert.id,
-                            "opacity-50":
-                              newEvent().referenced_from !== undefined && newEvent().referenced_from !== concert.id,
-                            "cursor-default": newEvent().referenced_from !== undefined,
-                          })}
-                          onClick={() => {
-                            if (newEvent().referenced_from !== undefined) return;
-                            setNewEvent((ev) => ({
-                              ...ev,
-                              ...concert,
-                              referenced_from: concert.id,
-                            }));
-                          }}
-                        >
-                          <CardHeader class="flex flex-col p-3 pb-2 ">
-                            <CardTitle
-                              class={cn("text-sm", {
-                                "text-white": concert.id === newEvent().referenced_from,
-                              })}
-                            >
-                              {concert.name}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent class="p-3 pt-0 pb-4">
-                            <CardDescription
-                              class={cn("text-xs", {
-                                "text-white": concert.id === newEvent().referenced_from,
-                              })}
-                            >
-                              <p>{concert.description}</p>
-                            </CardDescription>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </For>
-                  )}
-                </Match>
-              </Switch>
+                }
+                notFoundFallback={
+                  <div class="flex flex-col gap-2 w-full">
+                    <span class="text-sm font-medium leading-none text-neutral-500">
+                      No Recommended {newEvent().event_type} Found
+                    </span>
+                  </div>
+                }
+              >
+                {(rE) => (
+                  <For each={rE.slice(0, 2)}>
+                    {(concert, index) => (
+                      <Card
+                        class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
+                          "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
+                            concert.id === newEvent().referenced_from,
+                          "hover:bg-neutral-100 dark:hover:bg-neutral-900": newEvent().referenced_from === undefined,
+                          "opacity-100": newEvent().referenced_from === concert.id,
+                          "opacity-50":
+                            newEvent().referenced_from !== undefined && newEvent().referenced_from !== concert.id,
+                          "cursor-default": newEvent().referenced_from !== undefined,
+                        })}
+                        onClick={() => {
+                          if (newEvent().referenced_from !== undefined) return;
+                          setNewEvent((ev) => ({
+                            ...ev,
+                            ...concert,
+                            referenced_from: concert.id,
+                          }));
+                        }}
+                      >
+                        <CardHeader class="flex flex-col p-3 pb-2 ">
+                          <CardTitle
+                            class={cn("text-sm", {
+                              "text-white": concert.id === newEvent().referenced_from,
+                            })}
+                          >
+                            {concert.name}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-3 pt-0 pb-4">
+                          <CardDescription
+                            class={cn("text-xs", {
+                              "text-white": concert.id === newEvent().referenced_from,
+                            })}
+                          >
+                            <p>{concert.description}</p>
+                          </CardDescription>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </For>
+                )}
+              </QueryBoundary>
             </div>
           </div>
         </div>

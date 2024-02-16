@@ -28,7 +28,6 @@ export default function PlanCreateEventPage() {
       </div>
     );
   }
-  const [s, setS] = createSignal(0);
 
   return (
     <div class="flex flex-col py-10">

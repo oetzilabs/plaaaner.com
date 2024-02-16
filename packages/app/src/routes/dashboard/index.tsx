@@ -1,7 +1,7 @@
 import { auth, authLoggedin } from "@/components/providers/Authentication";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Queries } from "@/utils/api/queries";
-import { Skeleton } from "@kobalte/core/dist/types/skeleton/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createQuery } from "@tanstack/solid-query";
 import { Switch, Match } from "solid-js";
 
@@ -14,7 +14,7 @@ export default function DashboardPage() {
     get enabled() {
       const a = authLoggedin();
       return a;
-    }
+    },
   }));
 
   return (
@@ -25,9 +25,7 @@ export default function DashboardPage() {
             <div class="flex flex-col gap-8">
               <div class="flex flex-col gap-2">
                 <h1 class="text-2xl font-medium">Welcome back, {user.name}</h1>
-                <span class="text-xs text-neutral-500">
-                  Here's what's happening with your workspace today.
-                </span>
+                <span class="text-xs text-neutral-500">Here's what's happening with your workspace today.</span>
               </div>
               <div class="grid grid-cols-3 gap-4">
                 <Card>
