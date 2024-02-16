@@ -1,6 +1,6 @@
 import { For } from "solid-js";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../components/ui/card";
-import { A } from "solid-start";
+import { A } from "@solidjs/router";
 import { Button } from "../../../components/ui/button";
 import { As } from "@kobalte/core";
 import { Separator } from "../../../components/ui/separator";

@@ -10,6 +10,7 @@ import { Laptop, Moon, Sun } from "lucide-solid";
 
 const ModeToggle = () => {
   const { setColorMode } = useColorMode();
+  // const setColorMode = (s: string) => {};
 
   return (
     <DropdownMenu placement="bottom-end">

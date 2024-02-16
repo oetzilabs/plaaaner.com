@@ -48,8 +48,8 @@ import {
 } from "lucide-solid";
 import { For, Match, Show, Switch, createMemo, createSignal, onMount } from "solid-js";
 import { toast } from "solid-sonner";
-import { useNavigate } from "solid-start";
-import { clientOnly } from "solid-start/islands";
+import { useNavigate } from "@solidjs/router";
+import { clientOnly } from "@solidjs/start";
 import { Transition } from "solid-transition-group";
 import { z } from "zod";
 import { Queries } from "../../utils/api/queries";

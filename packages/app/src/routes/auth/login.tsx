@@ -3,7 +3,8 @@ import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
 import { createMutation, createQuery } from "@tanstack/solid-query";
 import { For, Match, Show, Switch, createSignal } from "solid-js";
-import { createCookie, useNavigate } from "solid-start";
+import { useNavigate } from "@solidjs/router";
+import { setCookie } from "vinxi/http";
 import { lastUsedProvider, setAuth, setAuthLoggedin } from "../../components/providers/Authentication";
 import { Button } from "../../components/ui/button";
 import { Logo } from "../../components/ui/custom/logo";
@@ -36,23 +37,19 @@ export default function LoginPage() {
       return Queries.Auth.loginViaEmail(email);
     },
     async onSuccess(data, variables, context) {
-      const sessionCookie = createCookie("session", {
+      setCookie("session", data.token, {
         maxAge: 60 * 60 * 24 * 7, // 1 week
         expires: new Date(Date.now() + 60 * 60 * 24 * 7),
         path: "/",
       });
-      const y = await sessionCookie.serialize(data.token);
-      const lastUsedProviderCookie = createCookie("lastUsedProvider", {
+      setCookie("lastUsedProvider", "email", {
         maxAge: 60 * 60 * 24 * 7, // 1 week
         expires: new Date(Date.now() + 60 * 60 * 24 * 7),
         path: "/",
       });
-      const x = await lastUsedProviderCookie.serialize("email");
       setAuthLoggedin(true);
       setAuth(data.user);
 
-      document.cookie = x;
-      document.cookie = y;
       navigate("/");
     },
   }));

@@ -1,14 +1,13 @@
-import solid from "solid-start/vite";
-import { defineConfig } from "vite";
-import aws from "solid-start-sst";
-import path from "path";
+import path from "node:path";
+import { defineConfig } from "@solidjs/start/config";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [
-    solid({
-      adapter: aws(),
-    }),
-  ],
+  start: {
+    server: {
+      preset: "node",
+    },
+  },
   ssr: {
     noExternal: ["@kobalte/core", "@internationalized/message"],
   },

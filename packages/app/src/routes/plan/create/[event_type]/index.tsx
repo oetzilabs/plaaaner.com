@@ -1,10 +1,10 @@
 import CreateEventForm from "@/components/forms/CreateEvent";
-import { useParams } from "solid-start";
-import { EventType } from "../../../../utils/schemas/event";
-import { Button } from "../../../../components/ui/button";
-import { Card, CardContent, CardHeader } from "../../../../components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EventType } from "@/utils/schemas/event";
 import { As } from "@kobalte/core";
-import { A } from "@solidjs/router";
+import { A, useParams } from "@solidjs/router";
+import { createSignal } from "solid-js";
 
 export default function PlanCreateEventPage() {
   const params = useParams();
@@ -28,6 +28,7 @@ export default function PlanCreateEventPage() {
       </div>
     );
   }
+  const [s, setS] = createSignal(0);
 
   return (
     <div class="flex flex-col py-10">
