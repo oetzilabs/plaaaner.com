@@ -18,7 +18,7 @@ export const TicketShape = z.union([
 ]);
 
 const BaseTicketSchema = z.object({
-  name: z.string({ required_error: "Name is required" }).min(3).max(50),
+  name: z.string({ required_error: "Name is required" }).max(50),
   shape: TicketShape,
   price: TicketPrice,
   currency: TicketCurrency,

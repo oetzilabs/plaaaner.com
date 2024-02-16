@@ -8,7 +8,6 @@ export default function URLPreview(props: { query: Accessor<string> }) {
     queryFn: async () => {
       const q = props.query();
       if (!q) return null;
-      console.log("Fetching", q);
       return Queries.URLPreviews.get(q);
     },
     retry: 0,

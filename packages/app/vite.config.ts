@@ -5,7 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   start: {
     server: {
-      preset: "node",
+      preset: "node-server",
     },
   },
   ssr: {

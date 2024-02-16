@@ -4,7 +4,7 @@ import { A } from "@solidjs/router";
 import { createMutation, createQuery } from "@tanstack/solid-query";
 import { For, Match, Show, Switch, createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { setCookie } from "vinxi/http";
+// import { setCookie } from "vinxi/http";
 import { lastUsedProvider, setAuth, setAuthLoggedin } from "../../components/providers/Authentication";
 import { Button } from "../../components/ui/button";
 import { Logo } from "../../components/ui/custom/logo";
@@ -37,16 +37,6 @@ export default function LoginPage() {
       return Queries.Auth.loginViaEmail(email);
     },
     async onSuccess(data, variables, context) {
-      setCookie("session", data.token, {
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        expires: new Date(Date.now() + 60 * 60 * 24 * 7),
-        path: "/",
-      });
-      setCookie("lastUsedProvider", "email", {
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        expires: new Date(Date.now() + 60 * 60 * 24 * 7),
-        path: "/",
-      });
       setAuthLoggedin(true);
       setAuth(data.user);
 
