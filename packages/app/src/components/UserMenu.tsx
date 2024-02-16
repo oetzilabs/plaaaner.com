@@ -1,11 +1,11 @@
+import { cn } from "@/lib/utils";
+import { Queries } from "@/utils/api/queries";
 import { As } from "@kobalte/core";
+import { A, useNavigate } from "@solidjs/router";
 import { createQuery, isServer } from "@tanstack/solid-query";
 import { LogIn, LogOut, Settings2, User } from "lucide-solid";
 import { Match, Show, Switch } from "solid-js";
 import { toast } from "solid-sonner";
-import { A, useNavigate } from "solid-start";
-import { cn } from "../lib/utils";
-import { Queries } from "../utils/api/queries";
 import { auth, authLoggedin, logout, session, setAuth, setAuthLoggedin } from "./providers/Authentication";
 import { Button } from "./ui/button";
 import {
@@ -24,6 +24,8 @@ export default function UserMenu() {
     queryFn: async () => {
       const token = session();
       if (!token) {
+        setAuthLoggedin(false);
+        setAuth(null);
         return false;
       }
       const user = await Queries.Auth.session(token);

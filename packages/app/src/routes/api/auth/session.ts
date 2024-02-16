@@ -1,4 +1,5 @@
-import { APIEvent, json } from "solid-start";
+import { json } from "@solidjs/router";
+import type { APIEvent } from "@solidjs/start/server";
 
 export const GET = async (event: APIEvent) => {
   // get the access_token from the headers
