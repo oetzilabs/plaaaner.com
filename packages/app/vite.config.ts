@@ -7,6 +7,7 @@ export default defineConfig({
     server: {
       preset: "node-server",
     },
+    middleware: "./src/middleware.ts",
   },
   ssr: {
     noExternal: ["@kobalte/core", "@internationalized/message"],

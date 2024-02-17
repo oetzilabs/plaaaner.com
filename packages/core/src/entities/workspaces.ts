@@ -2,12 +2,12 @@ import { eq, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
-import { users } from "../drizzle/sql/schema";
+import { workspaces } from "../drizzle/sql/schema";
 
-export * as User from "./users";
+export * as Workspace from "./workspaces";
 
-export const create = z.function(z.tuple([createInsertSchema(users)])).implement(async (userInput) => {
-  const [x] = await db.insert(users).values(userInput).returning();
+export const create = z.function(z.tuple([createInsertSchema(workspaces)])).implement(async (userInput) => {
+  const [x] = await db.insert(workspaces).values(userInput).returning();
 
   return x;
 });
@@ -15,35 +15,44 @@ export const create = z.function(z.tuple([createInsertSchema(users)])).implement
 export const countAll = z.function(z.tuple([])).implement(async () => {
   const [x] = await db
     .select({
-      count: sql`COUNT(${users.id})`,
+      count: sql`COUNT(${workspaces.id})`,
     })
-    .from(users);
+    .from(workspaces);
   return x.count;
 });
 
 export const findById = z.function(z.tuple([z.string()])).implement(async (input) => {
-  return db.query.users.findFirst({
-    where: (users, operations) => operations.eq(users.id, input),
+  return db.query.workspaces.findFirst({
+    where: (workspaces, operations) => operations.eq(workspaces.id, input),
     with: {},
   });
 });
 
-export const findByEmail = z.function(z.tuple([z.string().email()])).implement(async (input) => {
-  return db.query.users.findFirst({
-    where: (users, operations) => operations.eq(users.email, input),
-    with: {},
+export const findManyByUserId = z.function(z.tuple([z.string()])).implement(async (input) => {
+  const userWs = await db.query.users.findFirst({
+    where: (user, operations) => operations.eq(user.id, input),
+    with: {
+      workspaces: {
+        with: {
+          workspace: true,
+        },
+      },
+    },
   });
+  if (!userWs) return [];
+
+  return userWs.workspaces.map((x) => x.workspace);
 });
 
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {
-  return db.query.users.findFirst({
-    where: (users, operations) => operations.eq(users.name, input),
+  return db.query.workspaces.findFirst({
+    where: (workspaces, operations) => operations.eq(workspaces.name, input),
     with: {},
   });
 });
 
 export const all = z.function(z.tuple([])).implement(async () => {
-  return db.query.users.findMany({
+  return db.query.workspaces.findMany({
     with: {},
   });
 });
@@ -51,7 +60,7 @@ export const all = z.function(z.tuple([])).implement(async () => {
 const update = z
   .function(
     z.tuple([
-      createInsertSchema(users)
+      createInsertSchema(workspaces)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
@@ -59,9 +68,9 @@ const update = z
   )
   .implement(async (input) => {
     await db
-      .update(users)
+      .update(workspaces)
       .set({ ...input, updatedAt: new Date() })
-      .where(eq(users.id, input.id))
+      .where(eq(workspaces.id, input.id))
       .returning();
     return true;
   });
@@ -75,9 +84,5 @@ export const updateName = z
   .implement(async (input) => {
     return update({ id: input.id, name: input.name });
   });
-
-export const isAllowedToSignUp = z.function(z.tuple([z.object({ email: z.string() })])).implement(async (input) => {
-  return true;
-});
 
 export type Frontend = NonNullable<Awaited<ReturnType<typeof findById>>>;

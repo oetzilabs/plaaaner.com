@@ -1,13 +1,15 @@
-import { Api, Config, StackContext, use } from "sst/constructs";
+import { Api, StackContext, use } from "sst/constructs";
 import { StorageStack } from "./StorageStack";
 import { DNSStack } from "./DNSStack";
 import { SecretsStack } from "./SecretsStack";
+import { AuthStack } from "./AuthStack";
 
 export function ApiStack({ stack }: StackContext) {
   const dns = use(DNSStack);
 
-  const { bucket } = use(StorageStack);
+  const bucket = use(StorageStack);
   const secrets = use(SecretsStack);
+  const auth = use(AuthStack);
 
   const api = new Api(stack, "api", {
     customDomain: {
@@ -16,12 +18,8 @@ export function ApiStack({ stack }: StackContext) {
     },
     defaults: {
       function: {
-        nodejs: {
-          install: ["@libsql/linux-x64-gnu", "@libsql/client"],
-          // esbuild: { external: ["@libsql/linux-x64-gnu"] },
-        },
-        // handler: "packages/functions/src/migrator.handler",
-        bind: [secrets.DATABASE_URL, secrets.DATABASE_AUTH_TOKEN, bucket],
+        runtime: "nodejs20.x",
+        bind: [secrets.DATABASE_URL, bucket, auth, secrets.GOOGLE_CLIENT_ID],
         copyFiles: [
           {
             from: "packages/core/src/drizzle",
@@ -37,6 +35,12 @@ export function ApiStack({ stack }: StackContext) {
           description: "This is the migrator function",
         },
       },
+      "GET /session": {
+        function: {
+          handler: "packages/functions/src/user.session",
+          description: "This is the user.session function",
+        },
+      },
       "GET /healthcheck": {
         function: {
           handler: "packages/functions/src/healthcheck.main",
@@ -49,9 +53,9 @@ export function ApiStack({ stack }: StackContext) {
     },
   });
 
-  new Config.Parameter(stack, "API_URL", {
-    value: api.url,
-  });
+  // new Config.Parameter(stack, "API_URL", {
+  //   value: api.url,
+  // });
 
   stack.addOutputs({
     ApiEndpoint: api.customDomainUrl || api.url,

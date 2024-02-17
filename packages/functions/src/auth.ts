@@ -13,10 +13,8 @@ export const handler = AuthHandler({
   sessions,
   providers: {
     google: GoogleAdapter({
-      mode: "oauth",
       clientID: Config.GOOGLE_CLIENT_ID,
-      clientSecret: Config.GOOGLE_CLIENT_SECRET,
-      scope: "user:email profile email",
+      mode: "oidc",
     }),
     email: CodeAdapter({
       async onCodeRequest(code, claims) {
@@ -96,6 +94,15 @@ export const handler = AuthHandler({
     }),
   },
   callbacks: {
+    error: async (e) => {
+      console.log("upps error: ", e);
+      return {
+        statusCode: 302,
+        headers: {
+          Location: process.env.AUTH_FRONTEND_URL + "/auth/error?error=unknwown",
+        },
+      };
+    },
     auth: {
       async allowClient(clientID, redirect) {
         if (clientID !== "google") {
@@ -105,9 +112,11 @@ export const handler = AuthHandler({
       },
       async success(input, response) {
         if (input.provider === "google") {
-          const email = input.tokenset.claims().email;
-          if (!email) {
-            console.error("No email found in tokenset", input.tokenset);
+          const claims = input.tokenset.claims();
+          const email = claims.email;
+          const name = claims.name;
+          if (!email || !name) {
+            console.error("No email or name found in tokenset", input.tokenset);
             return response.http({
               statusCode: 400,
               body: "No email found in tokenset",
@@ -115,12 +124,16 @@ export const handler = AuthHandler({
           }
           let user_ = await User.findByEmail(email);
           if (!user_) {
-            user_ = await User.create({ email, name: email });
+            user_ = await User.create({ email, name });
+            console.log("created user", user_);
+          } else {
+            console.log("found user", user_);
           }
           return response.session({
             type: "user",
             properties: {
-              userID: user_.id,
+              id: user_.id,
+              email: user_.email,
             },
           });
         }
@@ -128,10 +141,4 @@ export const handler = AuthHandler({
       },
     },
   },
-});
-
-export const session = ApiHandler(async () => {
-  const user = await getUser();
-  if (!user) return error("No session");
-  return json(user);
 });

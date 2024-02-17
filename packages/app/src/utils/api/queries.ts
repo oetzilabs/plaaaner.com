@@ -7,8 +7,7 @@ import { isServer } from "@tanstack/solid-query";
 
 export * as Queries from "./queries";
 
-const API_BASE = process.env.VITE_API_URL ?? "http://localhost:3000";
-const AUTH_BASE = process.env.VITE_AUTH_URL ?? "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const DELAY = 0;
 
@@ -310,24 +309,7 @@ export const Events = {
     }),
 };
 
-const generateAuthUrl = (provider: string) =>
-  `${AUTH_BASE}/authorize?provider=${provider}&response_type=code&client_id=${provider}`;
-
 export const Auth = {
-  loginProviders: z.function(z.tuple([])).implement(async () => {
-    return new Promise<{ name: string; logo: string; url: string }[]>((resolve) => {
-      setTimeout(() => {
-        return resolve([
-          {
-            name: "Google",
-            logo: "https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/motion-tailwind/img/logos/logo-google.png",
-            url: generateAuthUrl("google"),
-          },
-        ]);
-      }, DELAY);
-    });
-    // return fetch(`${API_BASE}/auth/login-providers`).then((res) => res.json());
-  }),
   loginViaEmail: z.function(z.tuple([z.string().email()])).implement(async (email) => {
     const data = {
       user: {
@@ -352,46 +334,6 @@ export const Auth = {
     //     "Content-Type": "application/json",
     //   },
     // }).then((res) => res.json());
-  }),
-  session: z.function(z.tuple([z.string()])).implement(async (token) => {
-    return new Promise<z.infer<typeof UserSchema>>((resolve) => {
-      setTimeout(() => {
-        return resolve({
-          id: "1",
-          username: "alice",
-          email: "alice@example.com",
-          image: "https://via.placeholder.com/150",
-        });
-      }, DELAY);
-    });
-    // const session = document.cookie.split(";").find((c) => c.trim().startsWith("session="));
-    // if (!session) {
-    //   return Promise.reject("No session found");
-    // }
-    // return fetch(`${API_BASE}/session`, {
-    //   headers: {
-    //     Authorization: `Bearer ${session.split("=")[1]}`,
-    //   },
-    // }).then((res) => res.json());
-  }),
-};
-
-export const Testimonials = {
-  getRandom: z.function(z.tuple([])).implement(async () => {
-    return new Promise<{
-      name: string;
-      title: string;
-      testimonial: string;
-    }>((resolve) => {
-      setTimeout(() => {
-        return resolve({
-          name: "Özgür Isbert",
-          title: "CEO",
-          testimonial: "I might be biased, but it works as if I made it myself - It's that good.",
-        });
-      }, DELAY);
-    });
-    // return fetch(`${API_BASE}/testimonials/random`).then((res) => res.json());
   }),
 };
 

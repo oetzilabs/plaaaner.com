@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1708181643769,
+      "tag": "0000_flippant_masked_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1708191189384,
+      "tag": "0001_happy_shadow_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1708191948244,
+      "tag": "0002_volatile_robin_chapel",
+      "breakpoints": true
+    }
+  ]
+}

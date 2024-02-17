@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { CreateEventFormSchema } from "../schemas/event";
+import { WorkspaceUpdate } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 
 export * as Mutations from "./mutations";
 
 const API_BASE = import.meta.env.VITE_API_URL;
+const DELAY = 1000;
 
 export const Events = {
   create: z.function(z.tuple([CreateEventFormSchema])).implement(async (data) => {
