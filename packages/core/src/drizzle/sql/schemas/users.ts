@@ -3,6 +3,8 @@ import { text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { users_workspaces } from "./users_workspaces";
 import { schema } from "./utils";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const users = schema.table("users", {
   ...Entity.defaults,
@@ -31,3 +33,7 @@ export const userRelation = relations(users, ({ many }) => ({
 
 export type UserSelect = typeof users.$inferSelect;
 export type UserInsert = typeof users.$inferInsert;
+export const UserUpdateSchema = createInsertSchema(users)
+  .partial()
+  .omit({ createdAt: true, updatedAt: true })
+  .extend({ id: z.string().uuid() });

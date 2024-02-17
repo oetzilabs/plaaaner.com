@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
-import { users } from "../drizzle/sql/schema";
+import { UserUpdateSchema, users } from "../drizzle/sql/schema";
 
 export * as User from "./users";
 
@@ -48,7 +48,7 @@ export const all = z.function(z.tuple([])).implement(async () => {
   });
 });
 
-const update = z
+export const update = z
   .function(
     z.tuple([
       createInsertSchema(users)
@@ -58,12 +58,12 @@ const update = z
     ])
   )
   .implement(async (input) => {
-    await db
+    const [u] = await db
       .update(users)
       .set({ ...input, updatedAt: new Date() })
       .where(eq(users.id, input.id))
       .returning();
-    return true;
+    return u;
   });
 
 export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
@@ -75,6 +75,8 @@ export const updateName = z
   .implement(async (input) => {
     return update({ id: input.id, name: input.name });
   });
+
+export const safeParseUpdate = UserUpdateSchema.safeParse;
 
 export const isAllowedToSignUp = z.function(z.tuple([z.object({ email: z.string() })])).implement(async (input) => {
   return true;

@@ -1,4 +1,4 @@
-import type { Config } from "drizzle-kit";
+import type { Config as DrizzleConfig } from "drizzle-kit";
 
 export default {
   out: "./src/drizzle/migrations",
@@ -6,4 +6,4 @@ export default {
   verbose: true,
   driver: "pg",
   strict: true,
-} satisfies Config;
+} satisfies DrizzleConfig;
