@@ -27,10 +27,12 @@ export const lucia = new Lucia(luciaAdapter, {
 declare module "lucia" {
   interface Register {
     Lucia: typeof lucia;
-    DatabaseUserAttributes: Omit<UserSelect, "id">;
+    DatabaseUserAttributes: DatabaseUserAttributes;
     DatabaseSessionAttributes: DatabaseSessionAttributes;
   }
 }
+
+type DatabaseUserAttributes = Omit<UserSelect, "id">;
 interface DatabaseSessionAttributes {
   access_token: string;
 }

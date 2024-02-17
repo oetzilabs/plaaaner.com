@@ -14,8 +14,8 @@ export default function ProfilePage() {
         </Match>
         <Match when={user()}>
           <div class="flex flex-col items-start gap-2">
-            <span class="text-lg font-semibold">{user().username}</span>
-            <span class="text-sm text-muted-foreground">{user().email}</span>
+            <span class="text-lg font-semibold">{user()?.username}</span>
+            <span class="text-sm text-muted-foreground">{user()?.email}</span>
           </div>
         </Match>
       </Switch>

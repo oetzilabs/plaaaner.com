@@ -22,6 +22,13 @@
       "when": 1708191948244,
       "tag": "0002_volatile_robin_chapel",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1708211373130,
+      "tag": "0003_massive_tarot",
+      "breakpoints": true
     }
   ]
 }

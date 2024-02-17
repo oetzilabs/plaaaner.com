@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CreateEventFormSchema } from "../schemas/event";
-import { WorkspaceUpdate } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
+import { WorkspaceUpdateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 
 export * as Mutations from "./mutations";
 
