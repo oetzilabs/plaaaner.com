@@ -1,10 +1,12 @@
-import { migrate } from "@ciftlikpdf/core/drizzle/sql";
+import { migrate } from "@/core/drizzle/sql";
 import { ApiHandler } from "sst/node/api";
-import { Config } from "sst/node/config";
 
 export const handler = ApiHandler(async (_evt) => {
-  console.log(`Migrating to ${Config.DATABASE_URL} ...`);
-  await migrate();
+  await migrate().catch((e) => {
+    // full error
+    console.error(JSON.stringify(e, null, 2));
+    throw e;
+  });
 
   return {
     body: "Migrated!",

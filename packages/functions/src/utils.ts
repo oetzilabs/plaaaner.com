@@ -1,17 +1,17 @@
 import { User } from "@/core/entities/users";
-import { createSessionBuilder } from "sst/node/future/auth";
 import { StatusCodes } from "http-status-codes";
-import { useHeader } from "sst/node/api";
+import { createSessionBuilder } from "sst/node/future/auth";
 
 export const getUser = async () => {
   const session = sessions.use();
+  console.log({ session });
   if (!session) throw new Error("No session found");
   if (session.type !== "user") {
     throw new Error("Invalid session type");
   }
-  const userid = session.properties.userID;
-  if (!userid) throw new Error("Invalid UserID in session");
-  const user = await User.findById(userid);
+  const { id } = session.properties;
+  if (!id) throw new Error("Invalid UserID in session");
+  const user = await User.findById(id);
   if (!user) throw new Error("No session found");
   return user;
 };
@@ -48,6 +48,7 @@ export const text = (input: string, statusCode = StatusCodes.OK) => {
 
 export const sessions = createSessionBuilder<{
   user: {
-    userID: string;
+    id: string;
+    email: string;
   };
 }>();

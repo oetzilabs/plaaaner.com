@@ -14,16 +14,6 @@ export const [authLoggedin, setAuthLoggedin] = createSignal<boolean>(false);
 
 export const [auth, setAuth] = createSignal<z.infer<typeof UserSchema> | null>(null);
 
-export const logout = async () => {
-  setAuthLoggedin(false);
-  setAuth(null);
-  // setCookie("session", "", {
-  //   maxAge: 0,
-  //   expires: new Date(0),
-  //   path: "/",
-  // });
-};
-
 export const session = () => {
   // const sessionCookie = getCookie("session");
 
@@ -33,16 +23,4 @@ export const session = () => {
   // }
   // return sessionCookie;
   return "";
-};
-
-export const lastUsedProvider = () => {
-  if (isServer) {
-    return null;
-  }
-  // const provider = getCookie("lastUsedProvider");
-  // if (!provider) {
-  //   return "";
-  // }
-  // return provider;
-  return "email";
 };

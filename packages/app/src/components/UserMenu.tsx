@@ -1,12 +1,11 @@
+import { getAuthenticatedUser } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
-import { Queries } from "@/utils/api/queries";
 import { As } from "@kobalte/core";
-import { A, useNavigate } from "@solidjs/router";
-import { createQuery, isServer } from "@tanstack/solid-query";
+import { A, createAsync, useAction } from "@solidjs/router";
 import { LogIn, LogOut, Settings2, User } from "lucide-solid";
 import { Match, Show, Switch } from "solid-js";
-import { toast } from "solid-sonner";
-import { auth, authLoggedin, logout, session, setAuth, setAuthLoggedin } from "./providers/Authentication";
+import { logout } from "../utils/api/actions";
+import { auth, authLoggedin } from "./providers/Authentication";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -15,35 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Skeleton } from "./ui/skeleton";
 
 export default function UserMenu() {
-  const navigate = useNavigate();
-  const q = createQuery(() => ({
-    queryKey: ["auth"],
-    queryFn: async () => {
-      const token = session();
-      if (!token) {
-        setAuthLoggedin(false);
-        setAuth(null);
-        return false;
-      }
-      const user = await Queries.Auth.session(token);
-      if (!user) {
-        setAuthLoggedin(false);
-        setAuth(null);
-        return false;
-      }
-      setAuth(user);
-      setAuthLoggedin(true);
-      return true;
-    },
-    get enabled() {
-      const x = authLoggedin();
-      return !isServer && !x;
-    },
-    refetchInterval: 2000,
-  }));
+  const user = createAsync(() => getAuthenticatedUser(), { deferStream: true });
 
   return (
     <DropdownMenu>
@@ -66,26 +39,7 @@ export default function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent class="min-w-[100px]">
         <Switch>
-          <Match when={q.isPending}>
-            <DropdownMenuItem asChild>
-              <Skeleton class="w-full h-8" />
-            </DropdownMenuItem>
-          </Match>
-          <Match when={q.isError && q.error}>
-            {(e) => (
-              <DropdownMenuItem
-                onSelect={() => {
-                  toast.info("An error occurred. Please try again later.", {
-                    description: e()?.message ?? "unknown error",
-                  });
-                  navigate("/auth/login");
-                }}
-              >
-                Error
-              </DropdownMenuItem>
-            )}
-          </Match>
-          <Match when={q.isSuccess && !authLoggedin()}>
+          <Match when={!user()}>
             <DropdownMenuItem class="items-center gap-2" asChild>
               <As component={A} href="/auth/login">
                 Login
@@ -93,7 +47,7 @@ export default function UserMenu() {
               </As>
             </DropdownMenuItem>
           </Match>
-          <Match when={q.isSuccess && authLoggedin()}>
+          <Match when={user()}>
             <DropdownMenuItem class="items-center gap-2" asChild>
               <As component={A} href="/profile">
                 <User class="h-4 w-4" />
@@ -101,21 +55,23 @@ export default function UserMenu() {
               </As>
             </DropdownMenuItem>
             <DropdownMenuItem asChild class="items-center gap-2">
-              <As component={A} href="/settings">
+              <As component={A} href="/profile/settings">
                 <Settings2 class="h-4 w-4" />
                 Settings
               </As>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              class="text-red-500 hover:bg-red-100 dark:hover:bg-red-900 dark:text-red-400 hover:text-white items-center gap-2"
-              onSelect={async () => {
-                await logout();
-              }}
-            >
-              <LogOut class="h-4 w-4" />
-              Logout
-            </DropdownMenuItem>
+            <form method="post" action={logout}>
+              <DropdownMenuItem
+                class="text-red-500 hover:bg-red-100 dark:hover:bg-red-900 dark:text-red-400 hover:text-white items-center gap-2"
+                asChild
+              >
+                <As component={"button"} class="w-full cursor-pointer">
+                  <LogOut class="h-4 w-4" />
+                  Logout
+                </As>
+              </DropdownMenuItem>
+            </form>
           </Match>
         </Switch>
       </DropdownMenuContent>

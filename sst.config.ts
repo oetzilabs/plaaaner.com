@@ -1,9 +1,10 @@
 import { SSTConfig } from "sst";
 import { ApiStack } from "./stacks/ApiStack";
 import { StorageStack } from "./stacks/StorageStack";
-import { DashboardSolidStartStack } from "./stacks/DashboardSolidStartStack";
 import { DNSStack } from "./stacks/DNSStack";
-import { SolidStartStack } from "./stacks/PublicSolidStartStack";
+import { SolidStartStack } from "./stacks/SolidStartStack";
+import { SecretsStack } from "./stacks/SecretsStack";
+import { AuthStack } from "./stacks/AuthStack";
 
 export default {
   config(_input) {
@@ -17,9 +18,10 @@ export default {
     app
       //
       .stack(DNSStack)
+      .stack(SecretsStack)
       .stack(StorageStack)
+      .stack(AuthStack)
       .stack(ApiStack)
-      .stack(DashboardSolidStartStack)
       .stack(SolidStartStack);
   },
 } satisfies SSTConfig;

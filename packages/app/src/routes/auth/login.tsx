@@ -2,34 +2,54 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
 import { createMutation, createQuery } from "@tanstack/solid-query";
-import { For, Match, Show, Switch, createSignal } from "solid-js";
+import { For, JSX, Match, Show, Switch, createSignal, onMount } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 // import { setCookie } from "vinxi/http";
-import { lastUsedProvider, setAuth, setAuthLoggedin } from "../../components/providers/Authentication";
 import { Button } from "../../components/ui/button";
 import { Logo } from "../../components/ui/custom/logo";
 import { TextField, TextFieldInput, TextFieldLabel } from "../../components/ui/textfield";
 import { cn } from "../../lib/utils";
 import { Queries } from "../../utils/api/queries";
+import { QueryBoundary } from "../../components/QueryBoundary";
+import { toast } from "solid-sonner";
+import { SVGAttributes } from "lucide-solid/dist/types/types";
+
+const generateAuthUrl = (provider: string) => {
+  const url = new URL("/authorize", import.meta.env.VITE_AUTH_URL);
+  url.searchParams.set("provider", provider);
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("client_id", provider);
+  url.searchParams.set(
+    "redirect_uri",
+    (import.meta.env.NODE_ENV === "production" ? "https://plaaaner.com" : "http://localhost:3000") +
+      "/api/auth/callback"
+  );
+  return url.toString();
+};
+
+const logins = {
+  google: generateAuthUrl("google"),
+} as const;
+export type Logins = keyof typeof logins;
+const logos: Record<Logins, (props: SVGAttributes) => JSX.Element> = {
+  google: (props: SVGAttributes) => (
+    <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 13.9V10.18H21.36C21.5 10.81 21.61 11.4 21.61 12.23C21.61 17.94 17.78 22 12.01 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2C14.7 2 16.96 2.99 18.69 4.61L15.85 7.37C15.13 6.69 13.88 5.88 12 5.88C8.69 5.88 5.99 8.63 5.99 12C5.99 15.37 8.69 18.12 12 18.12C15.83 18.12 17.24 15.47 17.5 13.9H12Z"
+        fill="currentColor"
+      ></path>
+    </svg>
+  ),
+};
+
+const randomPersonTesimonial = {
+  name: "Özgür Isbert",
+  title: "CEO",
+  testimonial: "I might be biased, but it works as if I made it myself - It's that good.",
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
-
-  const loginProviders = createQuery(() => ({
-    queryKey: ["login-providers"],
-    queryFn: async () => {
-      return Queries.Auth.loginProviders();
-    },
-    refetchOnWindowFocus: false,
-  }));
-
-  const randomTestimonial = createQuery(() => ({
-    queryKey: ["randomTestimonial"],
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 1000));
-      return Queries.Testimonials.getRandom();
-    },
-  }));
 
   const loginViaEmail = createMutation(() => ({
     mutationKey: ["login-via-email"],
@@ -37,10 +57,10 @@ export default function LoginPage() {
       return Queries.Auth.loginViaEmail(email);
     },
     async onSuccess(data, variables, context) {
-      setAuthLoggedin(true);
-      setAuth(data.user);
-
       navigate("/");
+    },
+    onError(err, variables, context) {
+      toast.error(err.message);
     },
   }));
 
@@ -63,22 +83,12 @@ export default function LoginPage() {
               Plaaaner
             </div>
             <div class="relative z-20 mt-auto">
-              <Switch>
-                <Match when={randomTestimonial.isPending}>
-                  <Skeleton class="w-full" />
-                  <Skeleton class="w-3/4" />
-                </Match>
-                <Match when={randomTestimonial.isSuccess && randomTestimonial.data}>
-                  {(data) => (
-                    <blockquote class="space-y-2">
-                      <p class="">&ldquo;{data().testimonial}&rdquo;</p>
-                      <p class="text-sm">
-                        {data().name} - {data().title}
-                      </p>
-                    </blockquote>
-                  )}
-                </Match>
-              </Switch>
+              <blockquote class="space-y-2">
+                <p class="">&ldquo;{randomPersonTesimonial.testimonial}&rdquo;</p>
+                <p class="text-sm">
+                  {randomPersonTesimonial.name} - {randomPersonTesimonial.title}
+                </p>
+              </blockquote>
             </div>
           </div>
           <div class="p-8 w-full">
@@ -119,9 +129,6 @@ export default function LoginPage() {
                   disabled={loginViaEmail.isPending}
                 >
                   <span>Continue with Email</span>
-                  <Show when={lastUsedProvider() === "email"}>
-                    <div class="h-1 w-1 bg-green-500 rounded-full animate-pulse"></div>
-                  </Show>
                 </Button>
               </form>
               <div class="relative">
@@ -133,35 +140,23 @@ export default function LoginPage() {
                 </div>
               </div>
               <div class="flex flex-col gap-4 items-center w-full">
-                <Switch>
-                  <Match when={loginProviders.isLoading}>
-                    <For each={[1, 2]}>{(i) => <Skeleton class="w-full h-10" />}</For>
-                  </Match>
-                  <Match when={loginProviders.isPending}>
-                    <For each={[1, 2]}>{(i) => <Skeleton class="w-full h-10" />}</For>
-                  </Match>
-                  <Match when={loginProviders.isSuccess && loginProviders.data}>
-                    {(data) => (
-                      <For each={data()}>
-                        {(provider) => (
-                          <Button asChild variant="default" size="lg" class="!w-full">
-                            <As
-                              component={A}
-                              href={provider.url}
-                              class="flex items-center justify-center w-max text-sm font-medium gap-4"
-                            >
-                              <Show when={lastUsedProvider() === provider.name}>
-                                <div class="h-1 w-1 bg-green-500 rounded-full animate-pulse"></div>
-                              </Show>
-                              <img src={provider.logo} class="h-4 w-4" alt={provider.name} />
-                              <span>{provider.name}</span>
-                            </As>
-                          </Button>
-                        )}
-                      </For>
-                    )}
-                  </Match>
-                </Switch>
+                <For each={Object.entries(logins) as [Logins, string][]}>
+                  {([provider, url]) => {
+                    const L = logos[provider];
+                    return (
+                      <Button asChild variant="default" size="lg" class="!w-full">
+                        <As
+                          component={A}
+                          href={url}
+                          class="flex items-center justify-center w-max text-sm font-medium gap-4 capitalize"
+                        >
+                          <L class="h-5 w-5" />
+                          <span>{provider}</span>
+                        </As>
+                      </Button>
+                    );
+                  }}
+                </For>
               </div>
               <div class="px-8 text-center text-sm text-muted-foreground">
                 <span>By continuing, you agree to our</span>
