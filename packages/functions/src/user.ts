@@ -24,9 +24,11 @@ export const session = ApiHandler(async (_event) => {
     workspace = await Workspace.create({ name: "default", owner_id: user.id });
 
     await Workspace.connectUser(workspace.id, user.id);
+    // console.log("workspace-inner", workspace);
 
     return json({ email: user.email, id: user.id, workspace_id: workspace.id });
   }
+  // console.log("workspace", workspace);
 
   return json({ email: user.email, id: user.id, workspace_id: workspace.id });
 });
