@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getWorkspace } from "@/lib/api/workspaces";
-import { ownWorkspace } from "@/utils/api/actions";
+import { setWorkspaceOwner } from "@/utils/api/actions";
 import { createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
 import { Show } from "solid-js";
 
@@ -11,11 +11,11 @@ export default function Workspace() {
 
   const ws = createAsync(() => getWorkspace(wid));
 
-  const ownWorkspace_ = useAction(ownWorkspace);
-  const isOwningWorkspace = useSubmission(ownWorkspace);
+  const ownWorkspace = useAction(setWorkspaceOwner);
+  const changingWorkspaceOwner = useSubmission(setWorkspaceOwner);
 
-  const handleOwnWorkspace = async () => {
-    await ownWorkspace_(wid);
+  const handleWorkspaceOwnerChange = async () => {
+    await ownWorkspace(wid);
   };
 
   return (
@@ -36,8 +36,8 @@ export default function Workspace() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={handleOwnWorkspace}
-                        disabled={isOwningWorkspace.pending}
+                        onClick={handleWorkspaceOwnerChange}
+                        disabled={changingWorkspaceOwner.pending}
                       >
                         Claim
                       </Button>

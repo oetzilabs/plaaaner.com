@@ -6,7 +6,7 @@ import { WorkspaceCreateSchema, WorkspaceUpdateSchema, users_workspaces, workspa
 
 export * as Workspace from "./workspaces";
 
-export const create = z.function(z.tuple([createInsertSchema(workspaces)])).implement(async (userInput) => {
+export const create = z.function(z.tuple([WorkspaceCreateSchema])).implement(async (userInput) => {
   const [x] = await db.insert(workspaces).values(userInput).returning();
 
   return x;
@@ -123,7 +123,7 @@ export const setOwner = z
     return updated;
   });
 
-export const lastCreatedFromUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
   const ws = await db.query.workspaces.findFirst({
     where: (workspaces, operations) => and(operations.eq(workspaces.owner_id, user_id), isNull(workspaces.deletedAt)),
     orderBy(fields, operators) {

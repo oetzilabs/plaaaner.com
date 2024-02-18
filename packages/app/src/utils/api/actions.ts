@@ -60,7 +60,7 @@ export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreat
     return new Error("Unauthorized");
   }
   const workspace = await Workspace.create(data);
-  const connectedWorkspace = await Workspace.connectUser(workspace.id, event.nativeEvent.context.user.id);
+  await Workspace.connectUser(workspace.id, event.nativeEvent.context.user.id);
 
   return workspace;
 });
@@ -81,7 +81,7 @@ export const deleteWorkspace = action(async (id: string) => {
   return ws;
 });
 
-export const ownWorkspace = action(async (id: string) => {
+export const setWorkspaceOwner = action(async (id: string) => {
   "use server";
   const event = getRequestEvent()!;
   if (!event.nativeEvent.context.user) {
