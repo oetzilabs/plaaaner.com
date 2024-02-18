@@ -1,12 +1,13 @@
 import { A, createAsync } from "@solidjs/router";
-import { For, Show } from "solid-js";
+import { For, Match, Show, Switch } from "solid-js";
 import { getNotifications } from "@/lib/api/notifications";
 import { getAuthenticatedUser } from "@/lib/auth/util";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { As } from "@kobalte/core";
 import { Button } from "../../components/ui/button";
-import { GitGraph } from "lucide-solid";
+import { GitGraph, TrendingDown, TrendingUp } from "lucide-solid";
+import { Statistics } from "@/components/dashboard/statistics";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
@@ -25,62 +26,7 @@ export default function DashboardPage() {
             <div class="flex flex-row w-full gap-4 items-start justify-between">
               <div class="flex flex-col gap-2 -mt-8 w-full">
                 <span class="font-medium">Statistics</span>
-                <div class="w-full grid grid-cols-3 gap-2">
-                  <div class="flex flex-col gap-2 p-4 rounded-md border border-neutral-200 dark:border-neutral-800">
-                    <div class="flex flex-row items-start justify-between gap-2">
-                      <div class="flex flex-col gap-1">
-                        <span class="text-xs text-muted-foreground">Total plans</span>
-                        <span class="text-lg font-medium">Plans</span>
-                      </div>
-                      <div class="text-muted-foreground">
-                        <GitGraph class="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div class="flex flex-row items-start justify-between gap-2">
-                      <div class="flex flex-row gap-2 items-center">
-                        <span class="text-lg font-medium">1</span>
-                        <span class="text-sm font-medium">+100%</span>
-                      </div>
-                      <div class="text-muted-foreground"></div>
-                    </div>
-                  </div>
-                  <div class="flex flex-col gap-2 p-4 rounded-md border border-neutral-200 dark:border-neutral-800">
-                    <div class="flex flex-row items-start justify-between gap-2">
-                      <div class="flex flex-col gap-1">
-                        <span class="text-xs text-muted-foreground">Total tickets</span>
-                        <span class="text-lg font-medium">Tickets</span>
-                      </div>
-                      <div class="text-muted-foreground">
-                        <GitGraph class="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div class="flex flex-row items-start justify-between gap-2">
-                      <div class="flex flex-row gap-2 items-center">
-                        <span class="text-lg font-medium">220</span>
-                        <span class="text-sm font-medium">+100%</span>
-                      </div>
-                      <div class="text-muted-foreground"></div>
-                    </div>
-                  </div>
-                  <div class="flex flex-col gap-2 p-4 rounded-md border border-neutral-200 dark:border-neutral-800">
-                    <div class="flex flex-row items-start justify-between gap-2">
-                      <div class="flex flex-col gap-1">
-                        <span class="text-xs text-muted-foreground">Total revenue</span>
-                        <span class="text-lg font-medium">Revenue</span>
-                      </div>
-                      <div class="text-muted-foreground">
-                        <GitGraph class="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div class="flex flex-row items-start justify-between gap-2">
-                      <div class="flex flex-row gap-2 items-center">
-                        <span class="text-lg font-medium">5000</span>
-                        <span class="text-sm font-medium">+100%</span>
-                      </div>
-                      <div class="text-muted-foreground"></div>
-                    </div>
-                  </div>
-                </div>
+                <Statistics />
               </div>
               <div class="w-max flex flex-col gap-4">
                 <div class="flex flex-col gap-2 -mt-8">
