@@ -20,6 +20,7 @@ export const lucia = new Lucia(luciaAdapter, {
   getSessionAttributes(databaseSessionAttributes) {
     return {
       access_token: databaseSessionAttributes.access_token,
+      workspace_id: databaseSessionAttributes.workspace_id,
     };
   },
 });
@@ -35,4 +36,5 @@ declare module "lucia" {
 type DatabaseUserAttributes = Omit<UserSelect, "id">;
 interface DatabaseSessionAttributes {
   access_token: string;
+  workspace_id: string;
 }
