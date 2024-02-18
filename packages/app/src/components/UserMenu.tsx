@@ -2,10 +2,9 @@ import { getAuthenticatedUser } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
 import { As } from "@kobalte/core";
 import { A, createAsync, useAction } from "@solidjs/router";
-import { LogIn, LogOut, Settings2, User } from "lucide-solid";
+import { LayoutDashboard, LogIn, LogOut, Settings2, User } from "lucide-solid";
 import { Match, Show, Switch } from "solid-js";
 import { logout } from "../utils/api/actions";
-import { auth, authLoggedin } from "./providers/Authentication";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -25,14 +24,14 @@ export default function UserMenu() {
           component={Button}
           variant="ghost"
           size="icon"
-          class={cn("w-max flex flex-row gap-3 h-9 p-1  rounded-full", {
-            "pr-3": authLoggedin(),
+          class={cn("w-max flex flex-row gap-3 h-9 p-1 rounded-full", {
+            "pr-4": user(),
           })}
         >
           <div class="bg-secondary rounded-full p-2">
             <User class="h-4 w-4" />
           </div>
-          <Show when={authLoggedin() && auth()} fallback={<span class="sr-only">User menu</span>}>
+          <Show when={user()} fallback={<span class="sr-only">User menu</span>}>
             {(s) => <span class="">{s().username}</span>}
           </Show>
         </As>
@@ -48,6 +47,12 @@ export default function UserMenu() {
             </DropdownMenuItem>
           </Match>
           <Match when={user()}>
+            <DropdownMenuItem class="items-center gap-2" asChild>
+              <As component={A} href="/dashboard">
+                <LayoutDashboard class="h-4 w-4" />
+                Dashboard
+              </As>
+            </DropdownMenuItem>
             <DropdownMenuItem class="items-center gap-2" asChild>
               <As component={A} href="/profile">
                 <User class="h-4 w-4" />

@@ -15,8 +15,11 @@ export const Account = () => {
     if (u) setName(u.username);
   });
   return (
-    <div class="flex flex-col items-start gap-2 w-full">
-      <span class="text-lg font-semibold">Account</span>
+    <div class="flex flex-col items-start gap-8 w-full">
+      <div class="flex flex-col items-start gap-2 w-full">
+        <span class="text-lg font-semibold">Account</span>
+        <span class="text-muted-foreground text-xs">Make changes to your account here.</span>
+      </div>
       <form class="flex flex-col gap-4 items-start w-full py-4" action={saveUser} method="post">
         <TextField
           class="w-max flex flex-col gap-2"

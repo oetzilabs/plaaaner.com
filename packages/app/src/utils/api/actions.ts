@@ -152,3 +152,21 @@ export const revokeAllSessions = action(async () => {
 
   return true;
 }, "sessions");
+
+export const changeNotificationSettings = action(async (type: string) => {
+  "use server";
+  const event = getRequestEvent()!;
+  if (!event.nativeEvent.context.user) {
+    return new Error("Unauthorized");
+  }
+  return { type };
+}, "notificationSettings");
+
+export const changeMessageSettings = action(async (type: string) => {
+  "use server";
+  const event = getRequestEvent()!;
+  if (!event.nativeEvent.context.user) {
+    return new Error("Unauthorized");
+  }
+  return { type };
+}, "messageSetting");
