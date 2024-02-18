@@ -125,9 +125,6 @@ export const handler = AuthHandler({
           let user_ = await User.findByEmail(email);
           if (!user_) {
             user_ = await User.create({ email, name });
-            console.log("created user", user_);
-          } else {
-            console.log("found user", user_);
           }
           return response.session({
             type: "user",
