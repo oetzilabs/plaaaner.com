@@ -1,18 +1,14 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { As } from "@kobalte/core";
-import { A } from "@solidjs/router";
-import { createMutation, createQuery } from "@tanstack/solid-query";
-import { For, JSX, Match, Show, Switch, createSignal, onMount } from "solid-js";
-import { useNavigate } from "@solidjs/router";
-// import { setCookie } from "vinxi/http";
-import { Button } from "../../components/ui/button";
-import { Logo } from "../../components/ui/custom/logo";
-import { TextField, TextFieldInput, TextFieldLabel } from "../../components/ui/textfield";
-import { cn } from "../../lib/utils";
-import { Queries } from "../../utils/api/queries";
-import { QueryBoundary } from "../../components/QueryBoundary";
-import { toast } from "solid-sonner";
+import { A, useNavigate } from "@solidjs/router";
+import { createMutation } from "@tanstack/solid-query";
+import { For, JSX, createSignal } from "solid-js";
+import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/custom/logo";
+import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { cn } from "@/lib/utils";
+import { Queries } from "@/utils/api/queries";
 import { SVGAttributes } from "lucide-solid/dist/types/types";
+import { toast } from "solid-sonner";
 
 const generateAuthUrl = (provider: string) => {
   const url = new URL("/authorize", import.meta.env.VITE_AUTH_URL);

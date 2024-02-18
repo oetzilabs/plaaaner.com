@@ -25,7 +25,7 @@ export async function GET(event: APIEvent) {
   }
   // console.log({ access_token });
 
-  const { id } = await fetch(new URL("/session", import.meta.env.VITE_API_URL), {
+  const { id, workspace_id } = await fetch(new URL("/session", import.meta.env.VITE_API_URL), {
     headers: {
       Authorization: `Bearer ${access_token}`,
     },
@@ -34,11 +34,13 @@ export async function GET(event: APIEvent) {
   if (!id) {
     return sendRedirect(event, "/auth/error?error=missing_user", 303);
   }
-
-  // console.log({ email, id });
+  if (!workspace_id) {
+    return sendRedirect(event, "/auth/error?error=missing_workspace", 303);
+  }
 
   const session = await lucia.createSession(id, {
     access_token,
+    workspace_id,
   });
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());

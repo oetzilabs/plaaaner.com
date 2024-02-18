@@ -18,6 +18,7 @@ export default function LoginErrorPage() {
                   {error === "invalid_code" && "The code is invalid"}
                   {error === "missing_access_token" && "The access token is missing"}
                   {error === "missing_user" && "The user is missing"}
+                  {error === "missing_workspace" && "The workspace is missing"}
                   {error === "unknown" && "An unknown error occured"}
                 </p>
               </div>

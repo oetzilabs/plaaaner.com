@@ -1,18 +1,19 @@
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
 import { getWorkspaces } from "@/lib/api/workspaces";
-import { getAuthenticatedUser } from "@/lib/auth/util";
+import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
+import { deleteWorkspace, disconnectFromWorkspace, saveUser, setCurrentWorkspace } from "@/utils/api/actions";
 import { As } from "@kobalte/core";
-import { A, createAsync, useLocation, useSubmission, useAction } from "@solidjs/router";
-import { BellRing, HandCoins, Layout, MessagesSquare, Receipt, Trash, User } from "lucide-solid";
-import { For, Match, Show, Switch, createSignal, onMount } from "solid-js";
-import { Alert } from "../../components/ui/alert";
-import { disconnectFromWorkspace, saveUser, deleteWorkspace } from "../../utils/api/actions";
+import { A, createAsync, useAction, useLocation, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "../../components/ui/card";
+import { BellRing, HandCoins, Layout, MessagesSquare, Trash, User } from "lucide-solid";
+import { For, Match, Show, Switch, createSignal, onMount } from "solid-js";
+import { toast } from "solid-sonner";
 dayjs.extend(relativeTime);
 
 export default function ProfileSettingsPage() {
@@ -20,11 +21,15 @@ export default function ProfileSettingsPage() {
   const [tab, seTab] = createSignal("account");
 
   const user = createAsync(() => getAuthenticatedUser());
+  const session = createAsync(() => getAuthenticatedSession());
   const workspaces = createAsync(() => getWorkspaces());
   const [name, setName] = createSignal("");
+  const [uId, setUId] = createSignal("");
+  const [sessionWorkspaceId, setSessionWorkspaceId] = createSignal("");
 
   const isSaving = useSubmission(saveUser);
   const isDisconnecting = useSubmission(disconnectFromWorkspace);
+  const isSettingCurrentWorkspace = useSubmission(setCurrentWorkspace);
   const removeWorkspace = useAction(deleteWorkspace);
   const isDeleting = useSubmission(deleteWorkspace);
 
@@ -50,15 +55,27 @@ export default function ProfileSettingsPage() {
     const u = user();
     if (u) {
       setName(u.username);
+      setUId(u.id);
+    }
+    const s = session();
+    if (s) {
+      setSessionWorkspaceId(s.workspace_id);
+    } else {
+      toast.error("You are not logged in.");
     }
   });
 
   return (
     <div class="flex flex-col items-start h-full w-full py-10 gap-8">
       <div class="flex flex-col gap-1">
-        <Badge variant="secondary" class="w-max">
-          Profile
-        </Badge>
+        <div class="flex flex-row gap-2">
+          <Badge variant="secondary" class="w-max">
+            Profile
+          </Badge>
+          <Badge variant="outline" class="w-max">
+            {sessionWorkspaceId()}
+          </Badge>
+        </div>
         <h1 class="text-3xl font-medium">Settings</h1>
       </div>
       <div class="flex flex-col items-start gap-2 w-full">
@@ -183,7 +200,15 @@ export default function ProfileSettingsPage() {
                                 <Card>
                                   <CardHeader class="w-full">
                                     <div class="flex flex-row items-center gap-2 w-full">
-                                      <span class="w-full">{workspace.name}</span>
+                                      <div class="w-full flex flex-row gap-2">
+                                        <span>{workspace.name}</span>
+                                        <Show when={workspace.owner && workspace.owner_id === uId()}>
+                                          <Badge variant="default">Owner: {workspace.owner?.name}</Badge>
+                                        </Show>
+                                        <Show when={workspace.id === sessionWorkspaceId()}>
+                                          <Badge variant="secondary">Current</Badge>
+                                        </Show>
+                                      </div>
                                       <Button
                                         variant="destructive"
                                         size="icon"
@@ -197,7 +222,7 @@ export default function ProfileSettingsPage() {
                                     </div>
                                   </CardHeader>
                                   <CardContent>
-                                    <CardDescription>
+                                    <CardDescription class="flex flex-col gap-1">
                                       <span>Created {dayjs(workspace.createdAt).fromNow()}</span>
                                       <span>{workspace.users.length} Users</span>
                                     </CardDescription>
@@ -210,6 +235,23 @@ export default function ProfileSettingsPage() {
                                           <span>Manage</span>
                                         </As>
                                       </Button>
+                                      <form
+                                        class="flex flex-col gap-2 items-end w-full py-0"
+                                        action={setCurrentWorkspace}
+                                        method="post"
+                                      >
+                                        <input type="hidden" name="workspace_id" value={workspace.id} />
+                                        <Button
+                                          variant="secondary"
+                                          size="sm"
+                                          type="submit"
+                                          class="w-max"
+                                          aria-label="Connect to Workspace"
+                                          disabled={isSettingCurrentWorkspace.pending}
+                                        >
+                                          <span>Connect to Workspace</span>
+                                        </Button>
+                                      </form>
                                       <form
                                         class="flex flex-col gap-2 items-end w-full py-0"
                                         action={disconnectFromWorkspace}
@@ -226,15 +268,6 @@ export default function ProfileSettingsPage() {
                                         >
                                           <span>Disconnect from Workspace</span>
                                         </Button>
-                                        <Show
-                                          when={
-                                            typeof isDisconnecting.result !== "undefined" && !isDisconnecting.result
-                                          }
-                                        >
-                                          <Alert class="flex flex-col items-start gap-2 w-full bg-error">
-                                            There was an error disconnecting from the workspace.
-                                          </Alert>
-                                        </Show>
                                       </form>
                                     </div>
                                   </CardFooter>

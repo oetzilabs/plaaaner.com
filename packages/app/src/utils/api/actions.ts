@@ -1,7 +1,7 @@
 import { action, redirect } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 import { lucia } from "../../lib/auth";
-import { appendHeader } from "vinxi/http";
+import { appendHeader, getCookie } from "vinxi/http";
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { WorkspaceCreateSchema } from "@/core/drizzle/sql/schema";
@@ -10,7 +10,6 @@ import { z } from "zod";
 export const logout = action(async () => {
   "use server";
   const event = getRequestEvent()!;
-  console.log("hello from logout action");
   if (!event.nativeEvent.context.session) {
     return new Error("Unauthorized");
   }
@@ -95,5 +94,41 @@ export const ownWorkspace = action(async (id: string) => {
   const workspaceId = valid.data;
   const ws = await Workspace.setOwner(workspaceId, event.nativeEvent.context.user.id);
 
+  return ws;
+});
+
+export const setCurrentWorkspace = action(async (data: FormData) => {
+  "use server";
+  const event = getRequestEvent()!;
+  if (!event.nativeEvent.context.user) {
+    return new Error("Unauthorized");
+  }
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  if (!sessionId) {
+    return new Error("Unauthorized");
+  }
+  const { session: currentSession, user } = await lucia.validateSession(sessionId);
+  if (!currentSession || !user) {
+    throw new Error("Unauthorized");
+  }
+  const data_ = Object.fromEntries(data.entries());
+  const valid = z.string().uuid().safeParse(data_.workspace_id);
+  if (!valid.success) {
+    return new Error("Invalid data");
+  }
+  const workspaceId = valid.data;
+  const ws = await Workspace.findById(workspaceId);
+  if (!ws) {
+    return new Error("Workspace not found");
+  }
+
+  await lucia.invalidateSession(sessionId);
+  const session = await lucia.createSession(user.id, {
+    access_token: currentSession.access_token,
+    workspace_id: ws.id,
+  });
+  console.log("New session", session);
+
+  appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   return ws;
 });

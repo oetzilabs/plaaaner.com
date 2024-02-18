@@ -123,6 +123,16 @@ export const setOwner = z
     return updated;
   });
 
+export const lastCreatedFromUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+  const ws = await db.query.workspaces.findFirst({
+    where: (workspaces, operations) => and(operations.eq(workspaces.owner_id, user_id), isNull(workspaces.deletedAt)),
+    orderBy(fields, operators) {
+      return operators.desc(fields.createdAt);
+    },
+  });
+  return ws;
+});
+
 export const safeParseCreate = WorkspaceCreateSchema.safeParse;
 export const safeParseUpdate = WorkspaceUpdateSchema.safeParse;
 

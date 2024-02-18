@@ -4,7 +4,6 @@ import { createSessionBuilder } from "sst/node/future/auth";
 
 export const getUser = async () => {
   const session = sessions.use();
-  console.log({ session });
   if (!session) throw new Error("No session found");
   if (session.type !== "user") {
     throw new Error("Invalid session type");
