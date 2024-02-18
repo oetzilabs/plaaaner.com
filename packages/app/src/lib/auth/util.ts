@@ -23,6 +23,5 @@ export const getAuthenticatedSession = cache(async () => {
     return redirect("/auth/login");
   }
   const { session } = await lucia.validateSession(id);
-  console.log({ session });
   return session;
 }, "session");

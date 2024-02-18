@@ -23,25 +23,27 @@ export default function ProfileSettingsPage() {
   const user = createAsync(() => getAuthenticatedUser());
   const session = createAsync(() => getAuthenticatedSession());
   const workspaces = createAsync(() => getWorkspaces());
+
   const [name, setName] = createSignal("");
   const [uId, setUId] = createSignal("");
   const [sessionWorkspaceId, setSessionWorkspaceId] = createSignal("");
 
-  const isSaving = useSubmission(saveUser);
-  const isDisconnecting = useSubmission(disconnectFromWorkspace);
-  const isSettingCurrentWorkspace = useSubmission(setCurrentWorkspace);
   const removeWorkspace = useAction(deleteWorkspace);
-  const isDeleting = useSubmission(deleteWorkspace);
 
-  const confirmDelete = () => {
+  const isSavingUser = useSubmission(saveUser);
+  const isDisconnectingFromWorkspace = useSubmission(disconnectFromWorkspace);
+  const isSettingCurrentWorkspace = useSubmission(setCurrentWorkspace);
+  const isDeletingWorkspace = useSubmission(deleteWorkspace);
+
+  const confirmWorkspaceDeletion = () => {
     if (confirm("Are you sure you want to delete this workspace?")) {
       return true;
     }
     return false;
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirmDelete()) {
+  const handleWorkspaceDeletion = async (id: string) => {
+    if (!confirmWorkspaceDeletion()) {
       return;
     }
     await removeWorkspace(id);
@@ -116,7 +118,7 @@ export default function ProfileSettingsPage() {
             <div class="flex flex-col items-start gap-2 w-full">
               <span class="text-lg font-semibold">Account</span>
               <form class="flex flex-col gap-4 items-start w-full py-4" action={saveUser} method="post">
-                <TextField class="w-max flex flex-col gap-2" name="name" disabled={isSaving.pending}>
+                <TextField class="w-max flex flex-col gap-2" name="name" disabled={isSavingUser.pending}>
                   <TextFieldLabel class="flex flex-col gap-2">
                     User
                     <TextFieldInput
@@ -126,7 +128,7 @@ export default function ProfileSettingsPage() {
                       onChange={(e) => {
                         setName(e.target.value);
                       }}
-                      disabled={isSaving.pending}
+                      disabled={isSavingUser.pending}
                     />
                   </TextFieldLabel>
                 </TextField>
@@ -155,11 +157,11 @@ export default function ProfileSettingsPage() {
                   type="submit"
                   class="w-max"
                   aria-label="Save changes"
-                  disabled={isSaving.pending}
+                  disabled={isSavingUser.pending}
                 >
                   <span>Save</span>
                 </Button>
-                <Show when={typeof isSaving.result !== "undefined" && !isSaving.result}>
+                <Show when={typeof isSavingUser.result !== "undefined" && !isSavingUser.result}>
                   <Alert class="flex flex-col items-start gap-2 w-full bg-error">
                     There was an error saving your changes.
                   </Alert>
@@ -214,8 +216,8 @@ export default function ProfileSettingsPage() {
                                         size="icon"
                                         type="button"
                                         aria-label={`Delete workspace '${workspace.name}'`}
-                                        disabled={isDeleting.pending}
-                                        onClick={() => handleDelete(workspace.id)}
+                                        disabled={isDeletingWorkspace.pending}
+                                        onClick={() => handleWorkspaceDeletion(workspace.id)}
                                       >
                                         <Trash class="w-4 h-4" />
                                       </Button>
@@ -264,7 +266,7 @@ export default function ProfileSettingsPage() {
                                           type="submit"
                                           class="w-max"
                                           aria-label="Disconnect from workspace"
-                                          disabled={isDisconnecting.pending}
+                                          disabled={isDisconnectingFromWorkspace.pending}
                                         >
                                           <span>Disconnect from Workspace</span>
                                         </Button>

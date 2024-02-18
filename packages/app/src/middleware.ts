@@ -22,18 +22,22 @@ export default createMiddleware({
     }
 
     const { session, user } = await lucia.validateSession(sessionId);
+
     if (session && session.fresh) {
       appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
     }
+
     if (!session) {
+      console.warn("Session not found, creating a blank one");
       appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
     }
+
     event.nativeEvent.context.session = session;
     event.nativeEvent.context.user = user;
   },
 });
 
-declare module "vinxi/server" {
+declare module "vinxi/http" {
   interface H3EventContext {
     user: User | null;
     session: Session | null;

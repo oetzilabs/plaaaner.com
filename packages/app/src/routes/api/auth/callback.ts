@@ -34,6 +34,7 @@ export async function GET(event: APIEvent) {
   if (!id) {
     return sendRedirect(event, "/auth/error?error=missing_user", 303);
   }
+
   if (!workspace_id) {
     return sendRedirect(event, "/auth/error?error=missing_workspace", 303);
   }
@@ -42,6 +43,8 @@ export async function GET(event: APIEvent) {
     access_token,
     workspace_id,
   });
+
+  console.info("Session created", session);
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
 
