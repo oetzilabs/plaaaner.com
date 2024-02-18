@@ -29,6 +29,20 @@
       "when": 1708211373130,
       "tag": "0003_massive_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1708252192473,
+      "tag": "0004_plain_talos",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1708255938354,
+      "tag": "0005_wild_kree",
+      "breakpoints": true
     }
   ]
 }

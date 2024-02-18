@@ -1,7 +1,7 @@
 import { cache, redirect } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 import { lucia } from ".";
-import { getCookie } from "vinxi/http";
+import { appendHeader, getCookie } from "vinxi/http";
 
 export const getAuthenticatedUser = cache(async () => {
   "use server";
@@ -17,11 +17,23 @@ export const getAuthenticatedUser = cache(async () => {
 export const getAuthenticatedSession = cache(async () => {
   "use server";
   const event = getRequestEvent()!;
-  const { id } = event.nativeEvent.context.session;
-  if (!id) {
-    console.log("no session id");
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  if (!sessionId) {
     return redirect("/auth/login");
   }
-  const { session } = await lucia.validateSession(id);
+  // console.log({ sessionId });
+  const { session, user } = await lucia.validateSession(sessionId);
+  // console.log({ session, user });
   return session;
 }, "session");
+
+export const getAuthenticatedSessions = cache(async () => {
+  "use server";
+  const event = getRequestEvent()!;
+  if (!event.nativeEvent.context.user) {
+    return redirect("/auth/login");
+  }
+  const { id } = event.nativeEvent.context.user;
+  const sessions = await lucia.getUserSessions(id);
+  return sessions;
+}, "sessions");

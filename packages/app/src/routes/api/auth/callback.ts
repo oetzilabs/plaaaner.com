@@ -44,9 +44,7 @@ export async function GET(event: APIEvent) {
     workspace_id,
   });
 
-  console.info("Session created", session);
-
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
-
+  event.nativeEvent.context.session = session;
   return sendRedirect(event, "/", 303);
 }

@@ -15,8 +15,9 @@ export const logout = action(async () => {
   }
   await lucia.invalidateSession(event.nativeEvent.context.session.id);
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
+  event.nativeEvent.context.session = null;
   throw redirect("/auth/login", 303);
-});
+}, "session");
 
 export const saveUser = action(async (data: FormData) => {
   "use server";
@@ -29,12 +30,12 @@ export const saveUser = action(async (data: FormData) => {
   const d = { id, ...data_ };
   const valid = User.safeParseUpdate(d);
   if (!valid.success) {
-    console.log("valid.error", valid.error);
+    // console.log("valid.error", valid.error);
     return new Error("Invalid data");
   }
   const updatedUser = await User.update(valid.data);
   return updatedUser;
-});
+}, "users");
 
 export const disconnectFromWorkspace = action(async (data: FormData) => {
   "use server";
@@ -51,7 +52,7 @@ export const disconnectFromWorkspace = action(async (data: FormData) => {
   const ws = await Workspace.disconnectUser(workspaceId, id);
 
   return ws;
-});
+}, "workspaces");
 
 export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreateSchema>) => {
   "use server";
@@ -63,7 +64,7 @@ export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreat
   await Workspace.connectUser(workspace.id, event.nativeEvent.context.user.id);
 
   return workspace;
-});
+}, "workspaces");
 
 export const deleteWorkspace = action(async (id: string) => {
   "use server";
@@ -79,7 +80,7 @@ export const deleteWorkspace = action(async (id: string) => {
   const ws = await Workspace.markAsDeleted({ id: workspaceId });
 
   return ws;
-});
+}, "workspaces");
 
 export const setWorkspaceOwner = action(async (id: string) => {
   "use server";
@@ -123,12 +124,31 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
   }
 
   await lucia.invalidateSession(sessionId);
-  const session = await lucia.createSession(user.id, {
-    access_token: currentSession.access_token,
-    workspace_id: ws.id,
-  });
-  console.log("New session", session);
-
+  const session = await lucia.createSession(
+    user.id,
+    {
+      access_token: currentSession.access_token,
+      workspace_id: ws.id,
+    },
+    {
+      sessionId: sessionId,
+    }
+  );
+  // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
+  event.nativeEvent.context.session = session;
   return ws;
-});
+}, "session");
+
+export const revokeAllSessions = action(async () => {
+  "use server";
+  const event = getRequestEvent()!;
+  if (!event.nativeEvent.context.user) {
+    console.log("Unauthorized");
+    return false;
+  }
+  const { id } = event.nativeEvent.context.user;
+  await lucia.invalidateUserSessions(id);
+
+  return true;
+}, "sessions");

@@ -10,11 +10,13 @@ import { ticket_types } from "./ticket_types";
 export const tickets = schema.table("tickets", {
   ...Entity.defaults,
   name: text("name").notNull(),
-  ticket_type_id: uuid("ticket_type_id").notNull().references(() => ticket_types.id),
+  ticket_type_id: uuid("ticket_type_id")
+    .notNull()
+    .references(() => ticket_types.id),
   owner_id: uuid("owner").references(() => users.id),
 });
 
-export const events_relation = relations(tickets, ({ many, one }) => ({
+export const tickets_relation = relations(tickets, ({ many, one }) => ({
   ticket_type: one(ticket_types, {
     fields: [tickets.ticket_type_id],
     references: [ticket_types.id],
@@ -32,4 +34,3 @@ export const TicketCreateSchema = createInsertSchema(tickets);
 export const TicketUpdateSchema = TicketCreateSchema.partial().omit({ createdAt: true, updatedAt: true }).extend({
   id: z.string().uuid(),
 });
-

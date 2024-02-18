@@ -24,6 +24,8 @@ export const sessions = schema.table("session", {
     withTimezone: true,
     mode: "date",
   }).notNull(),
+  access_token: text("access_token"),
+  workspace_id: uuid("workspace_id"),
 });
 
 export const userRelation = relations(users, ({ many }) => ({
