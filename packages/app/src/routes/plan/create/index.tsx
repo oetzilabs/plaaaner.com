@@ -32,7 +32,7 @@ export default function PlanCreateEventPage() {
   return (
     <div class="flex flex-col py-10 gap-8">
       <h1 class="text-3xl font-medium">Create your event</h1>
-      <div class="p-4 pb-8 w-full border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col gap-8">
+      <div class="p-4 pb-8 w-full border border-neutral-200 dark:border-neutral-800 rounded-md flex flex-col gap-8">
         <h2 class="text-2xl font-semibold">Choose a plan</h2>
         <p class="text-neutral-500 dark:text-neutral-400">
           Choose the type of event you want to create and get started.
@@ -40,28 +40,22 @@ export default function PlanCreateEventPage() {
         <div class="w-full grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ">
           <For each={typesOfEvents}>
             {(plan) => (
-              <Card class="shadow-none hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle>{plan.title}</CardTitle>
-                </CardHeader>
-                <CardContent class="flex flex-col gap-4">
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardContent>
-                <CardFooter>
-                  <div class="flex flex-row items-center justify-between gap-2 w-full">
-                    <Button size="sm" variant="secondary" asChild>
-                      <As component={A} href={plan.learnMore}>
-                        Learn more
-                      </As>
-                    </Button>
-                    <Button size="sm" asChild>
-                      <As component={A} href={plan.link}>
-                        Create {plan.title}
-                      </As>
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
+              <div class="flex flex-col shadow-none hover:shadow-lg transition-shadow border border-neutral-200 dark:border-neutral-800 px-4 py-3 rounded-md gap-2">
+                <span class="text-lg font-medium">{plan.title}</span>
+                <CardDescription>{plan.description}</CardDescription>
+                <div class="flex flex-row items-center justify-between gap-2 w-full">
+                  <Button size="sm" variant="secondary" asChild>
+                    <As component={A} href={plan.learnMore}>
+                      Learn more
+                    </As>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <As component={A} href={plan.link}>
+                      Create {plan.title}
+                    </As>
+                  </Button>
+                </div>
+              </div>
             )}
           </For>
         </div>

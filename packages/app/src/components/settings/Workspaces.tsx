@@ -22,26 +22,20 @@ export const Workspaces = () => {
   const isDeletingWorkspace = useSubmission(deleteWorkspace);
   const removeWorkspace = useAction(deleteWorkspace);
 
-  const confirmWorkspaceDeletion = () => {
-    if (confirm("Are you sure you want to delete this workspace?")) {
-      return true;
-    }
-    return false;
-  };
-
   const handleWorkspaceDeletion = async (id: string) => {
-    if (!confirmWorkspaceDeletion()) {
+    if (!confirm("Are you sure you want to delete this workspace?")) {
       return;
     }
     await removeWorkspace(id);
   };
+
   return (
     <div class="flex flex-col items-start gap-8 w-full">
       <div class="flex flex-col items-start gap-2 w-full">
         <span class="text-lg font-semibold">Workspaces</span>
         <span class="text-sm text-muted-foreground">Manage your workspaces</span>
       </div>
-      <div class="gap-2 w-full flex flex-col">
+      <div class="gap-4 w-full flex flex-col">
         <Suspense fallback={<For each={[0, 1]}>{() => <Skeleton class="w-full h-48" />}</For>}>
           <For
             each={workspaces()}
@@ -105,7 +99,7 @@ export const Workspaces = () => {
                           type="submit"
                           class="w-max"
                           aria-label="Connect to Workspace"
-                          disabled={isSettingCurrentWorkspace.pending}
+                          disabled={isSettingCurrentWorkspace.pending || workspace.id === session()?.workspace_id}
                         >
                           <span>Connect</span>
                         </Button>
