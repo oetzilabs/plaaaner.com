@@ -1,8 +1,6 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
-import { authLoggedin } from "../components/providers/Authentication";
-import { Show } from "solid-js";
 import { cn } from "../lib/utils";
 
 export default function IndexPage() {

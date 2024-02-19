@@ -1,4 +1,4 @@
-import { createAsync } from "@solidjs/router";
+import { createAsync, A } from "@solidjs/router";
 import { getNotifications } from "@/lib/api/notifications";
 import { For } from "solid-js";
 import { As } from "@kobalte/core";
@@ -9,6 +9,7 @@ dayjs.extend(relativeTime);
 
 export const Notifications = () => {
   const notifications = createAsync(() => getNotifications());
+
   return (
     <div class="grid gap-2">
       <For each={notifications()}>
