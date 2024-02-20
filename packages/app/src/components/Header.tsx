@@ -1,4 +1,5 @@
 import { A } from "@solidjs/router";
+import { AppSearch } from "./AppSearch";
 import ModeToggle from "./ModeToogle";
 import { Logo } from "./ui/custom/logo";
 import UserMenu from "./UserMenu";
@@ -10,6 +11,9 @@ export function Header() {
         <A href="/" class="flex flex-row gap-4 items-center justify-center">
           <Logo small />
         </A>
+        <div class="w-max items-center justify-center flex flex-row">
+          <AppSearch />
+        </div>
         <div class="flex flex-row gap-2 items-center w-max">
           <ModeToggle />
           <UserMenu />
