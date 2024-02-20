@@ -78,6 +78,9 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
   }
+  #app {
+    @apply flex flex-col flex-grow min-h-screen;
+  }
 }
 
 .slide-fade-up-enter-active,

@@ -1,11 +1,9 @@
 import { getAuthenticatedUser } from "@/lib/auth/util";
-import { cn } from "@/lib/utils";
 import { As } from "@kobalte/core";
-import { A, createAsync, useAction } from "@solidjs/router";
+import { A, createAsync } from "@solidjs/router";
 import { LayoutDashboard, LogIn, LogOut, Settings2, User } from "lucide-solid";
-import { Match, Show, Switch } from "solid-js";
+import { Match, Switch } from "solid-js";
 import { logout } from "../utils/api/actions";
-import { Button } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,30 +13,16 @@ import {
 } from "./ui/dropdown-menu";
 
 export default function UserMenu() {
-  const user = createAsync(() => getAuthenticatedUser(), { deferStream: true });
+  const user = createAsync(() => getAuthenticatedUser());
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <As
-          component={Button}
-          variant="ghost"
-          size="icon"
-          class={cn("w-max flex flex-row gap-3 h-9 p-1 rounded-full", {
-            "pr-4": user(),
-          })}
-        >
-          <div class="bg-secondary rounded-full p-2">
-            <User class="h-4 w-4" />
-          </div>
-          <Show when={user()} fallback={<span class="sr-only">User menu</span>}>
-            {(s) => <span class="">{s().username}</span>}
-          </Show>
-        </As>
+      <DropdownMenuTrigger>
+        <User class="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent class="min-w-[100px]">
         <Switch>
-          <Match when={!user()}>
+          <Match when={user() === undefined}>
             <DropdownMenuItem class="items-center gap-2" asChild>
               <As component={A} href="/auth/login">
                 Login
@@ -46,7 +30,15 @@ export default function UserMenu() {
               </As>
             </DropdownMenuItem>
           </Match>
-          <Match when={user()}>
+          <Match when={user() !== undefined && user() === null}>
+            <DropdownMenuItem class="items-center gap-2" asChild>
+              <As component={A} href="/auth/login">
+                Login
+                <LogIn class="h-4 w-4" />
+              </As>
+            </DropdownMenuItem>
+          </Match>
+          <Match when={user() !== undefined && user() !== null}>
             <DropdownMenuItem class="items-center gap-2" asChild>
               <As component={A} href="/dashboard">
                 <LayoutDashboard class="h-4 w-4" />
