@@ -7,7 +7,7 @@
     "build": "vinxi build --preset aws-lambda",
     "build:local": "vinxi build --preset node-server",
     "start": "vinxi start --preset aws-lambda",
-    "start:local": "vinxi start --preset node-server",
+    "start:local": "sst bind vinxi start --preset node-server",
     "serve": "vinxi serve"
   },
   "type": "module",

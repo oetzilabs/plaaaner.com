@@ -9,11 +9,15 @@ import {
 } from "@/components/ui/command";
 import { Search  } from "lucide-solid";
 import { toast } from "solid-sonner";
+import { User } from "lucia";
+import { createAsync } from "@solidjs/router";
+import { getAuthenticatedUser } from "@/lib/auth/util";
+import { useColorMode } from "@kobalte/core";
 
 type Option = {
   label: string;
   value: string;
-  onSelect?: ComponentProps<"li">["onSelect"]
+  onSelect?: (user: User) => Promise<void>;
 };
 
 type List = {
@@ -23,6 +27,8 @@ type List = {
 
 export const AppSearch = () => {
   const [openSearch, setOpenSearch] = createSignal(false);
+  const user = createAsync(() => getAuthenticatedUser());
+  const { setColorMode, toggleColorMode } = useColorMode();
 
   const data: List[] = [
     {
@@ -31,16 +37,15 @@ export const AppSearch = () => {
         {
           label: "Calendar",
           value: "Calendar",
-          onSelect: async () => {
-            toast.info("ASDF");
+          onSelect: async (user) => {
+            toast.info("hello", {description: user.username });
+
           },
         },
         {
           label: "Events",
           value: "Events",
           onSelect: async (e) => {
-            e.preventDefault();
-            console.log("lol")
           },
         },
       ],
@@ -65,6 +70,32 @@ export const AppSearch = () => {
         },
       ],
     },
+    {
+      label: "Theme",
+      options: [
+        {
+          label: "Dark Mode",
+          value: "Dark Mode",
+          onSelect: async (user) => {
+            setColorMode("dark");
+          }
+        },
+        {
+          label: "Light Mode",
+          value: "Light Mode",
+          onSelect: async (user) => {
+            setColorMode("light");
+          }
+        },
+        {
+          label: "Toggle Mode",
+          value: "Toggle Mode",
+          onSelect: async (user) => {
+            toggleColorMode();
+          }
+        },
+      ]
+    }
   ];
 
   createEffect(() => {
@@ -101,12 +132,16 @@ export const AppSearch = () => {
         optionGroupChildren="options"
         placeholder="Type a command or search..."
         itemComponent={(props) => (
-          <CommandItem item={props.item} class="flex flex-row items-center gap-2" onSelect={props.item.rawValue.onSelect}>
+          <CommandItem item={props.item} class="flex flex-row items-center gap-2">
             <CommandItemLabel>{props.item.rawValue.label}</CommandItemLabel>
           </CommandItem>
         )}
         sectionComponent={(props) => <CommandHeading>{props.section.rawValue.label}</CommandHeading>}
         class="rounded-lg border shadow-md"
+        onChange={(e: Option)=>{
+          const u = user();
+          e.onSelect?.(u);
+        }}
       >
         <CommandInput />
         <CommandList />

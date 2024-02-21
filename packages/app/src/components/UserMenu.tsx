@@ -4,6 +4,7 @@ import { A, createAsync } from "@solidjs/router";
 import { LayoutDashboard, LogIn, LogOut, Settings2, User } from "lucide-solid";
 import { Match, Switch } from "solid-js";
 import { logout } from "../utils/api/actions";
+import { Button } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +18,10 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <User class="h-4 w-4" />
+      <DropdownMenuTrigger asChild>
+        <As component={Button} size="icon" variant="ghost" class="rounded-full">
+          <User class="h-4 w-4" />
+        </As>
       </DropdownMenuTrigger>
       <DropdownMenuContent class="min-w-[100px]">
         <Switch>

@@ -12,7 +12,7 @@ export const Progress: ParentComponent<ProgressPrimitive.ProgressRootProps> = (p
     <ProgressPrimitive.Root class={cn("flex flex-col gap-2 w-full", local.class)} {...rest}>
       {local.children}
       <ProgressPrimitive.Track class="h-2 bg-primary/20 rounded-full overflow-hidden">
-        <ProgressPrimitive.Fill class="bg-primary h-full w-[--kb-progress-fill-width] transition-all ease-linear duration-500 data-[progress=complete]:bg-primary" />
+        <ProgressPrimitive.Fill class="bg-primary h-full w-[--kb-progress-fill-width] transition-all ease-in-out duration-300 data-[progress=complete]:bg-primary" />
       </ProgressPrimitive.Track>
     </ProgressPrimitive.Root>
   );

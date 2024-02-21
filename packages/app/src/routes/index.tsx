@@ -24,7 +24,7 @@ export default function IndexPage() {
               Get started
             </A>
             <Button variant="secondary" size="lg" asChild>
-              <As component={A} href="/plan/create">
+              <As component={A} href="/learn-more">
                 Learn more
               </As>
             </Button>
