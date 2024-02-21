@@ -23,7 +23,7 @@ const AnimatedPlan = (props: { name: string; createdAt: Date; progress: number }
   return <Progress value={prog()} />;
 };
 
-export const UpcomingEvents = () => {
+export const UpcomingPlans = () => {
   const plans = createAsync(() => getPlans());
 
   return (

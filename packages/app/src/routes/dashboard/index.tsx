@@ -3,7 +3,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { Metrics } from "@/components/dashboard/metrics";
 import { Notifications } from "@/components/dashboard/notifications";
 import { Greeting } from "@/components/dashboard/greeting";
-import { UpcomingEvents } from "@/components/dashboard/upcoming-events";
+import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
@@ -22,7 +22,7 @@ export default function DashboardPage() {
             </div>
             <div class="flex flex-col gap-2 w-full">
               <span class="font-medium">Upcoming Events</span>
-              <UpcomingEvents />
+              <UpcomingPlans />
             </div>
           </div>
           <div class="w-max flex flex-col gap-4">
