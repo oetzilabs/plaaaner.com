@@ -21,11 +21,11 @@ export default function DashboardPage() {
               <Metrics />
             </div>
             <div class="flex flex-col gap-2 w-full">
-              <span class="font-medium">Upcoming Events</span>
+              <span class="font-medium">Your Events</span>
               <UpcomingPlans />
             </div>
           </div>
-          <div class="w-max flex flex-col gap-4">
+          <div class="w-max flex-col gap-4 hidden lg:flex">
             <div class="flex flex-col gap-2">
               <span class="font-medium">Notifications</span>
               <Notifications />
