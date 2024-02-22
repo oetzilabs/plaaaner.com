@@ -43,6 +43,27 @@
       "when": 1708255938354,
       "tag": "0005_wild_kree",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1708636810906,
+      "tag": "0006_nostalgic_blur",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1708638160160,
+      "tag": "0007_robust_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1708641457157,
+      "tag": "0008_small_madrox",
+      "breakpoints": true
     }
   ]
 }

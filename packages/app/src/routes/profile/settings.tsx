@@ -4,13 +4,14 @@ import { Messages } from "@/components/settings/Messages";
 import { Notifications } from "@/components/settings/Notifications";
 import { SessionList } from "@/components/settings/SessionList";
 import { Workspaces } from "@/components/settings/Workspaces";
+import { Organizations } from "@/components/settings/Organizations";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAuthenticatedSession } from "@/lib/auth/util";
 import { createAsync, useLocation } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { BellRing, HandCoins, KeyRound, Layout, MessagesSquare, User } from "lucide-solid";
+import { BellRing, Building, HandCoins, KeyRound, Layout, MessagesSquare, User } from "lucide-solid";
 import { createSignal, onMount } from "solid-js";
 dayjs.extend(relativeTime);
 
@@ -59,6 +60,10 @@ export default function ProfileSettingsPage() {
               <KeyRound class="w-4 h-4" />
               Sessions
             </TabsTrigger>
+            <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="organizations">
+              <Building class="w-4 h-4" />
+              Organizations
+            </TabsTrigger>
             <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="workspaces">
               <Layout class="w-4 h-4" />
               Workspaces
@@ -81,6 +86,9 @@ export default function ProfileSettingsPage() {
           </TabsContent>
           <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="sessions">
             <SessionList />
+          </TabsContent>
+          <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="organizations">
+            <Organizations />
           </TabsContent>
           <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="workspaces">
             <Workspaces />
