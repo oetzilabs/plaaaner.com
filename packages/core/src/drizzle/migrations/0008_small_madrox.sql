@@ -1,0 +1,1 @@
+ALTER TABLE "plaaaner"."session" ADD COLUMN "organization_id" uuid;

@@ -5,6 +5,7 @@ import { users_workspaces } from "./users_workspaces";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { users_organizations } from "./user_organizations";
 
 export const users = schema.table("users", {
   ...Entity.defaults,
@@ -26,11 +27,13 @@ export const sessions = schema.table("session", {
   }).notNull(),
   access_token: text("access_token"),
   workspace_id: uuid("workspace_id"),
+  organization_id: uuid("organization_id"),
 });
 
 export const userRelation = relations(users, ({ many }) => ({
   sessions: many(sessions),
   workspaces: many(users_workspaces),
+  organizations: many(users_organizations),
 }));
 
 export type UserSelect = typeof users.$inferSelect;

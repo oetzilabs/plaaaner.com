@@ -6,6 +6,7 @@ import { z } from "zod";
 import { relations } from "drizzle-orm";
 import { users_workspaces } from "./users_workspaces";
 import { users } from "./users";
+import { workspaces_organizations } from "./workspaces_organizations";
 
 export const workspaces = schema.table("workspaces", {
   ...Entity.defaults,
@@ -19,6 +20,7 @@ export const workspacesRelation = relations(workspaces, ({ many, one }) => ({
     fields: [workspaces.owner_id],
     references: [users.id],
   }),
+  organizations: many(workspaces_organizations),
 }));
 
 export type WorkspaceSelect = typeof workspaces.$inferSelect;

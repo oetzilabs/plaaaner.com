@@ -25,7 +25,7 @@ export default function NotFound() {
               </svg>
               <span class="text-xl font-medium text-neutral-600 sm:text-2xl ">Oops! Page not found.</span>
             </h1>
-            <p class="text-base font-normal text-neutral-600">The page you ara looking for was not found.</p>
+            <p class="text-base font-normal text-neutral-600">The page you are looking for was not found.</p>
             <p class="text-base font-normal text-neutral-600 flex flex-row gap-1">
               You may return to
               <A href="/" class="text-blue-600 hover:underline dark:text-blue-500">
