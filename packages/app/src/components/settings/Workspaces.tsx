@@ -1,16 +1,17 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { getAuthenticatedUser } from "@/lib/auth/util";
 import { deleteWorkspace, disconnectFromWorkspace, setCurrentWorkspace } from "@/lib/api/workspaces";
 import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
 import { For, Show, Suspense } from "solid-js";
 import { getWorkspaces } from "../../lib/api/workspaces";
 import { Badge } from "../ui/badge";
-import { Trash } from "lucide-solid";
+import { Plus, Trash } from "lucide-solid";
 import { As } from "@kobalte/core";
 import dayjs from "dayjs";
 import { Alert } from "../ui/alert";
 import { Skeleton } from "../ui/skeleton";
 import { useSession } from "../SessionProvider";
+import { cn } from "@/lib/utils";
 
 export const Workspaces = () => {
   const session = useSession();
@@ -128,6 +129,20 @@ export const Workspaces = () => {
             }}
           </For>
         </Suspense>
+        <div class="flex flex-col items-start gap-2">
+          <A
+            href="/workspaces/new"
+            class={cn(
+              "flex flex-row items-center gap-2 justify-center",
+              buttonVariants({
+                variant: "default",
+              })
+            )}
+          >
+            <Plus class="w-4 h-4" />
+            Create Workspace
+          </A>
+        </div>
       </div>
     </div>
   );

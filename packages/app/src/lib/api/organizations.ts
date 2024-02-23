@@ -36,13 +36,3 @@ export const getOrganizations = cache(async () => {
   return o;
 }, "organizations");
 
-export const deleteCorruptOrganizations = action(async () => {
-  "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
-    return new Error("Unauthorized");
-  }
-  const os = await Organization.removeCorrupt();
-  return os;
-}, "organizations");
-

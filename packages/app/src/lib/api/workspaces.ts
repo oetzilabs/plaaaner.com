@@ -1,10 +1,14 @@
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { WorkspaceCreateSchema } from "@/core/drizzle/sql/schema";
+import { WorkspaceCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schemas/workspaces";
 import { action, cache, redirect } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 import { z } from "zod";
 import { appendHeader, getCookie } from "vinxi/http";
 import { lucia } from "../auth";
+
+const WorkspaceCreateSchemaWithConnect = WorkspaceCreateSchema.extend({
+  connect: z.boolean().optional().default(true),
+});
 
 export const getWorkspaces = cache(async () => {
   "use server";
@@ -45,15 +49,21 @@ export const disconnectFromWorkspace = action(async (data: FormData) => {
   return ws;
 }, "workspaces");
 
-export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreateSchema>) => {
+export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreateSchemaWithConnect>) => {
   "use server";
   const event = getRequestEvent()!;
   if (!event.nativeEvent.context.user) {
-    return new Error("Unauthorized");
+    throw redirect("/auth/login");
   }
   const workspace = await Workspace.create(data, event.nativeEvent.context.user.id);
-  await Workspace.connectUser(workspace.id, event.nativeEvent.context.user.id);
-
+  if (data.connect && data.connect) {
+    const currentSession = event.nativeEvent.context.session!;
+    const currentWorkspace = await Workspace.findById(currentSession.workspace_id);
+    if (currentWorkspace) {
+      await Workspace.disconnectUser(currentWorkspace.id, event.nativeEvent.context.user.id);
+    }
+    await Workspace.connectUser(workspace.id, event.nativeEvent.context.user.id);
+  }
   return workspace;
 }, "workspaces");
 
@@ -130,14 +140,3 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
   event.nativeEvent.context.session = session;
   return ws;
 }, "session");
-
-export const deleteCorruptWorkspaces = action(async () => {
-  "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
-    return new Error("Unauthorized");
-  }
-  const ws_removed = await Workspace.removeCorrupt();
-  return ws_removed;
-}, "workspaces");
-

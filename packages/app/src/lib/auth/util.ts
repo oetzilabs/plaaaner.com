@@ -55,6 +55,5 @@ export const getCurrentOrganization = cache(async () => {
     console.log("No organization set up");
     return redirect("/setup/organization");
   }
-  console.log(org)
   return org;
 }, "currentOrganization");

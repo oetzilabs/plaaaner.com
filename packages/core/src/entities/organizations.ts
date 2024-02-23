@@ -99,18 +99,6 @@ export const all = z.function(z.tuple([])).implement(async () => {
   });
 });
 
-export const removeCorrupt = z.function(z.tuple([])).implement(async () => {
-  const all_corrupt_os = await db.query.organizations.findMany({
-    where(fields, op){
-      return op.isNull(fields.owner_id);
-    },
-  });
-  for (const os of all_corrupt_os) {
-    await db.delete(users_organizations).where(eq(users_organizations.organization_id, os.id)).returning();
-    await db.delete(organizations).where(eq(organizations.id, os.id)).returning();
-  }
-});
-
 export const update = z
   .function(
     z.tuple([

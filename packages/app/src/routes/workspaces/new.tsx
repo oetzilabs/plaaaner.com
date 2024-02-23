@@ -7,28 +7,18 @@ import { TextFieldLabel, TextFieldInput, TextField } from "@/components/ui/textf
 import { createWorkspace } from "@/lib/api/workspaces";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-
-type TabValue = "general" | "invites" | "permissions";
-
-const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | undefined>> = {
-  forward: {
-    general: "invites",
-    invites: "permissions",
-    permissions: undefined,
-  },
-  backward: {
-    general: undefined,
-    invites: "general",
-    permissions: "invites",
-  },
-};
+import { useSession } from "@/components/SessionProvider";
+import { Checkbox, CheckboxControl, CheckboxLabel } from "@/components/ui/checkbox";
 
 export default function NewWorkspace() {
-  const [tab, seTab] = createSignal("general");
+  const session = useSession();
+
   const cW = useAction(createWorkspace);
-  const isCreating = useSubmission(createWorkspace);
+  const isCreatingWorkspace = useSubmission(createWorkspace);
+
   const [newWorkspace, setNewWorkspace] = createSignal<Parameters<typeof createWorkspace>[0]>({
     name: "",
+    connect: session?.()?.workspace_id === null,
   });
 
   const handleSubmit = async (e: Event) => {
@@ -39,7 +29,7 @@ export default function NewWorkspace() {
 
   return (
     <div class="flex flex-col items-start h-full w-full py-10 gap-8">
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-2">
         <Badge variant="secondary" class="w-max">
           Workspaces
         </Badge>
@@ -47,14 +37,7 @@ export default function NewWorkspace() {
       </div>
       <div class="flex flex-col items-start gap-2 w-full">
         <form class="flex flex-col gap-4 items-start w-full py-4" onSubmit={handleSubmit}>
-          <Tabs
-            value={tab()}
-            onChange={(t) => {
-              seTab(t);
-              location.hash = t;
-            }}
-            class="w-full"
-          >
+          <Tabs class="w-full" defaultValue="general">
             <TabsList class="w-full">
               <TabsTrigger class="items-center justify-start gap-2" value="general">
                 <User class="w-4 h-4" />
@@ -73,7 +56,7 @@ export default function NewWorkspace() {
               <span class="text-muted-foreground text-xs">Setup your general information about the workspace.</span>
               <div class="flex flex-col items-start gap-2 w-full">
                 <span class="text-lg font-semibold">Account</span>
-                <TextField class="w-max flex flex-col gap-2" name="name" disabled={isCreating.pending}>
+                <TextField class="w-max flex flex-col gap-2" name="name" disabled={isCreatingWorkspace.pending}>
                   <TextFieldLabel class="flex flex-col gap-2">
                     Workspace Name
                     <TextFieldInput
@@ -83,11 +66,20 @@ export default function NewWorkspace() {
                       onChange={(e) => {
                         setNewWorkspace({ ...newWorkspace(), name: e.target.value });
                       }}
-                      disabled={isCreating.pending}
+                      disabled={isCreatingWorkspace.pending}
                     />
                   </TextFieldLabel>
                 </TextField>
-                <Show when={typeof isCreating.result !== "undefined" && !isCreating.result}>
+                <Checkbox
+                  onChange={(b) => setNewWorkspace((nw) => ({ ...nw, connect: b }))}
+                  class="flex flex-row"
+                >
+                  <CheckboxLabel class="text-sm font-bold flex flex-row items-center justify-start gap-2">
+                    <CheckboxControl />
+                    Connect to Workspace
+                  </CheckboxLabel>
+                </Checkbox>
+                <Show when={typeof isCreatingWorkspace.result !== "undefined" && !isCreatingWorkspace.result}>
                   <Alert class="flex flex-col items-start gap-2 w-full bg-error">
                     There was an error saving your changes.
                   </Alert>
@@ -109,7 +101,7 @@ export default function NewWorkspace() {
             type="submit"
             class="w-max"
             aria-label="Save changes"
-            disabled={isCreating.pending}
+            disabled={isCreatingWorkspace.pending}
           >
             <span>Save</span>
           </Button>

@@ -22,7 +22,7 @@ export default function ProfileSettingsPage() {
   const session = useSession();
   return (
     <div class="flex flex-col items-start h-full w-full py-10 gap-8">
-      <div class="flex flex-col gap-1  w-full">
+      <div class="flex flex-col gap-2 w-full">
         <div class="flex flex-row gap-2 items-center justify-between w-full">
           <Badge variant="secondary" class="w-max">
             Profile
