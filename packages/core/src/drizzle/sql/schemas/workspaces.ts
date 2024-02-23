@@ -11,7 +11,9 @@ import { workspaces_organizations } from "./workspaces_organizations";
 export const workspaces = schema.table("workspaces", {
   ...Entity.defaults,
   name: text("name").notNull(),
-  owner_id: uuid("owner").references(() => users.id),
+  owner_id: uuid("owner")
+    .references(() => users.id)
+    .notNull(),
 });
 
 export const workspacesRelation = relations(workspaces, ({ many, one }) => ({
@@ -26,7 +28,7 @@ export const workspacesRelation = relations(workspaces, ({ many, one }) => ({
 export type WorkspaceSelect = typeof workspaces.$inferSelect;
 export type WorkspaceInsert = typeof workspaces.$inferInsert;
 
-export const WorkspaceCreateSchema = createInsertSchema(workspaces);
+export const WorkspaceCreateSchema = createInsertSchema(workspaces).omit({ owner_id: true });
 export const WorkspaceUpdateSchema = WorkspaceCreateSchema.partial().omit({ createdAt: true, updatedAt: true }).extend({
   id: z.string().uuid(),
 });

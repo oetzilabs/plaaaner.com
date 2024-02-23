@@ -13,6 +13,7 @@ import { isServer } from "solid-js/web";
 import { Toaster } from "solid-sonner";
 // import { getCookie } from "vinxi/http";
 import "./app.css";
+import { SessionProvider } from "./components/SessionProvider";
 
 // const getServerCookies = () => {
 //   "use server";
@@ -62,7 +63,7 @@ export default function App() {
                       "flex-grow": "1",
                     }}
                   >
-                    {props.children}
+                    <SessionProvider>{props.children}</SessionProvider>
                   </div>
                   <Footer />
                 </ColorModeProvider>

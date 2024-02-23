@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
-import { deleteWorkspace, disconnectFromWorkspace, setCurrentWorkspace } from "@/utils/api/actions";
+import { getAuthenticatedUser } from "@/lib/auth/util";
+import { deleteWorkspace, disconnectFromWorkspace, setCurrentWorkspace } from "@/lib/api/workspaces";
 import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
 import { For, Show, Suspense } from "solid-js";
 import { getWorkspaces } from "../../lib/api/workspaces";
@@ -10,9 +10,10 @@ import { As } from "@kobalte/core";
 import dayjs from "dayjs";
 import { Alert } from "../ui/alert";
 import { Skeleton } from "../ui/skeleton";
+import { useSession } from "../SessionProvider";
 
 export const Workspaces = () => {
-  const session = createAsync(() => getAuthenticatedSession());
+  const session = useSession();
   const user = createAsync(() => getAuthenticatedUser());
   const workspaces = createAsync(() => getWorkspaces());
 
@@ -59,7 +60,7 @@ export const Workspaces = () => {
                       <Show when={workspace.owner && workspace.owner_id === user()?.id}>
                         <Badge variant="default">Owner: {workspace.owner?.name}</Badge>
                       </Show>
-                      <Show when={workspace.id === session()?.workspace_id}>
+                      <Show when={workspace.id === session?.()?.workspace_id}>
                         <Badge variant="secondary">Current</Badge>
                       </Show>
                     </div>
@@ -98,7 +99,7 @@ export const Workspaces = () => {
                           type="submit"
                           class="w-max"
                           aria-label="Connect to Workspace"
-                          disabled={isSettingCurrentWorkspace.pending || workspace.id === session()?.workspace_id}
+                          disabled={isSettingCurrentWorkspace.pending || workspace.id === session?.()?.workspace_id}
                         >
                           <span>Connect</span>
                         </Button>

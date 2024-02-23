@@ -59,7 +59,7 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
 });
 
 export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
-  const userWs = await db.query.users.findFirst({
+  const userOs = await db.query.users.findFirst({
     where: (user, operations) => operations.eq(user.id, input),
     with: {
       organizations: {
@@ -80,7 +80,10 @@ export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).impleme
   });
   if (!userOs) return [];
 
-  return userOs.organizations.map((x) => x.organization).filter((o) => o.deletedAt === null).filter((o) => typeof o !== undefined);
+  return userOs.organizations
+    .map((x) => x.organization)
+    .filter((o) => o?.deletedAt === null)
+    .filter((o) => typeof o !== undefined && o !== null);
 });
 
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {
@@ -94,6 +97,18 @@ export const all = z.function(z.tuple([])).implement(async () => {
   return db.query.organizations.findMany({
     with: {},
   });
+});
+
+export const removeCorrupt = z.function(z.tuple([])).implement(async () => {
+  const all_corrupt_os = await db.query.organizations.findMany({
+    where(fields, op){
+      return op.isNull(fields.owner_id);
+    },
+  });
+  for (const os of all_corrupt_os) {
+    await db.delete(users_organizations).where(eq(users_organizations.organization_id, os.id)).returning();
+    await db.delete(organizations).where(eq(organizations.id, os.id)).returning();
+  }
 });
 
 export const update = z

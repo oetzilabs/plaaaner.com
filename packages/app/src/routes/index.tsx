@@ -20,7 +20,7 @@ export default function IndexPage() {
             <p>you can get started or learn more.</p>
           </div>
           <div class="flex flex-row gap-2 items-center">
-            <A class={cn(buttonVariants({ size: "lg", variant: "default" }))} href="/plan/create">
+            <A class={cn(buttonVariants({ size: "lg", variant: "default" }))} href="/dashboard">
               Get started
             </A>
             <Button variant="secondary" size="lg" asChild>

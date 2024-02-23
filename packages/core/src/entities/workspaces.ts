@@ -6,11 +6,19 @@ import { WorkspaceCreateSchema, WorkspaceUpdateSchema, users_workspaces, workspa
 
 export * as Workspace from "./workspaces";
 
-export const create = z.function(z.tuple([WorkspaceCreateSchema])).implement(async (userInput) => {
-  const [x] = await db.insert(workspaces).values(userInput).returning();
+export const create = z
+  .function(z.tuple([WorkspaceCreateSchema, z.string().uuid()]))
+  .implement(async (userInput, owner_id) => {
+    const [x] = await db
+      .insert(workspaces)
+      .values({
+        ...userInput,
+        owner_id,
+      })
+      .returning();
 
-  return x;
-});
+    return x;
+  });
 
 export const countAll = z.function(z.tuple([])).implement(async () => {
   const [x] = await db
@@ -71,6 +79,19 @@ export const all = z.function(z.tuple([])).implement(async () => {
   return db.query.workspaces.findMany({
     with: {},
   });
+});
+
+export const removeCorrupt = z.function(z.tuple([])).implement(async () => {
+  const all_corrupt_ws = await db.query.workspaces.findMany({
+    where(fields, op){
+      return op.isNull(fields.owner_id);
+    },
+  });
+  for (const ws of all_corrupt_ws) {
+    await db.delete(users_workspaces).where(eq(users_workspaces.workspace_id, ws.id)).returning();
+    await db.delete(workspaces).where(eq(workspaces.id, ws.id)).returning();
+  }
+  return all_corrupt_ws;
 });
 
 export const update = z

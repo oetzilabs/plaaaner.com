@@ -12,7 +12,7 @@ import { users_organizations } from "./user_organizations";
 export const organizations = schema.table("organizations", {
   ...Entity.defaults,
   name: text("name").notNull(),
-  owner_id: uuid("owner").references(() => users.id),
+  owner_id: uuid("owner").references(() => users.id).notNull(),
 });
 
 export const organizations_relation = relations(organizations, ({ many, one }) => ({
