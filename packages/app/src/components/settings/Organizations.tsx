@@ -10,9 +10,10 @@ import { As } from "@kobalte/core";
 import dayjs from "dayjs";
 import { Alert } from "../ui/alert";
 import { Skeleton } from "../ui/skeleton";
+import { useSession } from "../SessionProvider";
 
 export const Organizations = () => {
-  const session = createAsync(() => getAuthenticatedSession());
+  const session = useSession();
   const user = createAsync(() => getAuthenticatedUser());
   const organizations = createAsync(() => getOrganizations());
 
@@ -59,7 +60,7 @@ export const Organizations = () => {
                       <Show when={organization.owner && organization.owner_id === user()?.id}>
                         <Badge variant="default">Owner: {organization.owner?.name}</Badge>
                       </Show>
-                      <Show when={organization.id === session()?.organization_id}>
+                      <Show when={organization.id === session?.()?.organization_id}>
                         <Badge variant="secondary">Current</Badge>
                       </Show>
                     </div>
@@ -99,7 +100,7 @@ export const Organizations = () => {
                           class="w-max"
                           aria-label="Connect to Organization"
                           disabled={
-                            isSettingCurrentOrganization.pending || organization.id === session()?.organization_id
+                            isSettingCurrentOrganization.pending || organization.id === session?.()?.organization_id
                           }
                         >
                           <span>Connect</span>

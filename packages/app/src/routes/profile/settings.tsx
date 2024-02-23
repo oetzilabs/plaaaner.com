@@ -5,29 +5,21 @@ import { Notifications } from "@/components/settings/Notifications";
 import { SessionList } from "@/components/settings/SessionList";
 import { Workspaces } from "@/components/settings/Workspaces";
 import { Organizations } from "@/components/settings/Organizations";
+import { Dangerzone } from "@/components/settings/Dangerzone";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAuthenticatedSession } from "@/lib/auth/util";
 import { createAsync, useLocation } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { BellRing, Building, HandCoins, KeyRound, Layout, MessagesSquare, User } from "lucide-solid";
+import { BellRing, Building, HandCoins, KeyRound, Layout, MessagesSquare, User, X } from "lucide-solid";
 import { createSignal, onMount } from "solid-js";
+import { SessionProvider, useSession } from "@/components/SessionProvider";
 dayjs.extend(relativeTime);
 
 export default function ProfileSettingsPage() {
   const lo = useLocation();
-  const [tab, seTab] = createSignal("account");
-
-  const session = createAsync(() => getAuthenticatedSession());
-
-  onMount(() => {
-    const t = lo.hash.replace("#", "");
-    if (t) {
-      seTab(t);
-    }
-  });
-
+  const session = useSession();
   return (
     <div class="flex flex-col items-start h-full w-full py-10 gap-8">
       <div class="flex flex-col gap-1  w-full">
@@ -36,18 +28,13 @@ export default function ProfileSettingsPage() {
             Profile
           </Badge>
           <Badge variant="outline" class="w-max">
-            Session: {session()?.id}
+            Session: {session?.()?.id}
           </Badge>
         </div>
         <h1 class="text-3xl font-medium">Settings</h1>
       </div>
       <div class="flex flex-col items-start gap-2 w-full">
         <Tabs
-          value={tab()}
-          onChange={(t) => {
-            seTab(t);
-            location.hash = t;
-          }}
           class="w-full py-0"
           orientation="vertical"
         >
@@ -80,6 +67,10 @@ export default function ProfileSettingsPage() {
               <MessagesSquare class="w-4 h-4" />
               Messages
             </TabsTrigger>
+            <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2 text-red-500" value="dangerzone">
+              <X class="w-4 h-4" />
+              Dangerzone
+            </TabsTrigger>
           </TabsList>
           <TabsContent class="px-4 py-0 mt-0 flex flex-col w-full gap-8" value="account">
             <Account />
@@ -101,6 +92,9 @@ export default function ProfileSettingsPage() {
           </TabsContent>
           <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="messages">
             <Messages />
+          </TabsContent>
+          <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="dangerzone">
+            <Dangerzone />
           </TabsContent>
         </Tabs>
       </div>

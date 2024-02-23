@@ -1,16 +1,12 @@
-import { workspaces } from "@/core/drizzle/sql/schema";
-import { As } from "@kobalte/core";
-import { A, useAction, useSubmission } from "@solidjs/router";
-import { User, Layout, Receipt, BellRing, MessagesSquare } from "lucide-solid";
-import user from "lucide-solid/dist/types/icons/user";
-import { Show, Switch, Match, For, createSignal } from "solid-js";
-import { Badge } from "../../components/ui/badge";
-import { Card, CardContent } from "../../components/ui/card";
-import { TabsList, TabsTrigger, TabsContent, Tabs } from "../../components/ui/tabs";
-import { TextFieldLabel, TextFieldInput, TextField } from "../../components/ui/textfield";
-import { createWorkspace } from "../../utils/api/actions";
-import { Button } from "../../components/ui/button";
-import { Alert } from "../../components/ui/alert";
+import { useAction, useSubmission } from "@solidjs/router";
+import { User, Layout, Receipt } from "lucide-solid";
+import { Show, createSignal } from "solid-js";
+import { Badge } from "@/components/ui/badge";
+import { TabsList, TabsTrigger, TabsContent, Tabs } from "@/components/ui/tabs";
+import { TextFieldLabel, TextFieldInput, TextField } from "@/components/ui/textfield";
+import { createWorkspace } from "@/lib/api/workspaces";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
 
 type TabValue = "general" | "invites" | "permissions";
 

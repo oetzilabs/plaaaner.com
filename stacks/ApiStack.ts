@@ -41,6 +41,12 @@ export function ApiStack({ stack }: StackContext) {
           description: "This is the user.session function",
         },
       },
+      "POST /corrupted": {
+        function: {
+          handler: "packages/functions/src/corrupted.main",
+          description: "This is the corrupted entities function",
+        },
+      },
       "GET /healthcheck": {
         function: {
           handler: "packages/functions/src/healthcheck.main",
