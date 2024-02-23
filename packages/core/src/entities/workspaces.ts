@@ -81,19 +81,6 @@ export const all = z.function(z.tuple([])).implement(async () => {
   });
 });
 
-export const removeCorrupt = z.function(z.tuple([])).implement(async () => {
-  const all_corrupt_ws = await db.query.workspaces.findMany({
-    where(fields, op){
-      return op.isNull(fields.owner_id);
-    },
-  });
-  for (const ws of all_corrupt_ws) {
-    await db.delete(users_workspaces).where(eq(users_workspaces.workspace_id, ws.id)).returning();
-    await db.delete(workspaces).where(eq(workspaces.id, ws.id)).returning();
-  }
-  return all_corrupt_ws;
-});
-
 export const update = z
   .function(
     z.tuple([
