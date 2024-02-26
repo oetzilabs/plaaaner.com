@@ -1,6 +1,7 @@
 export * from "./schemas/users";
 
 export * from "./schemas/organization";
+export * from "./schemas/organizations_joins";
 export * from "./schemas/organizations_events";
 export * from "./schemas/user_organizations";
 

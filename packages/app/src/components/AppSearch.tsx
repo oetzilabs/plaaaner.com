@@ -7,7 +7,7 @@ import {
   CommandList,
   CommandHeading,
 } from "@/components/ui/command";
-import { Search  } from "lucide-solid";
+import { Search } from "lucide-solid";
 import { toast } from "solid-sonner";
 import { User } from "lucia";
 import { createAsync } from "@solidjs/router";
@@ -38,15 +38,13 @@ export const AppSearch = () => {
           label: "Calendar",
           value: "Calendar",
           onSelect: async (user) => {
-            toast.info("hello", {description: user.username });
-
+            toast.info("hello", { description: user.username });
           },
         },
         {
           label: "Events",
           value: "Events",
-          onSelect: async (e) => {
-          },
+          onSelect: async (e) => {},
         },
       ],
     },
@@ -78,24 +76,24 @@ export const AppSearch = () => {
           value: "Dark Mode",
           onSelect: async (user) => {
             setColorMode("dark");
-          }
+          },
         },
         {
           label: "Light Mode",
           value: "Light Mode",
           onSelect: async (user) => {
             setColorMode("light");
-          }
+          },
         },
         {
           label: "Toggle Mode",
           value: "Toggle Mode",
           onSelect: async (user) => {
             toggleColorMode();
-          }
+          },
         },
-      ]
-    }
+      ],
+    },
   ];
 
   createEffect(() => {
@@ -138,7 +136,7 @@ export const AppSearch = () => {
         )}
         sectionComponent={(props) => <CommandHeading>{props.section.rawValue.label}</CommandHeading>}
         class="rounded-lg border shadow-md"
-        onChange={(e: Option)=>{
+        onChange={(e: Option) => {
           const u = user();
           e.onSelect?.(u);
         }}

@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Combobox as ComboboxPrimitive } from "@kobalte/core";
-import { SelectIcon } from "@kobalte/core/dist/types/select/select-icon";
-import { Check } from "lucide-solid";
+import { Check, ChevronDown } from "lucide-solid";
 import type { VoidComponent } from "solid-js";
 import { splitProps, type ParentComponent } from "solid-js";
 
@@ -38,7 +37,7 @@ export const ComboboxTrigger: ParentComponent<ComboboxPrimitive.ComboboxTriggerP
       >
         {local.children}
         <ComboboxPrimitive.Icon class="flex h-3.5 w-3.5 items-center justify-center">
-          <SelectIcon class="w-4 h-4" />
+          <ChevronDown class="w-4 h-4" />
         </ComboboxPrimitive.Icon>
       </ComboboxPrimitive.Trigger>
     </ComboboxPrimitive.Control>

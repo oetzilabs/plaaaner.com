@@ -8,7 +8,7 @@ export const getAuthenticatedUser = cache(async () => {
   "use server";
   const event = getRequestEvent()!;
   if (!event.nativeEvent.context.session) {
-    throw redirect("/auth/login");
+    return null;
   }
   const { id } = event.nativeEvent.context.session;
   const { user } = await lucia.validateSession(id);
@@ -20,7 +20,7 @@ export const getAuthenticatedSession = cache(async () => {
   const event = getRequestEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
-    return redirect("/auth/login");
+    return null;
   }
   // console.log({ sessionId });
   const { session, user } = await lucia.validateSession(sessionId);
@@ -47,11 +47,11 @@ export const getCurrentOrganization = cache(async () => {
   }
   const { id } = event.nativeEvent.context.session;
   const { user } = await lucia.validateSession(id);
-  if(!user) {
+  if (!user) {
     return redirect("/auth/login");
   }
   const org = await Organization.findByUserId(user.id);
-  if(!org) {
+  if (!org) {
     console.log("No organization set up");
     return redirect("/setup/organization");
   }
