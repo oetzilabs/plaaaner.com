@@ -1,16 +1,30 @@
-import { Button } from "@/components/ui/button";
-import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
-import { deleteOrganization, disconnectFromOrganization, setCurrentOrganization } from "@/utils/api/actions";
-import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
-import { For, Show, Suspense } from "solid-js";
-import { getOrganizations } from "../../lib/api/organizations";
-import { Badge } from "../ui/badge";
-import { Trash } from "lucide-solid";
+import { Alert } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getOrganizations } from "@/lib/api/organizations";
+import { setCurrentOrganization } from "@/lib/api/user";
+import { getAuthenticatedUser } from "@/lib/auth/util";
+import { deleteOrganization, disconnectFromOrganization } from "@/utils/api/actions";
 import { As } from "@kobalte/core";
+import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
-import { Alert } from "../ui/alert";
-import { Skeleton } from "../ui/skeleton";
+import { Loader2, Plus, Trash } from "lucide-solid";
+import { For, Show, Suspense } from "solid-js";
+import { toast } from "solid-sonner";
 import { useSession } from "../SessionProvider";
+import { cn } from "../../lib/utils";
 
 export const Organizations = () => {
   const session = useSession();
@@ -22,17 +36,29 @@ export const Organizations = () => {
   const isDeletingOrganization = useSubmission(deleteOrganization);
   const removeOrganization = useAction(deleteOrganization);
 
-  const handleOrganizationDeletion = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this workspace?")) {
-      return;
-    }
-    await removeOrganization(id);
-  };
-
   return (
     <div class="flex flex-col items-start gap-8 w-full">
       <div class="flex flex-col items-start gap-2 w-full">
-        <span class="text-lg font-semibold">Organizations</span>
+        <div class="flex flex-row items-center justify-between w-full gap-2">
+          <div class="w-full">
+            <span class="text-lg font-semibold">Organizations</span>
+          </div>
+          <div class="w-max">
+            <A
+              href="/organizations/new"
+              class={cn(
+                buttonVariants({
+                  variant: "default",
+                  size: "sm",
+                }),
+                "w-max gap-2 items-center"
+              )}
+            >
+              <Plus class="size-4" />
+              Create Organization
+            </A>
+          </div>
+        </div>
         <span class="text-sm text-muted-foreground">Manage your organizations</span>
       </div>
       <div class="gap-4 w-full flex flex-col">
@@ -64,16 +90,44 @@ export const Organizations = () => {
                         <Badge variant="secondary">Current</Badge>
                       </Show>
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      type="button"
-                      aria-label={`Delete organization '${organization.name}'`}
-                      disabled={isDeletingOrganization.pending}
-                      onClick={() => handleOrganizationDeletion(organization.id)}
-                    >
-                      <Trash class="w-4 h-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <As
+                          component={Button}
+                          variant="destructive"
+                          size="icon"
+                          disabled={isDeletingOrganization.pending}
+                        >
+                          <Trash class="w-4 h-4" />
+                        </As>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you really sure, you want to delete this organization?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogClose>Cancel</AlertDialogClose>
+                          <AlertDialogAction
+                            asChild
+                            onClick={() => {
+                              toast.promise(removeOrganization(organization.id), {
+                                loading: "Hold on a second, we're deleting the organization",
+                                icon: <Loader2 class="size-4 animate-spin" />,
+                                error: "There was an error deleting the organization",
+                                success: "Organization has been deleted, redirecting to home page!",
+                              });
+                            }}
+                          >
+                            <As component={Button} variant="destructive">
+                              Continue
+                            </As>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                   <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-1 text-sm">
                     <span>Created {dayjs(organization.createdAt).fromNow()}</span>
