@@ -8,6 +8,9 @@ import {
   users_organizations,
   organizations,
 } from "../drizzle/sql/schema";
+import { User } from "./users";
+import { OrganizationJoin } from "./organizations_joins";
+import dayjs from "dayjs";
 
 export * as Organization from "./organizations";
 
@@ -93,6 +96,15 @@ export const findByName = z.function(z.tuple([z.string()])).implement(async (inp
   });
 });
 
+export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
+  return db.query.organizations.findMany({
+    with: {},
+    where(fields, operations){
+      return operations.isNull(fields.deletedAt)
+    }
+  });
+});
+
 export const all = z.function(z.tuple([])).implement(async () => {
   return db.query.organizations.findMany({
     with: {},
@@ -133,7 +145,7 @@ export const disconnectUser = z
   .implement(async (organization_id, user_id) => {
     const [deleted] = await db
       .delete(users_organizations)
-      .where(and(eq(users_organizations.organization_id, workspace_id), eq(users_organizations.user_id, user_id)))
+      .where(and(eq(users_organizations.organization_id, organization_id), eq(users_organizations.user_id, user_id)))
       .returning();
     return deleted;
   });
@@ -159,6 +171,26 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
   });
   return ws;
 });
+
+export const requestJoin = z.function(z.tuple([z.string().uuid(), z.string().uuid()])).implement(async (organization_id, user_id) => {
+  const org = await findById(organization_id);
+  const user = await User.findById(user_id);
+  if(!org){
+    throw new Error("Organization does not exist");
+  }
+  if(!user){
+    throw new Error("User does not exist");
+  }
+
+  const organizationJoin = await OrganizationJoin.create({
+    type: "request",
+    expiresAt: dayjs().add(1, "week").toDate(),
+    organization_id: org.id,
+  }, user.id);
+
+  return organizationJoin;
+});
+
 
 export const safeParseCreate = OrganizationCreateSchema.safeParse;
 export const safeParseUpdate = OrganizationUpdateSchema.safeParse;

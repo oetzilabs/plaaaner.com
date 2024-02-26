@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { lucia } from "../../../lib/auth";
+import { lucia } from "@/lib/auth";
 import { appendHeader, sendRedirect } from "vinxi/http";
 
 export async function GET(event: APIEvent) {
@@ -42,9 +42,10 @@ export async function GET(event: APIEvent) {
   const session = await lucia.createSession(id, {
     access_token,
     workspace_id,
+    organization_id: null,
   });
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.nativeEvent.context.session = session;
-  return sendRedirect(event, "/", 303);
+  return sendRedirect(event, "/setup/profile", 303);
 }

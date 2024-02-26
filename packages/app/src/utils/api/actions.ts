@@ -3,9 +3,7 @@ import { getRequestEvent } from "solid-js/web";
 import { lucia } from "../../lib/auth";
 import { appendHeader, getCookie } from "vinxi/http";
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
-import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
-import { WorkspaceCreateSchema, workspaces } from "@/core/drizzle/sql/schema";
 import { z } from "zod";
 
 export const logout = action(async () => {
@@ -37,6 +35,29 @@ export const saveUser = action(async (data: FormData) => {
   const updatedUser = await User.update(valid.data);
   return updatedUser;
 }, "users");
+
+export const disableUser = action(async () => {
+  "use server";
+  const event = getRequestEvent()!;
+  if (!event.nativeEvent.context.user) {
+    return new Error("Unauthorized");
+  }
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  if (!sessionId) {
+    return new Error("Unauthorized");
+  }
+  const { session: currentSession, user } = await lucia.validateSession(sessionId);
+  if (!currentSession || !user) {
+    throw new Error("Unauthorized");
+  }
+  const { id } = event.nativeEvent.context.user;
+  await User.markAsDeleted({
+    id,
+  });
+  await lucia.invalidateSession(sessionId);
+  appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
+  throw redirect("/");
+}, "user");
 
 export const revokeAllSessions = action(async () => {
   "use server";

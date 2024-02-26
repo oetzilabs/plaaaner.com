@@ -6,6 +6,7 @@ import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { users_organizations } from "./user_organizations";
+import { organizations_joins } from "./organizations_joins";
 
 export const users = schema.table("users", {
   ...Entity.defaults,
@@ -15,6 +16,16 @@ export const users = schema.table("users", {
 
 export const sessions = schema.table("session", {
   id: text("id").primaryKey(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  })
+  .notNull()
+  .defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, {
@@ -34,6 +45,7 @@ export const userRelation = relations(users, ({ many }) => ({
   sessions: many(sessions),
   workspaces: many(users_workspaces),
   organizations: many(users_organizations),
+  joins: many(organizations_joins),
 }));
 
 export type UserSelect = typeof users.$inferSelect;
@@ -42,3 +54,18 @@ export const UserUpdateSchema = createInsertSchema(users)
   .partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({ id: z.string().uuid() });
+
+export const sessionRelation = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id]
+  }),
+}));
+
+export type SessionSelect = typeof sessions.$inferSelect;
+export type SessionInsert = typeof sessions.$inferInsert;
+export const SessionUpdateSchema = createInsertSchema(sessions)
+  .partial()
+  .omit({ createdAt: true, updatedAt: true })
+  .extend({ id: z.string().uuid() });
+

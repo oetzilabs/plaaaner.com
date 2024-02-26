@@ -71,6 +71,20 @@
       "when": 1708678239452,
       "tag": "0009_lying_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1708943481234,
+      "tag": "0010_amusing_yellow_claw",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1708951116141,
+      "tag": "0011_nebulous_luminals",
+      "breakpoints": true
     }
   ]
 }

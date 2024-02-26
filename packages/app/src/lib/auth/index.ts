@@ -1,7 +1,7 @@
 import { Lucia, TimeSpan } from "lucia";
 
 import { luciaAdapter } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql";
-import type { UserSelect } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
+import type { UserSelect, SessionSelect } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 
 export const lucia = new Lucia(luciaAdapter, {
   sessionExpiresIn: new TimeSpan(2, "w"),
@@ -35,8 +35,4 @@ declare module "lucia" {
 }
 
 type DatabaseUserAttributes = Omit<UserSelect, "id">;
-interface DatabaseSessionAttributes {
-  access_token: string;
-  workspace_id: string;
-  organization_id: string;
-}
+type DatabaseSessionAttributes = Omit<SessionSelect, "id" | "userID" | "expiresAt" | "userId" | "createdAt" | "updatedAt">;

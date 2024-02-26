@@ -126,6 +126,9 @@ export const handler = AuthHandler({
           if (!user_) {
             user_ = await User.create({ email, name });
           }
+
+          await User.update({ id: user_.id, deletedAt: null });
+
           return response.session({
             type: "user",
             properties: {

@@ -41,7 +41,7 @@ export const SessionList = () => {
                             size="icon"
                             type="button"
                             onClick={() => {
-                              if ("clipboard" in navigator) {
+                              if ("clipboard" in navigator && s.access_token) {
                                 navigator.clipboard.writeText(s.access_token);
                                 toast.info("Access token copied to clipboard");
                               }
