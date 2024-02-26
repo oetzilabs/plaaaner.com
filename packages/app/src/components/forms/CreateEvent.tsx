@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DatePicker,
   DatePickerContent,
@@ -34,20 +34,17 @@ import {
   RadioGroupLabel,
 } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCaption, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { createNewEvent, getEventTypeId, getPreviousEvents, getRecommendedEvents } from "@/lib/api/events";
 import { cn } from "@/lib/utils";
-import { Mutations } from "@/utils/api/mutations";
-import { Queries } from "@/utils/api/queries";
-import { CreateEventFormSchema, EventType, TicketSchema } from "@/utils/schemas/event";
+import { CreateEventFormSchema, TicketSchema } from "@/utils/schemas/event";
 import { today } from "@internationalized/date";
 import { As } from "@kobalte/core";
 import { createUndoHistory } from "@solid-primitives/history";
-import { useNavigate } from "@solidjs/router";
+import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import { clientOnly } from "@solidjs/start";
-import { createMutation, createQuery, isServer } from "@tanstack/solid-query";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import tz from "dayjs/plugin/timezone";
@@ -70,11 +67,10 @@ import {
   Ticket,
   Undo,
 } from "lucide-solid";
-import { For, Match, Show, Suspense, Switch, createEffect, createMemo, createSignal, onMount } from "solid-js";
+import { For, Match, Show, Switch, createMemo, createSignal, onMount } from "solid-js";
 import { toast } from "solid-sonner";
 import { Transition } from "solid-transition-group";
 import { z } from "zod";
-import { QueryBoundary } from "../QueryBoundary";
 import URLPreview from "../URLPreview";
 import { EditTicketForm } from "./EditTicketForm";
 dayjs.extend(tz);
@@ -100,6 +96,11 @@ const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | un
 };
 
 export default function CreateConcertForm(props: { event_type: z.infer<typeof CreateEventFormSchema>["event_type"] }) {
+  const previousEvents = createAsync(() => getPreviousEvents());
+  const recommendedEvents = createAsync(() => getRecommendedEvents());
+  const event_type_id = createAsync(() => getEventTypeId(props.event_type));
+  const isCreatingEvent = useSubmission(createNewEvent);
+  const createEvent = useAction(createNewEvent);
   const DEFAULT_EVENT: z.infer<typeof CreateEventFormSchema> = {
     event_type: props.event_type,
     name: "",
@@ -150,71 +151,28 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
   const [locationQuery, setLocationQuery] = createSignal("");
   const [urlQuery, setURLQuery] = createSignal("");
 
-  const previousEvents = createQuery(() => ({
-    queryKey: ["previousEvents", newEvent().event_type || props.event_type],
-    queryFn: async (k) => {
-      const event_type = k.queryKey[1];
-      const v = EventType.safeParse(event_type);
-      if (!v.success) {
-        return Promise.resolve<Awaited<ReturnType<typeof Queries.Events.all>>>([]);
-      }
-      return Queries.Events.all({
-        event_type: v.data,
-      });
-    },
-    initialData: [],
-    get enabled() {
-      return !isServer;
-    },
-  }));
-
-  const recommendedEvents = createQuery(() => ({
-    queryKey: ["recommendedEvents", newEvent().event_type || props.event_type],
-    queryFn: async (k) => {
-      const event_type = k.queryKey[1];
-      const v = EventType.safeParse(event_type);
-      if (!v.success) {
-        return Promise.resolve<Awaited<ReturnType<typeof Queries.Events.recommended>>>([]);
-      }
-      return Queries.Events.recommended({
-        event_type: v.data,
-      });
-    },
-    initialData: [],
-    get enabled() {
-      return !isServer;
-    },
-  }));
   onMount(() => {
     setTimeZone(dayjs.tz.guess());
-    previousEvents.refetch();
-    recommendedEvents.refetch();
   });
+
   const suggestNewNames = () => {
     const ne = newEvent();
     if (!ne) {
       return [];
     }
     const name = ne.name;
-    if (previousEvents.isPending || previousEvents.fetchStatus === "fetching") {
-      return [];
-    }
-    if (previousEvents.isFetching) {
-      return [];
-    }
-    if (!previousEvents.isSuccess) {
+    const pE = previousEvents();
+    if (!pE) {
       return [];
     }
     if (name.length === 0) {
       return [];
     }
     // is the name already in the list?
-    const existsStartingWithLowerCase = previousEvents.data.find((pConcert) =>
+    const existsStartingWithLowerCase = pE.find((pConcert) =>
       pConcert.name.toLowerCase().startsWith(name.toLowerCase())
     );
-    const existsExactLowercase = previousEvents.data.find(
-      (pConcert) => pConcert.name.toLowerCase() === name.toLowerCase()
-    );
+    const existsExactLowercase = pE.find((pConcert) => pConcert.name.toLowerCase() === name.toLowerCase());
 
     if (!existsExactLowercase) {
       return [];
@@ -222,7 +180,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     if (!existsStartingWithLowerCase) {
       return [];
     }
-    const lastCounter = previousEvents.data.reduce((acc, pConcert) => {
+    const lastCounter = pE.reduce((acc, pConcert) => {
       const pConcertName = pConcert.name.toLowerCase();
 
       // find the last number in the name, if it exists. the name can be "name-1" or "name 1" or even "name1"
@@ -248,28 +206,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     return suggestions;
   };
 
-  const handleSubmit = async (event: Event) => {
-    event.preventDefault();
-    const validation = CreateEventFormSchema.safeParse(newEvent());
-    if (!validation.success) {
-      const niceError = Object.entries(validation.error.flatten().fieldErrors).map(([key, value]) => {
-        return `${key}: ${value}`;
-      });
-      toast.error("Error Creating Concert", {
-        description: niceError,
-        action: {
-          label: "Fix",
-          onClick: () => {
-            formRef?.reportValidity();
-          },
-        },
-      });
-      return;
-    }
-
-    return await createEvent.mutateAsync(validation.data);
-  };
-
   const navigate = useNavigate();
 
   const isAllowedToCreateConcert = () => {
@@ -281,29 +217,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     const secondCondition = sn.length === 0;
     return firstCondition.success && secondCondition;
   };
-
-  const createEvent = createMutation(() => ({
-    mutationKey: ["createConcert"],
-    mutationFn: async (data: Parameters<typeof Mutations.Concerts.create>[0]) => {
-      return Mutations.Concerts.create(data);
-    },
-    onSuccess: (data) => {
-      toast.info(`Concert '${data.name}' Created!`, {
-        action: {
-          label: "View Concert",
-          onClick: () => {
-            navigate(`/concerts/${data.id}`);
-          },
-        },
-      });
-      clearEventHistory();
-    },
-    onError: (error) => {
-      toast.error("Error Creating Concert", {
-        description: error.message,
-      });
-    },
-  }));
 
   const isFormEmpty = (concert: z.infer<typeof CreateEventFormSchema>) => {
     // check deep equality
@@ -371,6 +284,11 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     } as const;
   };
 
+  const handleSubmit = async (e: Event) => {
+    e.preventDefault();
+    await createEvent(newEvent());
+  };
+
   return (
     <div class="flex flex-col gap-4 items-start w-full">
       <div class="flex flex-col">
@@ -389,6 +307,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
       <h1 class="text-3xl font-semibold w-full capitalize">Create {newEvent().event_type}</h1>
       <div class="flex flex-col-reverse lg:flex-row lg:justify-between gap-8 py-4 w-full">
         <form onSubmit={handleSubmit} class="flex flex-col gap-6 xl:w-1/2 lg:w-2/3 w-full self-start" ref={formRef!}>
+          <Show when={event_type_id()}>{(eti) => <input hidden value={eti()} name="event_type_id" />}</Show>
           <Tabs defaultValue="general" value={currentTab()} onChange={(value) => setCurrentTab(value as TabValue)}>
             <TabsList>
               <TabsTrigger value="general" class="text-sm font-medium leading-none gap-2 pl-3">
@@ -429,7 +348,10 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                     setNewEvent((ev) => ({ ...ev, name: value }));
                   }}
                 />
-                <Show when={previousEvents.isSuccess} fallback={<Loader2 class="w-4 h-4 animate-spin" />}>
+                <Show
+                  when={previousEvents() !== undefined && previousEvents()}
+                  fallback={<Loader2 class="w-4 h-4 animate-spin" />}
+                >
                   <Show when={suggestNewNames().length > 0 && suggestNewNames()}>
                     {(v) => (
                       <>
@@ -471,7 +393,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   What is the concert about?
                 </TextFieldLabel>
                 <TextFieldInput
-                  value={newEvent().description}
+                  value={newEvent().description ?? ""}
                   onChange={(e) => {
                     const value = e.currentTarget.value;
                     setNewEvent((ev) => ({ ...ev, description: value }));
@@ -1091,7 +1013,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           aria-label="Add Ticket"
                           class="flex flex-row items-center justify-center gap-2 w-max"
                           disabled={
-                            createEvent.isPending ||
+                            isCreatingEvent.pending ||
                             tooManyTicketsCheck().type === "error" ||
                             tooManyTicketsCheck().type === "success:done"
                           }
@@ -1143,43 +1065,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               </Transition>
             </TabsContent>
           </Tabs>
-          <div>
-            <Show when={createEvent.isError && createEvent.error}>
-              {(e) => (
-                <div class="flex flex-row items-center gap-2 text-red-500 justify-between w-full">
-                  <div class="w-max flex flex-row items-center gap-2">
-                    <CircleSlash class="w-4 h-4" />
-                    <span class="text-sm font-medium leading-none">{e().message}</span>
-                  </div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <As component={Button} variant="destructive" size="sm" class="w-max">
-                        More Info
-                      </As>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogTitle>Error Creating Concert</DialogTitle>
-                      <DialogDescription>
-                        <pre class="bg-background border border-muted rounded p-2">
-                          {JSON.stringify(e().cause, null, 2)}
-                        </pre>
-                      </DialogDescription>
-                      <DialogFooter>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            createEvent.reset();
-                          }}
-                        >
-                          Close
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              )}
-            </Show>
-          </div>
           <div class="flex flex-row items-center justify-between gap-2 w-full">
             <div class="flex flex-row items-center gap-2">
               <Button
@@ -1193,7 +1078,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   formRef.reset();
                   clearEventHistory();
                 }}
-                disabled={createEvent.isPending || isFormEmpty(newEvent())}
+                disabled={isCreatingEvent.pending || isFormEmpty(newEvent())}
               >
                 Reset Form
                 <Eraser class="w-4 h-4" />
@@ -1208,7 +1093,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   const eH = eventHistory();
                   eH.undo();
                 }}
-                disabled={createEvent.isPending || isFormEmpty(newEvent())}
+                disabled={isCreatingEvent.pending || isFormEmpty(newEvent())}
               >
                 <Undo class="w-4 h-4" />
               </Button>
@@ -1222,7 +1107,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   const eH = eventHistory();
                   eH.redo();
                 }}
-                disabled={createEvent.isPending || isFormEmpty(newEvent()) || !eventHistory().canRedo()}
+                disabled={isCreatingEvent.pending || isFormEmpty(newEvent()) || !eventHistory().canRedo()}
               >
                 <Redo class="w-4 h-4" />
               </Button>
@@ -1231,7 +1116,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               <Button
                 size="icon"
                 variant={currentTab() === "general" ? "outline" : "secondary"}
-                disabled={createEvent.isPending || currentTab() === "general"}
+                disabled={isCreatingEvent.pending || currentTab() === "general"}
                 aria-label="Previous Tab"
                 onClick={() => handleTabChange("backward")}
               >
@@ -1240,7 +1125,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               <Button
                 size="icon"
                 variant={currentTab() === "tickets" ? "outline" : "secondary"}
-                disabled={createEvent.isPending || currentTab() === "tickets"}
+                disabled={isCreatingEvent.pending || currentTab() === "tickets"}
                 aria-label="Next Tab"
                 onClick={() => handleTabChange("forward")}
               >
@@ -1250,28 +1135,31 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                 type="submit"
                 aria-label="Create Concert"
                 class="flex flex-row items-center justify-between gap-2"
-                disabled={createEvent.isPending || !isAllowedToCreateConcert()}
+                disabled={isCreatingEvent.pending || !isAllowedToCreateConcert()}
               >
-                <Switch>
-                  <Match when={createEvent.isPending}>
+                <Switch
+                  fallback={
+                    <>
+                      <span class="text-sm font-medium leading-none">Create Concert</span>
+                      <Plus class="w-4 h-4" />
+                    </>
+                  }
+                >
+                  <Match when={isCreatingEvent.pending}>
                     <span class="text-sm font-medium leading-none">Creating Concert...</span>
                     <Loader2 class="w-4 h-4 animate-spin" />
                   </Match>
-                  <Match when={createEvent.isSuccess}>
+                  <Match when={isCreatingEvent.result}>
                     <span class="text-sm font-medium leading-none">Concert Created!</span>
                     <CheckCheck class="w-4 h-4" />
                   </Match>
-                  <Match when={createEvent.isError}>
+                  {/* <Match when={& !isCreatingEvent.pending && !isCreatingEvent.result}>
                     <span class="text-sm font-medium leading-none">Error Creating Concert</span>
                     <AlertCircleIcon class="w-4 h-4" />
-                  </Match>
-                  <Match when={createEvent.isIdle}>
-                    <span class="text-sm font-medium leading-none">Create Concert</span>
-                    <Plus class="w-4 h-4" />
-                  </Match>
+                  </Match> */}
                 </Switch>
               </Button>
-              <Show when={createEvent.isSuccess && createEvent.data}>
+              <Show when={!isCreatingEvent.pending && isCreatingEvent.result}>
                 {(data) => (
                   <Button
                     variant="secondary"
@@ -1286,104 +1174,80 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
             </div>
           </div>
         </form>
-
         <div class="lg:w-max w-full flex flex-col gap-8">
-          <div class="w-full flex flex-col gap-4">
-            <div class="w-full flex flex-row items-center justify-between w-min-72">
-              <div
-                class={cn("flex flex-row gap-2 items-center", {
-                  "opacity-50": newEvent().referenced_from !== undefined,
-                })}
-              >
-                <History class="w-4 h-4" />
-                <h3 class="text-base font-medium capitalize">Previous {newEvent().event_type}</h3>
-              </div>
-              <div class="flex flex-row items-center gap-2">
-                <Button
-                  size="sm"
-                  class="md:hidden flex w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                  variant="outline"
-                  onClick={() => {
-                    if (!formRef) return;
-                    formRef.reset();
-                    setNewEvent(DEFAULT_EVENT);
-                  }}
-                  aria-label="Resets the Form"
-                  disabled={createEvent.isPending || isFormEmpty(newEvent())}
-                >
-                  Reset Form
-                  <Eraser class="w-3 h-3" />
-                </Button>
-                <Button
-                  size="sm"
-                  class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                  variant="secondary"
-                  onClick={() => {
-                    const eH = eventHistory();
-                    eH.undo();
-                  }}
-                  aria-label={`Undo Fill From Previous ${newEvent().event_type}`}
-                  disabled={
-                    newEvent().referenced_from === undefined || createEvent.isPending || isFormEmpty(newEvent())
-                  }
-                >
-                  Undo
-                  <Undo class="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-            <Alert
-              class={cn("lg:max-w-72 w-full flex flex-col gap-2 bg-muted rounded", {
-                "opacity-50": newEvent().referenced_from !== undefined,
-              })}
-            >
-              <AlertDescription class="text-xs">
-                You can also fill the form with a previous {newEvent().event_type} to save time.
-              </AlertDescription>
-            </Alert>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-max w-full self-end ">
-              <QueryBoundary
-                query={previousEvents}
-                loadingFallback={
-                  <For each={[1, 2, 3]}>
-                    {(i) => (
-                      <Skeleton>
-                        <Card class="rounded-md shadow-sm lg:w-max w-full min-w-72">
-                          <CardHeader class="flex flex-col p-3 pb-2 ">
-                            <CardTitle class="text-sm">Loading...</CardTitle>
-                          </CardHeader>
-                          <CardContent class="p-3 pt-0 pb-2">
-                            <CardDescription class="text-xs">Loading...</CardDescription>
-                          </CardContent>
-                          <CardFooter class="flex flex-row items-center justify-between p-3 pt-0">
-                            <div></div>
-                            <Button size="sm" variant="outline">
-                              Use Concert
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      </Skeleton>
-                    )}
-                  </For>
-                }
-                errorFallback={
-                  <div class="flex flex-col gap-2 w-full">
-                    <span class="text-sm font-medium leading-none text-red-500">
-                      Error Fetching Previous {newEvent().event_type}
-                    </span>
-                    <span class="text-sm font-medium leading-none">{previousEvents.error?.message}</span>
+          <Show when={previousEvents() != undefined && previousEvents()}>
+            {(pE) => (
+              <div class="w-full flex flex-col gap-4">
+                <div class="w-full flex flex-row items-center justify-between w-min-72">
+                  <div
+                    class={cn("flex flex-row gap-2 items-center", {
+                      "opacity-50": newEvent().referenced_from !== undefined,
+                    })}
+                  >
+                    <History class="w-4 h-4" />
+                    <h3 class="text-base font-medium capitalize">Previous {newEvent().event_type}</h3>
                   </div>
-                }
-                notFoundFallback={
-                  <div class="flex flex-col gap-2 w-full">
-                    <span class="text-sm font-medium leading-none text-neutral-500">
-                      No Previous {newEvent().event_type} Found
-                    </span>
+                  <div class="flex flex-row items-center gap-2">
+                    <Button
+                      size="sm"
+                      class="md:hidden flex w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
+                      variant="outline"
+                      onClick={() => {
+                        if (!formRef) return;
+                        formRef.reset();
+                        setNewEvent(DEFAULT_EVENT);
+                      }}
+                      aria-label="Resets the Form"
+                      disabled={isCreatingEvent.pending || isFormEmpty(newEvent())}
+                    >
+                      Reset Form
+                      <Eraser class="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
+                      variant="secondary"
+                      onClick={() => {
+                        const eH = eventHistory();
+                        eH.undo();
+                      }}
+                      aria-label={`Undo Fill From Previous ${newEvent().event_type}`}
+                      disabled={
+                        newEvent().referenced_from === undefined || isCreatingEvent.pending || isFormEmpty(newEvent())
+                      }
+                    >
+                      Undo
+                      <Undo class="w-3 h-3" />
+                    </Button>
                   </div>
-                }
-              >
-                {(pE) => (
-                  <For each={pE.slice(0, 3)}>
+                </div>
+                <Show when={pE().length > 0}>
+                  <Alert
+                    class={cn("lg:max-w-72 w-full flex flex-col gap-2 bg-muted rounded", {
+                      "opacity-50": newEvent().referenced_from !== undefined,
+                    })}
+                  >
+                    <AlertDescription class="text-xs">
+                      You can also fill the form with a previous {newEvent().event_type} to save time.
+                    </AlertDescription>
+                  </Alert>
+                </Show>
+                <div
+                  class={cn(
+                    "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 w-full self-end min-w-[250px]",
+                    {
+                      "lg:w-max": pE().length > 0,
+                    }
+                  )}
+                >
+                  <For
+                    each={pE().slice(0, 3)}
+                    fallback={
+                      <div class="lg:max-w-72 w-full flex flex-col gap-2 border border-muted rounded p-2 items-center justify-center">
+                        <span class="text-xs text-muted-foreground">No previous Events</span>
+                      </div>
+                    }
+                  >
                     {(concert, index) => (
                       <Card
                         class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
@@ -1425,106 +1289,83 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       </Card>
                     )}
                   </For>
-                )}
-              </QueryBoundary>
-            </div>
-          </div>
-          <div class="w-full flex flex-col gap-4">
-            <div class="w-full flex flex-row items-center justify-between w-min-72">
-              <div
-                class={cn("flex flex-row gap-2 items-center", {
-                  "opacity-50": newEvent().referenced_from !== undefined,
-                })}
-              >
-                <Sparkles class="w-4 h-4" />
-                <h3 class="text-base font-medium capitalize">Recommended </h3>
+                </div>
               </div>
-              <div class="flex flex-row items-center gap-2">
-                <Button
-                  size="sm"
-                  class="md:hidden flex w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                  variant="outline"
-                  onClick={() => {
-                    if (!formRef) return;
-                    formRef.reset();
-                    setNewEvent(DEFAULT_EVENT);
-                  }}
-                  aria-label="Resets the Form"
-                  disabled={createEvent.isPending || isFormEmpty(newEvent())}
-                >
-                  Reset Form
-                  <Eraser class="w-3 h-3" />
-                </Button>
-                <Button
-                  size="sm"
-                  class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                  variant="secondary"
-                  onClick={() => {
-                    const eH = eventHistory();
-                    eH.undo();
-                  }}
-                  aria-label={`Undo Fill From Previous ${newEvent().event_type}`}
-                  disabled={
-                    newEvent().referenced_from === undefined || createEvent.isPending || isFormEmpty(newEvent())
-                  }
-                >
-                  Undo
-                  <Undo class="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-            <Alert
-              class={cn("lg:max-w-72 w-full flex flex-col gap-2 bg-muted rounded", {
-                "opacity-50": newEvent().referenced_from !== undefined,
-              })}
-            >
-              <AlertDescription class="text-xs">
-                You can also fill the form with a recommended {newEvent().event_type} to save time.
-              </AlertDescription>
-            </Alert>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 lg:w-max w-full self-end ">
-              <QueryBoundary
-                query={recommendedEvents}
-                loadingFallback={
-                  <For each={[1, 2, 3]}>
-                    {(i) => (
-                      <Skeleton>
-                        <Card class="rounded-md shadow-sm lg:w-max w-full min-w-72">
-                          <CardHeader class="flex flex-col p-3 pb-2 ">
-                            <CardTitle class="text-sm">Loading...</CardTitle>
-                          </CardHeader>
-                          <CardContent class="p-3 pt-0 pb-2">
-                            <CardDescription class="text-xs">Loading...</CardDescription>
-                          </CardContent>
-                          <CardFooter class="flex flex-row items-center justify-between p-3 pt-0">
-                            <div></div>
-                            <Button size="sm" variant="outline">
-                              Use Concert
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      </Skeleton>
-                    )}
-                  </For>
-                }
-                errorFallback={
-                  <div class="flex flex-col gap-2 w-full">
-                    <span class="text-sm font-medium leading-none text-red-500">
-                      Error Fetching Recommended {newEvent().event_type}
-                    </span>
-                    <span class="text-sm font-medium leading-none">{recommendedEvents.error?.message}</span>
+            )}
+          </Show>
+          <Show when={recommendedEvents() != undefined && recommendedEvents()}>
+            {(rE) => (
+              <div class="w-full flex flex-col gap-4">
+                <div class="w-full flex flex-row items-center justify-between w-min-72">
+                  <div
+                    class={cn("flex flex-row gap-2 items-center", {
+                      "opacity-50": newEvent().referenced_from !== undefined,
+                    })}
+                  >
+                    <Sparkles class="w-4 h-4" />
+                    <h3 class="text-base font-medium capitalize">Recommended </h3>
                   </div>
-                }
-                notFoundFallback={
-                  <div class="flex flex-col gap-2 w-full">
-                    <span class="text-sm font-medium leading-none text-neutral-500">
-                      No Recommended {newEvent().event_type} Found
-                    </span>
+                  <div class="flex flex-row items-center gap-2">
+                    <Button
+                      size="sm"
+                      class="md:hidden flex w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
+                      variant="outline"
+                      onClick={() => {
+                        if (!formRef) return;
+                        formRef.reset();
+                        setNewEvent(DEFAULT_EVENT);
+                      }}
+                      aria-label="Resets the Form"
+                      disabled={isCreatingEvent.pending || isFormEmpty(newEvent())}
+                    >
+                      Reset Form
+                      <Eraser class="w-3 h-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
+                      variant="secondary"
+                      onClick={() => {
+                        const eH = eventHistory();
+                        eH.undo();
+                      }}
+                      aria-label={`Undo Fill From Previous ${newEvent().event_type}`}
+                      disabled={
+                        newEvent().referenced_from === undefined || isCreatingEvent.pending || isFormEmpty(newEvent())
+                      }
+                    >
+                      Undo
+                      <Undo class="w-3 h-3" />
+                    </Button>
                   </div>
-                }
-              >
-                {(rE) => (
-                  <For each={rE.slice(0, 2)}>
+                </div>
+                <Show when={rE().length > 0}>
+                  <Alert
+                    class={cn("lg:max-w-72 w-full flex flex-col gap-2 bg-muted rounded", {
+                      "opacity-50": newEvent().referenced_from !== undefined,
+                    })}
+                  >
+                    <AlertDescription class="text-xs">
+                      You can also fill the form with a recommended {newEvent().event_type} to save time.
+                    </AlertDescription>
+                  </Alert>
+                </Show>
+                <div
+                  class={cn(
+                    "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 w-full self-end min-w-[250px]",
+                    {
+                      "lg:w-max": rE().length > 0,
+                    }
+                  )}
+                >
+                  <For
+                    each={rE().slice(0, 3)}
+                    fallback={
+                      <div class="lg:max-w-72 w-full flex flex-col gap-2 border border-muted rounded p-2 items-center justify-center">
+                        <span class="text-xs text-muted-foreground">No previous Events</span>
+                      </div>
+                    }
+                  >
                     {(concert, index) => (
                       <Card
                         class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
@@ -1566,10 +1407,10 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       </Card>
                     )}
                   </For>
-                )}
-              </QueryBoundary>
-            </div>
-          </div>
+                </div>
+              </div>
+            )}
+          </Show>
         </div>
       </div>
     </div>

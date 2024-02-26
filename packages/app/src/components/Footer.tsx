@@ -72,7 +72,7 @@ export function Footer() {
             <For each={Object.entries(footer)}>
               {([title, links]) => (
                 <div class="flex flex-col gap-4">
-                  <h4 class="text-base font-semibold text-indigo-400 dark:text-indigo-800">{title}</h4>
+                  <h4 class="text-base font-semibold text-accent-2">{title}</h4>
                   <div class="flex flex-col gap-1">
                     <For each={links}>
                       {(link) => (
