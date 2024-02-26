@@ -12,7 +12,9 @@ import { users_organizations } from "./user_organizations";
 export const organizations = schema.table("organizations", {
   ...Entity.defaults,
   name: text("name").notNull(),
-  owner_id: uuid("owner").references(() => users.id).notNull(),
+  owner_id: uuid("owner")
+    .references(() => users.id)
+    .notNull(),
 });
 
 export const organizations_relation = relations(organizations, ({ many, one }) => ({
@@ -28,7 +30,9 @@ export const organizations_relation = relations(organizations, ({ many, one }) =
 export type OrganizationSelect = typeof organizations.$inferSelect;
 export type OrganizationInsert = typeof organizations.$inferInsert;
 
-export const OrganizationCreateSchema = createInsertSchema(organizations);
+export const OrganizationCreateSchema = createInsertSchema(organizations).omit({
+  owner_id: true,
+});
 export const OrganizationUpdateSchema = OrganizationCreateSchema.partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({

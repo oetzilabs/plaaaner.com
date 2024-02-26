@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, notExists, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
@@ -99,9 +99,9 @@ export const findByName = z.function(z.tuple([z.string()])).implement(async (inp
 export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
   return db.query.organizations.findMany({
     with: {},
-    where(fields, operations){
-      return operations.isNull(fields.deletedAt)
-    }
+    where(fields, operations) {
+      return operations.isNull(fields.deletedAt);
+    },
   });
 });
 
@@ -172,25 +172,58 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
   return ws;
 });
 
-export const requestJoin = z.function(z.tuple([z.string().uuid(), z.string().uuid()])).implement(async (organization_id, user_id) => {
-  const org = await findById(organization_id);
-  const user = await User.findById(user_id);
-  if(!org){
-    throw new Error("Organization does not exist");
-  }
-  if(!user){
-    throw new Error("User does not exist");
-  }
-
-  const organizationJoin = await OrganizationJoin.create({
-    type: "request",
-    expiresAt: dayjs().add(1, "week").toDate(),
-    organization_id: org.id,
-  }, user.id);
-
-  return organizationJoin;
+export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+  const ws = await db.query.organizations.findFirst({
+    where: (fields, operators) => and(operators.eq(fields.owner_id, user_id), operators.isNull(fields.deletedAt)),
+    orderBy(fields, operators) {
+      return operators.desc(fields.createdAt);
+    },
+  });
+  return ws;
 });
 
+export const requestJoin = z
+  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .implement(async (organization_id, user_id) => {
+    const org = await findById(organization_id);
+    const user = await User.findById(user_id);
+    if (!org) {
+      throw new Error("Organization does not exist");
+    }
+    if (!user) {
+      throw new Error("User does not exist");
+    }
+
+    const organizationJoin = await OrganizationJoin.create(
+      {
+        type: "request",
+        expiresAt: dayjs().add(1, "week").toDate(),
+        organization_id: org.id,
+      },
+      user.id
+    );
+
+    return organizationJoin;
+  });
+
+export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+  const usersOrgsResult = await db.query.users_organizations.findMany({
+    where(fields, operators) {
+      return operators.and(operators.eq(fields.user_id, user_id), operators.isNull(fields.deletedAt));
+    },
+  });
+  const userOrgs = usersOrgsResult.map((uo) => uo.organization_id);
+  const orgs = await db.query.organizations.findMany({
+    where(fields, operators) {
+      return operators.and(operators.notInArray(fields.id, userOrgs), operators.isNull(fields.deletedAt));
+    },
+    with: {
+      owner: true,
+      users: true,
+    },
+  });
+  return orgs;
+});
 
 export const safeParseCreate = OrganizationCreateSchema.safeParse;
 export const safeParseUpdate = OrganizationUpdateSchema.safeParse;

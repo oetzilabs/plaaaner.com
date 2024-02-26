@@ -25,7 +25,7 @@ export async function GET(event: APIEvent) {
   }
   // console.log({ access_token });
 
-  const { id, workspace_id } = await fetch(new URL("/session", import.meta.env.VITE_API_URL), {
+  const { id, workspace_id, organization_id } = await fetch(new URL("/session", import.meta.env.VITE_API_URL), {
     headers: {
       Authorization: `Bearer ${access_token}`,
     },
@@ -42,10 +42,14 @@ export async function GET(event: APIEvent) {
   const session = await lucia.createSession(id, {
     access_token,
     workspace_id,
-    organization_id: null,
+    organization_id,
   });
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.nativeEvent.context.session = session;
-  return sendRedirect(event, "/setup/profile", 303);
+
+  if (!organization_id || !workspace_id) {
+    return sendRedirect(event, "/setup/profile", 303);
+  }
+  return sendRedirect(event, "/dashboard", 303);
 }

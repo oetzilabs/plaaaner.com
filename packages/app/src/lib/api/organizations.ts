@@ -10,6 +10,7 @@ export const createOrganization = action(async (form: FormData) => {
   const event = getRequestEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
   if (!sessionId) {
     return new Error("Unauthorized");
   }
@@ -21,17 +22,25 @@ export const createOrganization = action(async (form: FormData) => {
   }
 
   const data = Object.fromEntries(form.entries());
+
   const validation = Organization.safeParseCreate(data);
+
   if (!validation.success) {
     throw validation.error;
   }
 
+  if (validation.data.name.length === 0) {
+    throw new Error("Organization name is too short. Please set a name");
+  }
+
   const organization = await Organization.create(validation.data, user.id);
+
   if (!organization) {
     throw new Error("Couldn't create organization");
   }
 
   const connected = await Organization.connectUser(organization.id, user.id);
+
   if (!connected) {
     throw new Error("Couldn't connect user to organization");
   }
@@ -41,6 +50,7 @@ export const createOrganization = action(async (form: FormData) => {
   }
 
   await lucia.invalidateSession(sessionId);
+
   const session = await lucia.createSession(
     user.id,
     {
@@ -62,31 +72,40 @@ export const createOrganization = action(async (form: FormData) => {
 export const getOrganizations = cache(async () => {
   "use server";
   const event = getRequestEvent()!;
+
   if (!event.nativeEvent.context.user) {
     throw redirect("/auth/login");
   }
+
   const user = event.nativeEvent.context.user;
+
   const o = await Organization.findManyByUserId(user.id);
+
   return o;
 }, "organizations");
 
 export const getOrganization = cache(async () => {
   "use server";
   const event = getRequestEvent()!;
+
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
   if (!sessionId) {
     return new Error("Unauthorized");
   }
 
-  const { session, user } = await lucia.validateSession(sessionId);
+  const { session } = await lucia.validateSession(sessionId);
+
   if (!session) {
     throw redirect("/auth/login");
   }
+
   if (!session.organization_id) {
     return null;
   }
 
   const organizations = await Organization.findById(session.organization_id);
+
   return organizations;
 }, "organization");
 
@@ -95,6 +114,7 @@ export const requestOrganizationJoin = action(async (form: FormData) => {
   const event = getRequestEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
   if (!sessionId) {
     return new Error("Unauthorized");
   }
@@ -106,26 +126,29 @@ export const requestOrganizationJoin = action(async (form: FormData) => {
   }
 
   const data = Object.fromEntries(form.entries());
-  const validation = z.object({
-    organization_id: z.string().uuid()
-  }).safeParse(data);
 
-  if(!session) {
+  const validation = z
+    .object({
+      organization_id: z.string().uuid(),
+    })
+    .safeParse(data);
+
+  if (!session) {
     throw redirect("/auth/login");
   }
-
 
   if (!validation.success) {
     console.error(validation.error);
     throw validation.error;
   }
 
-  if(session.organization_id !== null && session.organization_id === validation.data.organization_id){
+  if (session.organization_id !== null && session.organization_id === validation.data.organization_id) {
     // user is already connected to the organization
     throw redirect("/dashboard");
   }
 
   const organization = await Organization.findById(validation.data.organization_id);
+
   if (!organization) {
     throw new Error("Organization does not exist");
   }
@@ -140,5 +163,23 @@ export const requestOrganizationJoin = action(async (form: FormData) => {
 export const getAllOrganizations = cache(async () => {
   "use server";
   const orgs = await Organization.all();
+  return orgs;
+}, "allOrganizations");
+
+export const getNoneConnectedOrganizations = cache(async () => {
+  "use server";
+  const event = getRequestEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { user } = await lucia.validateSession(sessionId);
+
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+  const orgs = await Organization.notConnectedToUserById(user.id);
   return orgs;
 }, "allOrganizations");
