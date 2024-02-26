@@ -65,7 +65,7 @@ const CapacitySchema = z.discriminatedUnion("capacity_type", [
 const BaseEventSchema = z.object({
   referenced_from: z.string().optional(),
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
-  description: z.string().min(3).optional(),
+  description: z.string().min(3).optional().nullable(),
   days: z.array(z.date()).optional(),
   duration: z.number().optional(),
   capacity: CapacitySchema,

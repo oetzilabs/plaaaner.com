@@ -1,17 +1,20 @@
-import { text, uuid } from "drizzle-orm/pg-core";
-import { Entity } from "./entity";
-import { schema } from "./utils";
+import { relations } from "drizzle-orm";
+import { uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
-import { organizations } from "./organization";
-import { workspaces } from "./workspaces";
+import { Entity } from "./entity";
 import { events } from "./events";
+import { organizations } from "./organization";
+import { schema } from "./utils";
 
 export const organizations_events = schema.table("organizations_events", {
   ...Entity.defaults,
-  organization_id: uuid("organization_id").references(() => organizations.id),
-  event_id: uuid("event_id").references(() => events.id),
+  organization_id: uuid("organization_id")
+    .references(() => organizations.id)
+    .notNull(),
+  event_id: uuid("event_id")
+    .references(() => events.id)
+    .notNull(),
 });
 
 export const organizations_events_relation = relations(organizations_events, ({ many, one }) => ({
