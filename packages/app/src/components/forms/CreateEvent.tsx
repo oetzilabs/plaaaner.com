@@ -19,14 +19,6 @@ import {
   DatePickerViewTrigger,
 } from "@/components/ui/date-picker";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   RadioGroup,
   RadioGroupItem,
   RadioGroupItemControl,
@@ -37,9 +29,15 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCaption, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
-import { createNewEvent, getEventTypeId, getPreviousEvents, getRecommendedEvents } from "@/lib/api/events";
+import {
+  createNewEvent,
+  getDefaultFreeTicketType,
+  getEventTypeId,
+  getPreviousEvents,
+  getRecommendedEvents,
+} from "@/lib/api/events";
 import { cn } from "@/lib/utils";
-import { CreateEventFormSchema, TicketSchema } from "@/utils/schemas/event";
+import { BaseTicketSchema, CreateEventFormSchema } from "@/utils/schemas/event";
 import { today } from "@internationalized/date";
 import { As } from "@kobalte/core";
 import { createUndoHistory } from "@solid-primitives/history";
@@ -49,18 +47,20 @@ import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import tz from "dayjs/plugin/timezone";
 import {
-  AlertCircleIcon,
   ArrowLeft,
   Calendar,
   CheckCheck,
-  CircleSlash,
   Clock,
+  Clover,
+  Container,
   Eraser,
+  Globe,
   History,
   Library,
   Loader2,
   MapPin,
   Minus,
+  PartyPopper,
   Plus,
   Redo,
   Sparkles,
@@ -72,6 +72,7 @@ import { toast } from "solid-sonner";
 import { Transition } from "solid-transition-group";
 import { z } from "zod";
 import URLPreview from "../URLPreview";
+import { TextFieldTextArea } from "../ui/textarea";
 import { EditTicketForm } from "./EditTicketForm";
 dayjs.extend(tz);
 dayjs.extend(advancedFormat);
@@ -95,12 +96,14 @@ const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | un
   },
 };
 
-export default function CreateConcertForm(props: { event_type: z.infer<typeof CreateEventFormSchema>["event_type"] }) {
+export default function CreatePlanForm(props: { event_type: z.infer<typeof CreateEventFormSchema>["event_type"] }) {
   const previousEvents = createAsync(() => getPreviousEvents());
   const recommendedEvents = createAsync(() => getRecommendedEvents());
   const event_type_id = createAsync(() => getEventTypeId(props.event_type));
-  const isCreatingEvent = useSubmission(createNewEvent);
+  const defaultFreeTicketType = createAsync(() => getDefaultFreeTicketType());
   const createEvent = useAction(createNewEvent);
+  const isCreatingEvent = useSubmission(createNewEvent);
+
   const DEFAULT_EVENT: z.infer<typeof CreateEventFormSchema> = {
     event_type: props.event_type,
     name: "",
@@ -111,17 +114,18 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
       capacity_type: "none",
       value: "none",
     },
-    duration: 60,
     location: {
-      location_type: "venue",
-      address: "",
+      location_type: "other",
+      details: "",
     },
   };
+
+  const navigate = useNavigate();
+
   let formRef: HTMLFormElement;
+
   const [newEvent, setNewEvent] = createSignal<z.infer<typeof CreateEventFormSchema>>(DEFAULT_EVENT);
   const [trackClearEvent, clearEventHistory] = createSignal(undefined, { equals: false });
-  const [timezone, setTimeZone] = createSignal("UTC");
-
   const eventHistory = createMemo(() => {
     // track what should rerun the memo
     trackClearEvent();
@@ -138,8 +142,12 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     );
   });
 
-  const [currentTab, setCurrentTab] = createSignal<TabValue>("general");
+  const [timezone, setTimeZone] = createSignal("UTC");
+  onMount(() => {
+    setTimeZone(dayjs.tz.guess());
+  });
 
+  const [currentTab, setCurrentTab] = createSignal<TabValue>("general");
   const handleTabChange = (direction: "forward" | "backward") => {
     const current = currentTab();
     const next = TabMovement[direction][current];
@@ -150,10 +158,6 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
 
   const [locationQuery, setLocationQuery] = createSignal("");
   const [urlQuery, setURLQuery] = createSignal("");
-
-  onMount(() => {
-    setTimeZone(dayjs.tz.guess());
-  });
 
   const suggestNewNames = () => {
     const ne = newEvent();
@@ -169,10 +173,8 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
       return [];
     }
     // is the name already in the list?
-    const existsStartingWithLowerCase = pE.find((pConcert) =>
-      pConcert.name.toLowerCase().startsWith(name.toLowerCase())
-    );
-    const existsExactLowercase = pE.find((pConcert) => pConcert.name.toLowerCase() === name.toLowerCase());
+    const existsStartingWithLowerCase = pE.find((pPlan) => pPlan.name.toLowerCase().startsWith(name.toLowerCase()));
+    const existsExactLowercase = pE.find((pPlan) => pPlan.name.toLowerCase() === name.toLowerCase());
 
     if (!existsExactLowercase) {
       return [];
@@ -180,11 +182,11 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     if (!existsStartingWithLowerCase) {
       return [];
     }
-    const lastCounter = pE.reduce((acc, pConcert) => {
-      const pConcertName = pConcert.name.toLowerCase();
+    const lastCounter = pE.reduce((acc, pPlan) => {
+      const pPlanName = pPlan.name.toLowerCase();
 
       // find the last number in the name, if it exists. the name can be "name-1" or "name 1" or even "name1"
-      const lastNumber = pConcertName.match(/(\d+)$/);
+      const lastNumber = pPlanName.match(/(\d+)$/);
 
       if (lastNumber) {
         const counter = parseInt(lastNumber[0]);
@@ -206,9 +208,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     return suggestions;
   };
 
-  const navigate = useNavigate();
-
-  const isAllowedToCreateConcert = () => {
+  const isAllowedToCreatePlan = () => {
     const firstCondition = CreateEventFormSchema.safeParse(newEvent());
     if (!firstCondition.success) {
       return false;
@@ -218,16 +218,12 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     return firstCondition.success && secondCondition;
   };
 
-  const isFormEmpty = (concert: z.infer<typeof CreateEventFormSchema>) => {
+  const isFormEmpty = (plan: z.infer<typeof CreateEventFormSchema>) => {
     // check deep equality
-    return JSON.stringify(concert) === JSON.stringify(DEFAULT_EVENT);
+    return JSON.stringify(plan) === JSON.stringify(DEFAULT_EVENT);
   };
 
-  const calculateRemainingTicketsQuantity = (ticket: z.infer<typeof TicketSchema>): number => {
-    // calculate the remaining tickets quantity.
-    // how can I determine the remaining tickets, when I change the quantity of that exact ticket?
-    // If I check how many have been set up, I can calculate the remaining tickets of that type.
-    // Issue: A ticket type is already in the list and I want to change the quantity.
+  const calculateRemainingTicketsQuantity = (ticket: z.infer<typeof BaseTicketSchema>): number => {
     const totalTickets = newEvent()
       .tickets.filter((x) => x.ticket_type !== ticket.ticket_type)
       .reduce((acc, t) => acc + t.quantity, 0);
@@ -240,10 +236,10 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               "none" | number
             >
           ) - totalTickets;
-    if (ticket.ticket_type.startsWith("free")) {
+    if (ticket.ticket_type.name.toLowerCase().startsWith("free")) {
       return remainingTickets;
     }
-    const paidTickets = newEvent().tickets.filter((t) => t.ticket_type.startsWith("paid"));
+    const paidTickets = newEvent().tickets.filter((t) => t.ticket_type.name.startsWith("paid"));
     const remainingPaidTickets = paidTickets.reduce((acc, t) => acc + t.quantity, 0);
     return remainingPaidTickets;
   };
@@ -252,7 +248,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     const nc = newEvent();
     if (!nc) {
       return {
-        message: "You have not set a capacity for the concert.",
+        message: `You have not set a capacity for the ${props.event_type}.`,
         type: "error",
       };
     }
@@ -261,32 +257,34 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
     const cpt = cp.capacity_type;
     if (cpt === "none") {
       return {
-        message: "You have not set a capacity for the concert.",
+        message: `You have not set a capacity for the ${props.event_type}.`,
         type: "error",
       };
     }
     const cpv = parseInt(String(cp.value));
     if (totalTickets === cpv) {
       return {
-        message: "You have reached the maximum capacity of tickets for this concert.",
+        message: `You have reached the maximum capacity of tickets for this ${props.event_type}.`,
         type: "success:done",
       } as const;
     }
     if (totalTickets > cpv) {
       return {
-        message: "You have exceeded the maximum capacity of tickets for this concert.\nPlease reduce the quantity.",
+        message: `You have exceeded the maximum capacity of tickets for this ${props.event_type}.\nPlease reduce the quantity.`,
         type: "error",
       } as const;
     }
+    const difference = cpv - totalTickets;
     return {
-      message: `Note: You have ${cpv - totalTickets} ticket(s) left to sell.`,
+      message: `Note: You have ${difference} ticket${difference === 1 ? "" : "s"} left to set up.`,
       type: "success:unfinished",
     } as const;
   };
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    await createEvent(newEvent());
+    const nE = newEvent();
+    await createEvent(nE);
   };
 
   return (
@@ -333,13 +331,22 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                 ) > 0
                   ? newEvent().capacity.value
                   : ""}{" "}
-                Tickets
+                Ticket
+                {newEvent().capacity.capacity_type !== "none" &&
+                parseInt(
+                  newEvent().capacity.value as Exclude<
+                    z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
+                    "none"
+                  > as string
+                ) === 1
+                  ? ""
+                  : "s"}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="general" class="flex flex-col gap-6 w-full">
-              <TextField class="w-full flex flex-col gap-2" aria-label="Concert Name">
+              <TextField class="w-full flex flex-col gap-2" aria-label={`${props.event_type} Name`}>
                 <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  The Name of the Concert
+                  The Name of the <span class="capitalize">{props.event_type}</span>
                 </TextFieldLabel>
                 <TextFieldInput
                   value={newEvent().name}
@@ -356,7 +363,8 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                     {(v) => (
                       <>
                         <span class="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                          Concert '{newEvent().name}' exists already! Suggested Names:
+                          <span class="capitalize">{props.event_type}</span> '{newEvent().name}' exists already!
+                          Suggested Names:
                         </span>
                         <div class="grid grid-cols-3 gap-2">
                           <For
@@ -388,11 +396,12 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   </Show>
                 </Show>
               </TextField>
-              <TextField class="w-full flex flex-col gap-2" aria-label="Concert Description">
+              <TextField class="w-full flex flex-col gap-2">
                 <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  What is the concert about?
+                  What is the {props.event_type} about? (optional)
                 </TextFieldLabel>
                 <TextFieldInput
+                  aria-label={`What is the ${props.event_type} about? (optional)`}
                   value={newEvent().description ?? ""}
                   onChange={(e) => {
                     const value = e.currentTarget.value;
@@ -405,7 +414,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
                 <div class="flex flex-row items-center justify-between w-full">
                   <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    When is the concert?
+                    When is the {props.event_type}?
                   </TextFieldLabel>
                   <Button
                     size="sm"
@@ -583,7 +592,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               <div class="flex flex-col items-start justify-between gap-2 w-full">
                 <RadioGroup
                   value={newEvent().location.location_type}
-                  aria-label="Where is the concert?"
+                  aria-label={`Where is the ${props.event_type}?`}
                   onChange={(value) => {
                     const v = value as ReturnType<typeof newEvent>["location"]["location_type"];
                     switch (v) {
@@ -639,13 +648,13 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   class="w-full flex flex-col gap-2"
                 >
                   <RadioGroupLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Where is the concert?
+                    Where is the {props.event_type}?
                   </RadioGroupLabel>
                   <div class="grid grid-cols-2 gap-2 w-full">
                     <RadioGroupItem value="venue">
                       <RadioGroupItemLabel
                         class={cn(
-                          "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                          "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type === "online",
@@ -653,13 +662,14 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           }
                         )}
                       >
+                        <Container class="size-4" />
                         Venue <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                     <RadioGroupItem value="festival">
                       <RadioGroupItemLabel
                         class={cn(
-                          "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                          "flex flex-row items-center justify-center gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type === "venue",
@@ -667,13 +677,14 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           }
                         )}
                       >
+                        <PartyPopper class="size-4" />
                         Festival <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                     <RadioGroupItem value="other">
                       <RadioGroupItemLabel
                         class={cn(
-                          "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                          "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type === "venue",
@@ -681,13 +692,14 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           }
                         )}
                       >
+                        <Clover class="size-4" />
                         Other <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                     <RadioGroupItem value="online">
                       <RadioGroupItemLabel
                         class={cn(
-                          "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                          "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type === "venue",
@@ -695,6 +707,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                           }
                         )}
                       >
+                        <Globe class="size-4" />
                         Online <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
@@ -706,7 +719,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   <Match when={newEvent().location.location_type === "online"}>
                     <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                       <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        What is the URL of the concert?
+                        What is the URL of the {props.event_type}?
                       </TextFieldLabel>
                       <TextFieldInput
                         value={
@@ -736,7 +749,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   <Match when={newEvent().location.location_type === "venue"}>
                     <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                       <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Where is the concert going to take place?
+                        Where is the {props.event_type} going to take place?
                       </TextFieldLabel>
                       <TextFieldInput
                         value={
@@ -766,12 +779,12 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   <Match when={newEvent().location.location_type === "festival"}>
                     <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                       <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Where is the concert going to take place?
+                        Where is the {props.event_type} going to take place?
                       </TextFieldLabel>
                       <TextFieldInput
                         value={
                           // @ts-ignore
-                          newEvent().location.location_type === "in_person" && newEvent().location.address
+                          newEvent().location.location_type === "festival" && newEvent().location.address
                             ? // @ts-ignore
                               newEvent().location.address
                             : locationQuery()
@@ -792,6 +805,36 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                       />
                     </TextField>
                     <ClientMap query={locationQuery} />
+                  </Match>
+                  <Match when={newEvent().location.location_type === "other"}>
+                    <TextField class="w-full flex flex-col gap-2" aria-label="Other Location">
+                      <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Where is the {props.event_type} going to take place?
+                      </TextFieldLabel>
+                      <TextFieldTextArea
+                        autoResize
+                        value={
+                          // @ts-ignore
+                          newEvent().location.location_type === "other" && newEvent().location.details
+                            ? // @ts-ignore
+                              newEvent().location.details
+                            : locationQuery()
+                        }
+                        onChange={(e) => {
+                          const value = e.currentTarget.value;
+                          setLocationQuery(value);
+                          setNewEvent((ev) => {
+                            return {
+                              ...ev,
+                              location: {
+                                ...ev.location,
+                                details: value,
+                              },
+                            };
+                          });
+                        }}
+                      />
+                    </TextField>
                   </Match>
                 </Switch>
               </div>
@@ -911,10 +954,10 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                               {(ticket, index) => (
                                 <TableRow class="last:rounded-b-sm last:overflow-clip">
                                   <TableCell class="uppercase">{ticket.shape}</TableCell>
-                                  <TableCell class="uppercase">{ticket.ticket_type}</TableCell>
+                                  <TableCell class="uppercase">{ticket.ticket_type.name}</TableCell>
                                   <TableCell>{ticket.name}</TableCell>
                                   <TableCell>
-                                    {ticket.ticket_type.startsWith("free") ? (
+                                    {ticket.ticket_type.name.toLowerCase().startsWith("free") ? (
                                       "Free"
                                     ) : (
                                       <div>
@@ -924,9 +967,9 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                                             when={
                                               ticket.currency.currency_type === "other" &&
                                               (ticket.currency as Exclude<
-                                                z.infer<typeof TicketSchema>["currency"],
+                                                z.infer<typeof BaseTicketSchema>["currency"],
                                                 Exclude<
-                                                  z.infer<typeof TicketSchema>["currency"],
+                                                  z.infer<typeof BaseTicketSchema>["currency"],
                                                   { currency_type: "other" }
                                                 >
                                               >)
@@ -1024,24 +1067,26 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                             const cpt = cp.capacity_type;
                             if (cpt === "none") {
                               toast.error("Error Adding Ticket", {
-                                description: "You have not set a capacity for the concert.",
+                                description: `You have not set a capacity for the ${props.event_type}.`,
                               });
                               return;
                             }
                             const cpv = parseInt(String(cp.value));
                             if (totalTickets >= cpv) {
                               toast.error("Error Adding Ticket", {
-                                description: "You have reached the maximum capacity of tickets for this concert.",
+                                description: `You have reached the maximum capacity of tickets for this ${props.event_type}.`,
                               });
                               return;
                             }
                             setNewEvent((ev) => {
+                              const dtt = defaultFreeTicketType();
+                              if (!dtt) return ev;
                               return {
                                 ...ev,
                                 tickets: [
                                   ...ev.tickets,
                                   {
-                                    ticket_type: "free",
+                                    ticket_type: dtt,
                                     shape: "default",
                                     name: "",
                                     price: 0,
@@ -1133,30 +1178,26 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
               </Button>
               <Button
                 type="submit"
-                aria-label="Create Concert"
-                class="flex flex-row items-center justify-between gap-2"
-                disabled={isCreatingEvent.pending || !isAllowedToCreateConcert()}
+                aria-label={`Create ${props.event_type}`}
+                class="flex flex-row items-center justify-between gap-2 capitalize"
+                disabled={isCreatingEvent.pending || !isAllowedToCreatePlan()}
               >
                 <Switch
                   fallback={
                     <>
-                      <span class="text-sm font-medium leading-none">Create Concert</span>
+                      <span class="text-sm font-medium leading-none">Create {props.event_type}</span>
                       <Plus class="w-4 h-4" />
                     </>
                   }
                 >
                   <Match when={isCreatingEvent.pending}>
-                    <span class="text-sm font-medium leading-none">Creating Concert...</span>
+                    <span class="text-sm font-medium leading-none">Creating {props.event_type}...</span>
                     <Loader2 class="w-4 h-4 animate-spin" />
                   </Match>
                   <Match when={isCreatingEvent.result}>
-                    <span class="text-sm font-medium leading-none">Concert Created!</span>
+                    <span class="text-sm font-medium leading-none">{props.event_type} Created!</span>
                     <CheckCheck class="w-4 h-4" />
                   </Match>
-                  {/* <Match when={& !isCreatingEvent.pending && !isCreatingEvent.result}>
-                    <span class="text-sm font-medium leading-none">Error Creating Concert</span>
-                    <AlertCircleIcon class="w-4 h-4" />
-                  </Match> */}
                 </Switch>
               </Button>
               <Show when={!isCreatingEvent.pending && isCreatingEvent.result}>
@@ -1164,10 +1205,10 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                   <Button
                     variant="secondary"
                     onClick={() => {
-                      navigate(`/concerts/${data().id}`);
+                      navigate(`/plans/${data().id}`);
                     }}
                   >
-                    <span class="text-sm font-medium leading-none">View Concert</span>
+                    <span class="text-sm font-medium leading-none capitalize">View {props.event_type}</span>
                   </Button>
                 )}
               </Show>
@@ -1206,7 +1247,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                     <Button
                       size="sm"
                       class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                      variant="secondary"
+                      variant={newEvent().referenced_from === undefined ? "outline" : "secondary"}
                       onClick={() => {
                         const eH = eventHistory();
                         eH.undo();
@@ -1237,53 +1278,53 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                     "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 w-full self-end min-w-[250px]",
                     {
                       "lg:w-max": pE().length > 0,
+                      "w-full sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1": pE().length === 0,
                     }
                   )}
                 >
                   <For
                     each={pE().slice(0, 3)}
                     fallback={
-                      <div class="lg:max-w-72 w-full flex flex-col gap-2 border border-muted rounded p-2 items-center justify-center">
-                        <span class="text-xs text-muted-foreground">No previous Events</span>
+                      <div class="max-w-full w-full flex flex-col gap-2 border border-neutral-200 dark:border-neutral-800 rounded p-2 items-center justify-center">
+                        <span class="text-xs text-muted-foreground">There are no previous {props.event_type}s</span>
                       </div>
                     }
                   >
-                    {(concert, index) => (
+                    {(plan, index) => (
                       <Card
                         class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
-                          "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
-                            concert.id === newEvent().referenced_from,
+                          "border-indigo-500 bg-indigo-400 dark:bg-indigo-600": plan.id === newEvent().referenced_from,
                           "hover:bg-neutral-100 dark:hover:bg-neutral-900": newEvent().referenced_from === undefined,
-                          "opacity-100": newEvent().referenced_from === concert.id,
+                          "opacity-100": newEvent().referenced_from === plan.id,
                           "opacity-50":
-                            newEvent().referenced_from !== undefined && newEvent().referenced_from !== concert.id,
+                            newEvent().referenced_from !== undefined && newEvent().referenced_from !== plan.id,
                           "cursor-default": newEvent().referenced_from !== undefined,
                         })}
                         onClick={() => {
                           if (newEvent().referenced_from !== undefined) return;
                           setNewEvent((ev) => ({
                             ...ev,
-                            ...concert,
-                            referenced_from: concert.id,
+                            ...plan,
+                            referenced_from: plan.id,
                           }));
                         }}
                       >
                         <CardHeader class="flex flex-col p-3 pb-2 ">
                           <CardTitle
                             class={cn("text-sm", {
-                              "text-white": concert.id === newEvent().referenced_from,
+                              "text-white": plan.id === newEvent().referenced_from,
                             })}
                           >
-                            {concert.name}
+                            {plan.name}
                           </CardTitle>
                         </CardHeader>
                         <CardContent class="p-3 pt-0 pb-4">
                           <CardDescription
                             class={cn("text-xs", {
-                              "text-white": concert.id === newEvent().referenced_from,
+                              "text-white": plan.id === newEvent().referenced_from,
                             })}
                           >
-                            <p>{concert.description}</p>
+                            <p>{plan.description}</p>
                           </CardDescription>
                         </CardContent>
                       </Card>
@@ -1324,7 +1365,7 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                     <Button
                       size="sm"
                       class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                      variant="secondary"
+                      variant={newEvent().referenced_from === undefined ? "outline" : "secondary"}
                       onClick={() => {
                         const eH = eventHistory();
                         eH.undo();
@@ -1355,53 +1396,53 @@ export default function CreateConcertForm(props: { event_type: z.infer<typeof Cr
                     "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4 w-full self-end min-w-[250px]",
                     {
                       "lg:w-max": rE().length > 0,
+                      "w-full sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1": rE().length === 0,
                     }
                   )}
                 >
                   <For
                     each={rE().slice(0, 3)}
                     fallback={
-                      <div class="lg:max-w-72 w-full flex flex-col gap-2 border border-muted rounded p-2 items-center justify-center">
-                        <span class="text-xs text-muted-foreground">No previous Events</span>
+                      <div class="lg:max-w-72 w-full flex flex-col gap-2 border border-neutral-200 dark:border-neutral-800 rounded p-2 items-center justify-center">
+                        <span class="text-xs text-muted-foreground">There are no recommended {props.event_type}s</span>
                       </div>
                     }
                   >
-                    {(concert, index) => (
+                    {(plan, index) => (
                       <Card
                         class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
-                          "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
-                            concert.id === newEvent().referenced_from,
+                          "border-indigo-500 bg-indigo-400 dark:bg-indigo-600": plan.id === newEvent().referenced_from,
                           "hover:bg-neutral-100 dark:hover:bg-neutral-900": newEvent().referenced_from === undefined,
-                          "opacity-100": newEvent().referenced_from === concert.id,
+                          "opacity-100": newEvent().referenced_from === plan.id,
                           "opacity-50":
-                            newEvent().referenced_from !== undefined && newEvent().referenced_from !== concert.id,
+                            newEvent().referenced_from !== undefined && newEvent().referenced_from !== plan.id,
                           "cursor-default": newEvent().referenced_from !== undefined,
                         })}
                         onClick={() => {
                           if (newEvent().referenced_from !== undefined) return;
                           setNewEvent((ev) => ({
                             ...ev,
-                            ...concert,
-                            referenced_from: concert.id,
+                            ...plan,
+                            referenced_from: plan.id,
                           }));
                         }}
                       >
                         <CardHeader class="flex flex-col p-3 pb-2 ">
                           <CardTitle
                             class={cn("text-sm", {
-                              "text-white": concert.id === newEvent().referenced_from,
+                              "text-white": plan.id === newEvent().referenced_from,
                             })}
                           >
-                            {concert.name}
+                            {plan.name}
                           </CardTitle>
                         </CardHeader>
                         <CardContent class="p-3 pt-0 pb-4">
                           <CardDescription
                             class={cn("text-xs", {
-                              "text-white": concert.id === newEvent().referenced_from,
+                              "text-white": plan.id === newEvent().referenced_from,
                             })}
                           >
-                            <p>{concert.description}</p>
+                            <p>{plan.description}</p>
                           </CardDescription>
                         </CardContent>
                       </Card>

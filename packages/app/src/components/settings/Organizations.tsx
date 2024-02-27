@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getOrganizations } from "@/lib/api/organizations";
+import { fillDefaultTicketTypes, getDefaultTicketTypeCount, getOrganizations } from "@/lib/api/organizations";
 import { setCurrentOrganization } from "@/lib/api/user";
 import { getAuthenticatedUser } from "@/lib/auth/util";
 import { deleteOrganization, disconnectFromOrganization } from "@/utils/api/actions";
@@ -25,16 +25,21 @@ import { For, Show, Suspense } from "solid-js";
 import { toast } from "solid-sonner";
 import { useSession } from "../SessionProvider";
 import { cn } from "../../lib/utils";
+import { Switch } from "solid-js";
+import { Match } from "solid-js";
 
 export const Organizations = () => {
   const session = useSession();
   const user = createAsync(() => getAuthenticatedUser());
   const organizations = createAsync(() => getOrganizations());
+  const defaultTicketTypeCount = createAsync(() => getDefaultTicketTypeCount(), { deferStream: true });
 
   const isDisconnectingFromOrganization = useSubmission(disconnectFromOrganization);
   const isSettingCurrentOrganization = useSubmission(setCurrentOrganization);
   const isDeletingOrganization = useSubmission(deleteOrganization);
   const removeOrganization = useAction(deleteOrganization);
+  const fillInDefaultTicketTypes = useAction(fillDefaultTicketTypes);
+  const isFillingDefaultTicketTypes = useSubmission(fillDefaultTicketTypes);
 
   return (
     <div class="flex flex-col items-start gap-8 w-full">
@@ -67,11 +72,11 @@ export const Organizations = () => {
             each={organizations()}
             fallback={
               <Alert class="flex flex-col items-start gap-2 w-full bg-muted">
-                <span class="text-lg font-semibold">No workspaces</span>
-                <span class="text-sm text-muted-foreground">Create a new workspace</span>
+                <span class="text-lg font-semibold">No organizations</span>
+                <span class="text-sm text-muted-foreground">Create a new Organization</span>
                 <Button variant="default" size="sm" type="submit" class="w-max" asChild>
-                  <As component={A} href="/workspaces/new">
-                    <span>Create workspace</span>
+                  <As component={A} href="/organization/new">
+                    <span>Create Organization</span>
                   </As>
                 </Button>
               </Alert>
@@ -132,6 +137,55 @@ export const Organizations = () => {
                   <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-1 text-sm">
                     <span>Created {dayjs(organization.createdAt).fromNow()}</span>
                     <span>{organization.users.length} Users</span>
+                    <span>
+                      {organization.ticket_types.filter((tt) => !tt.ticket_type.name.startsWith("default")).length}{" "}
+                      Ticket Types
+                    </span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 ">
+                      <For each={organization.ticket_types.filter((tt) => !tt.ticket_type.name.startsWith("default"))}>
+                        {(ticket_type) => (
+                          <Badge
+                            variant={ticket_type.ticket_type.name.startsWith("default") ? "secondary" : "default"}
+                            class={cn("w-full p-2 px-3", {
+                              "text-muted-foreground cursor-not-allowed":
+                                ticket_type.ticket_type.name.startsWith("default"),
+                            })}
+                          >
+                            {ticket_type.ticket_type.name}
+                          </Badge>
+                        )}
+                      </For>
+                    </div>
+                    <Show when={defaultTicketTypeCount() !== undefined && defaultTicketTypeCount()}>
+                      {(count) => (
+                        <Show
+                          when={
+                            organization.ticket_types.filter((tt) => !tt.ticket_type.name.startsWith("default"))
+                              .length !==
+                            count() -
+                              organization.ticket_types.filter((tt) => tt.ticket_type.name.startsWith("default")).length
+                          }
+                        >
+                          Default Ticket Types: {count()}
+                          <Button
+                            onClick={async () => {
+                              await fillInDefaultTicketTypes();
+                            }}
+                            class="w-max items-center justify-center gap-2"
+                            size="sm"
+                            disabled={isFillingDefaultTicketTypes.pending}
+                          >
+                            <Switch>
+                              <Match when={isFillingDefaultTicketTypes.pending}>
+                                <Loader2 class="size-4 animate-spin" />
+                                <span>Adding Default Ticket Types</span>
+                              </Match>
+                              <Match when={!isFillingDefaultTicketTypes.pending}>Add Default Ticket Types</Match>
+                            </Switch>
+                          </Button>
+                        </Show>
+                      )}
+                    </Show>
                   </div>
                   <div class="w-full flex items-center justify-between gap-2">
                     <div class="w-full"></div>
@@ -172,7 +226,7 @@ export const Organizations = () => {
                           type="submit"
                           class="w-max"
                           aria-label="Disconnect from organization"
-                          disabled={isDisconnectingFromOrganization.pending}
+                          disabled={isDisconnectingFromOrganization.pending || organizations()!.length === 1}
                         >
                           <span>Disconnect</span>
                         </Button>

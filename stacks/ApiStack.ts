@@ -53,6 +53,18 @@ export function ApiStack({ stack }: StackContext) {
           description: "This is the healthcheck function",
         },
       },
+      "POST /seed/tickets/types": {
+        function: {
+          handler: "packages/functions/src/tickets/types/seed.main",
+          description: "This is the ticket_types seeding function",
+        },
+      },
+      "GET /ticket_types/all": {
+        function: {
+          handler: "packages/functions/src/tickets/types/index.all",
+          description: "This is the all ticket_types function",
+        },
+      },
     },
     cors: {
       allowOrigins: ["*", "http://localhost:3000", "http://localhost:3001"],

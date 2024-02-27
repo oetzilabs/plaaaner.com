@@ -1,5 +1,7 @@
 import { action, cache, redirect } from "@solidjs/router";
 import { Events } from "@oetzilabs-plaaaner-com/core/src/entities/events";
+import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
+import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { getCookie } from "vinxi/http";
 import { lucia } from "../auth";
 import { getRequestEvent } from "solid-js/web";
@@ -70,12 +72,30 @@ export const createNewEvent = action(async (data: z.infer<typeof CreateEventForm
   }
   console.log("simulating creating event", data);
 
+  const plan_name = data.name;
+  const plan_description = data.description;
+
+  const [start_time, end_time] = data.days;
+
+  const plan_location = data.location;
+
+  const defaultTicketTypeId = await Tickets.getDefaultTypeId();
+
+  const tickets = data.tickets;
+
   // const e = await Events.create(validation.data, user.id);
 
   const e = { id: "test" };
 
   return e;
 }, "events");
+
+export const getDefaultFreeTicketType = cache(async () => {
+  "use server";
+  const defaultFreeTicketType = await TicketTypes.getDefaultFreeTicketType();
+
+  return defaultFreeTicketType;
+}, "default_free_ticket_type");
 
 export const getEventTypeId = cache(async (event_type: z.infer<typeof CreateEventFormSchema>["event_type"]) => {
   "use server";

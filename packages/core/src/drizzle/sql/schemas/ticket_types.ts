@@ -25,8 +25,9 @@ export const ticket_types_relation = relations(ticket_types, ({ many, one }) => 
 export type TicketTypeSelect = typeof ticket_types.$inferSelect;
 export type TicketTypeInsert = typeof ticket_types.$inferInsert;
 
-export const TicketTypeCreateSchema = createInsertSchema(ticket_types);
-export const TicketTypeUpdateSchema = TicketTypeCreateSchema.partial().omit({ createdAt: true, updatedAt: true }).extend({
-  id: z.string().uuid(),
-});
-
+export const TicketTypeCreateSchema = createInsertSchema(ticket_types).omit({ owner_id: true });
+export const TicketTypeUpdateSchema = TicketTypeCreateSchema.partial()
+  .omit({ createdAt: true, updatedAt: true })
+  .extend({
+    id: z.string().uuid(),
+  });

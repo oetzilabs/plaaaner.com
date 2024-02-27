@@ -24,8 +24,8 @@ export default function PlanCreateEventPage() {
       title: "Tournament",
       description:
         "The festival plan is for those who need to manage multiple events and need a way to keep track of all of them.",
-      link: "/plan/create/tournaments",
-      learnMore: "/plan/info/tournaments",
+      link: "/plan/create/tournament",
+      learnMore: "/plan/info/tournament",
     },
   ];
 
@@ -42,7 +42,7 @@ export default function PlanCreateEventPage() {
             {(plan) => (
               <div class="flex flex-col shadow-none hover:shadow-lg transition-shadow border border-neutral-200 dark:border-neutral-800 px-4 py-3 rounded-md gap-2">
                 <span class="text-lg font-medium">{plan.title}</span>
-                <CardDescription>{plan.description}</CardDescription>
+                <CardDescription class="flex flex-grow">{plan.description}</CardDescription>
                 <div class="flex flex-row items-center justify-between gap-2 w-full">
                   <Button size="sm" variant="secondary" asChild>
                     <As component={A} href={plan.learnMore}>

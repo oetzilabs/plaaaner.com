@@ -4,7 +4,7 @@ import { Accessor, Show, createSignal } from "solid-js";
 import { toast } from "solid-sonner";
 import { z } from "zod";
 import { cn } from "../../lib/utils";
-import { TicketSchema } from "../../utils/schemas/event";
+import { BaseTicketSchema } from "../../utils/schemas/event";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
 import {
@@ -16,42 +16,32 @@ import {
 } from "../ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { TextField, TextFieldErrorMessage, TextFieldInput, TextFieldLabel, labelVariants } from "../ui/textfield";
+import { createAsync } from "@solidjs/router";
+import { getTicketTypes } from "../../lib/api/organizations";
 
 export const EditTicketForm = (props: {
-  ticket: z.infer<typeof TicketSchema>;
-  onChange: (ticket: z.infer<typeof TicketSchema>) => void;
-  tickets: Accessor<z.infer<typeof TicketSchema>[]>;
+  ticket: z.infer<typeof BaseTicketSchema>;
+  onChange: (ticket: z.infer<typeof BaseTicketSchema>) => void;
+  tickets: Accessor<z.infer<typeof BaseTicketSchema>[]>;
   freeAllowedTickets: Accessor<number>;
 }) => {
   const [ticket, setTicket] = createSignal(props.ticket);
 
-  const isDisabledTicket = (ticket_type: z.infer<typeof TicketSchema>["ticket_type"]) => {
-    return props.tickets().some((a) => a.ticket_type === ticket_type);
+  const isDisabledTicket = (ticket_type_id: z.infer<typeof BaseTicketSchema>["ticket_type"]["id"]) => {
+    return props.tickets().some((a) => a.ticket_type.id === ticket_type_id);
   };
 
-  const stepsPerCurrency = (currency: z.infer<typeof TicketSchema>["currency"]["currency_type"]) =>
+  const stepsPerCurrency = (currency: z.infer<typeof BaseTicketSchema>["currency"]["currency_type"]) =>
     ((
       {
         usd: 0.01,
         eur: 0.01,
         chf: 0.05,
         other: 0.01,
-      } as Record<z.infer<typeof TicketSchema>["currency"]["currency_type"], number>
+      } as Record<z.infer<typeof BaseTicketSchema>["currency"]["currency_type"], number>
     )[currency]);
 
-  const getTickets = () => {
-    return [
-      { value: "free", label: "Free", disabled: isDisabledTicket("free") },
-      { value: "free:vip", label: "Free: VIP", disabled: isDisabledTicket("free:vip") },
-      { value: "paid:vip", label: "Paid: VIP", disabled: isDisabledTicket("paid:vip") },
-      { value: "paid:regular", label: "Paid: Regular", disabled: isDisabledTicket("paid:regular") },
-      { value: "paid:student", label: "Paid: Student", disabled: isDisabledTicket("paid:student") },
-    ] as {
-      value: z.infer<typeof TicketSchema>["ticket_type"];
-      label: string;
-      disabled: boolean;
-    }[];
-  };
+  const getTickets = createAsync(() => getTicketTypes(), { deferStream: true });
 
   const getCurrencies = () => {
     return [
@@ -60,7 +50,7 @@ export const EditTicketForm = (props: {
       { value: "chf", label: "CHF" },
       { value: "other", label: "Other" },
     ] as {
-      value: z.infer<typeof TicketSchema>["currency"]["currency_type"];
+      value: z.infer<typeof BaseTicketSchema>["currency"]["currency_type"];
       label: string;
     }[];
   };
@@ -152,34 +142,53 @@ export const EditTicketForm = (props: {
             </div>
             <div class="flex flex-col gap-2 w-full">
               <span>Ticket Type</span>
-              <Select
-                optionValue="value"
-                optionTextValue="label"
-                options={getTickets()}
-                placeholder="Select a ticket type"
-                optionDisabled="disabled"
-                itemComponent={(props) => <SelectItem item={props.item}>{props.item.rawValue.label}</SelectItem>}
-                value={getTickets().find((t) => t.value === ticket().ticket_type)}
-                onChange={(value) => {
-                  if (!value) {
-                    return;
-                  }
-                  setTicket((t) => {
-                    return {
-                      ...t,
-                      ticket_type: value.value,
-                    };
-                  });
-                }}
-                class="w-full"
+              <Show
+                when={
+                  getTickets() !== undefined &&
+                  getTickets()!
+                    .filter((t) => !t.name.startsWith("default"))
+                    .map((t) => ({
+                      value: t.id,
+                      label: t.name,
+                      disabled: isDisabledTicket(t.id),
+                    }))
+                }
               >
-                <SelectTrigger class="w-full">
-                  <SelectValue<ReturnType<typeof getTickets>[number]>>
-                    {(state) => state.selectedOption().label}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent />
-              </Select>
+                {(tickets) => (
+                  <Select
+                    optionValue="value"
+                    optionTextValue="label"
+                    options={tickets()}
+                    placeholder="Select a ticket type"
+                    optionDisabled="disabled"
+                    itemComponent={(props) => <SelectItem item={props.item}>{props.item.rawValue.label}</SelectItem>}
+                    value={tickets().find((t) => t.value === ticket().ticket_type.id)}
+                    onChange={(value) => {
+                      if (!value) {
+                        return;
+                      }
+                      setTicket((t) => {
+                        return {
+                          ...t,
+                          ticket_type: getTickets()!.find((t) => t.id === value.value)!,
+                        };
+                      });
+                    }}
+                    class="w-full"
+                  >
+                    <SelectTrigger class="w-full">
+                      <SelectValue<{
+                        value: string;
+                        label: string;
+                        disabled: boolean;
+                      }>>
+                        {(state) => state.selectedOption().label}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent />
+                  </Select>
+                )}
+              </Show>
             </div>
             <TextField class="w-full flex flex-col gap-2" aria-label="Ticket Name">
               <TextFieldLabel class="flex flex-col gap-2 w-full">
@@ -199,7 +208,7 @@ export const EditTicketForm = (props: {
                 />
               </TextFieldLabel>
             </TextField>
-            <Show when={ticket().ticket_type.startsWith("paid")}>
+            <Show when={ticket().ticket_type.name.startsWith("paid")}>
               <div class="flex flex-row items-center justify-between gap-2 w-full">
                 <TextField class="w-full flex flex-col gap-2" aria-label="Ticket Price">
                   <TextFieldLabel class="flex flex-col gap-2 w-full">
@@ -274,8 +283,8 @@ export const EditTicketForm = (props: {
                       when={
                         ticket().currency.currency_type === "other" &&
                         (ticket().currency as Exclude<
-                          z.infer<typeof TicketSchema>["currency"],
-                          Exclude<z.infer<typeof TicketSchema>["currency"], { currency_type: "other" }>
+                          z.infer<typeof BaseTicketSchema>["currency"],
+                          Exclude<z.infer<typeof BaseTicketSchema>["currency"], { currency_type: "other" }>
                         >)
                       }
                     >

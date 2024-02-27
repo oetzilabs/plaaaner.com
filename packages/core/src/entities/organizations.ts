@@ -7,10 +7,12 @@ import {
   OrganizationUpdateSchema,
   users_organizations,
   organizations,
+  organizations_ticket_types,
 } from "../drizzle/sql/schema";
 import { User } from "./users";
 import { OrganizationJoin } from "./organizations_joins";
 import dayjs from "dayjs";
+import { TicketTypes } from "./ticket_types";
 
 export * as Organization from "./organizations";
 
@@ -75,6 +77,11 @@ export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).impleme
                 },
               },
               owner: true,
+              ticket_types: {
+                with: {
+                  ticket_type: true,
+                },
+              },
             },
           },
         },
@@ -223,6 +230,37 @@ export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).i
     },
   });
   return orgs;
+});
+
+export const getTicketTypes = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
+  const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
+    where(fields, operators) {
+      return operators.isNull(fields.deletedAt);
+    },
+    with: {
+      ticket_type: true,
+    },
+  });
+  return orgs_ticket_types.map((ott) => ott.ticket_type);
+});
+
+export const fillDefaultTicketTypes = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
+  const existing = await db.query.ticket_types.findMany({
+    where(fields, operators) {
+      return operators.inArray(
+        fields.name,
+        TicketTypes.DEFAULT_TICKET_TYPES.map((t) => t.name)
+      );
+    },
+    columns: {
+      id: true,
+    },
+  });
+  const connected_ticket_type_to_org = await db
+    .insert(organizations_ticket_types)
+    .values(existing.map((ett) => ({ ticket_type_id: ett.id, organization_id })))
+    .returning();
+  return connected_ticket_type_to_org;
 });
 
 export const safeParseCreate = OrganizationCreateSchema.safeParse;
