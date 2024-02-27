@@ -1,4 +1,4 @@
-import { text, uuid } from "drizzle-orm/pg-core";
+import { pgEnum, text, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
@@ -7,11 +7,14 @@ import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { tickets } from "./tickets";
 
+export const ticketPaymentType = pgEnum("ticketPaymentType", ["FREE", "PAID"]);
+
 export const ticket_types = schema.table("ticket_types", {
   ...Entity.defaults,
   name: text("name").notNull(),
   description: text("description"),
   owner_id: uuid("owner").references(() => users.id),
+  payment_type: ticketPaymentType("payment_type").default("FREE").notNull(),
 });
 
 export const ticket_types_relation = relations(ticket_types, ({ many, one }) => ({

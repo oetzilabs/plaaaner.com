@@ -13,11 +13,15 @@ import {
 export * as TicketTypes from "./ticket_types";
 
 export const DEFAULT_TICKET_TYPES: Parameters<typeof create>[0] = [
-  { name: "default-ticket-for-all-plans", description: "This is the default ticket type, made by our system." },
-  { name: "FREE", description: "This ticket will be free." },
-  { name: "FREE:VIP", description: "This ticket will be free for VIPs." },
-  { name: "PAID:REGULAR", description: "This ticket will be paid for regulars." },
-  { name: "PAID:VIP", description: "This ticket will be paid for VIPs." },
+  {
+    name: "default-ticket-for-all-plans",
+    description: "This is the default ticket type, made by our system.",
+    payment_type: "FREE",
+  },
+  { name: "FREE", description: "This ticket will be free.", payment_type: "FREE" },
+  { name: "FREE:VIP", description: "This ticket will be free for VIPs.", payment_type: "FREE" },
+  { name: "PAID:REGULAR", description: "This ticket will be paid for regulars.", payment_type: "PAID" },
+  { name: "PAID:VIP", description: "This ticket will be paid for VIPs.", payment_type: "PAID" },
 ] as const;
 
 export const create = z
@@ -43,6 +47,37 @@ export const create = z
     return new_ticket_types;
   });
 
+export const upsert = z
+  .function(z.tuple([TicketTypeCreateSchema.array(), z.string().uuid().nullable()]))
+  .implement(async (ticket_types_to_create, user_id) => {
+    const updated = [];
+    const names = ticket_types_to_create.map((tt) => tt.name);
+    const existing = await db.query.ticket_types.findMany({
+      where(fields, operators) {
+        return operators.inArray(fields.name, names);
+      },
+    });
+
+    for await (const e of existing) {
+      const to_update = ticket_types_to_create.find((tttc) => tttc.name === e.name)!;
+      const u = await db.update(ticket_types).set(to_update).where(eq(ticket_types.name, e.name)).returning();
+      updated.push(u);
+    }
+
+    const missing_new_tickets = ticket_types_to_create.filter((tt) => !existing.some((tt2) => tt2.name === tt.name));
+    if (missing_new_tickets.length === 0) {
+      return updated;
+    }
+
+    const new_ticket_types = await db
+      .insert(ticket_types)
+      .values(missing_new_tickets.map((tt) => ({ ...tt, owner_id: user_id })))
+      .returning();
+
+    updated.push(...new_ticket_types);
+
+    return updated;
+  });
 export const countAll = z.function(z.tuple([])).implement(async () => {
   const [x] = await db
     .select({
@@ -167,7 +202,7 @@ export const getDefaultTypeId = z.function(z.tuple([])).implement(async () => {
 export const getDefaultFreeTicketType = z.function(z.tuple([])).implement(async () => {
   const et = await db.query.ticket_types.findFirst({
     where(fields, operators) {
-      return operators.eq(fields.name, DEFAULT_TICKET_TYPES[0].name);
+      return operators.eq(fields.name, DEFAULT_TICKET_TYPES[1].name);
     },
   });
   if (!et) {

@@ -208,7 +208,7 @@ export const EditTicketForm = (props: {
                 />
               </TextFieldLabel>
             </TextField>
-            <Show when={ticket().ticket_type.name.startsWith("paid")}>
+            <Show when={ticket().ticket_type.payment_type === "PAID"}>
               <div class="flex flex-row items-center justify-between gap-2 w-full">
                 <TextField class="w-full flex flex-col gap-2" aria-label="Ticket Price">
                   <TextFieldLabel class="flex flex-col gap-2 w-full">

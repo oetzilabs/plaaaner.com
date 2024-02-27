@@ -12,6 +12,7 @@ export * from "./schemas/users_workspaces";
 
 export * from "./schemas/events";
 export * from "./schemas/event_types";
+export * from "./schemas/event_times";
 export * from "./schemas/event_participants";
 
 export * from "./schemas/tickets";

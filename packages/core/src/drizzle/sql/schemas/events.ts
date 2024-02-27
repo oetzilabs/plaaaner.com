@@ -1,4 +1,4 @@
-import { text, uuid } from "drizzle-orm/pg-core";
+import { text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
@@ -7,6 +7,7 @@ import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { event_types } from "./event_types";
 import { organizations_events } from "./organizations_events";
+import { event_times } from "./event_times";
 
 export const events = schema.table("events", {
   ...Entity.defaults,
@@ -16,6 +17,14 @@ export const events = schema.table("events", {
     .notNull()
     .references(() => event_types.id),
   owner_id: uuid("owner").references(() => users.id),
+  starts_at: timestamp("starts_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  ends_at: timestamp("ends_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
 });
 
 export const events_relation = relations(events, ({ many, one }) => ({
@@ -28,6 +37,7 @@ export const events_relation = relations(events, ({ many, one }) => ({
     references: [users.id],
   }),
   organizations: many(organizations_events),
+  times: many(event_times),
 }));
 
 export type EventSelect = typeof events.$inferSelect;

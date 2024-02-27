@@ -4,6 +4,7 @@ import { Metrics } from "@/components/dashboard/metrics";
 import { Notifications } from "@/components/dashboard/notifications";
 import { Greeting } from "@/components/dashboard/greeting";
 import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
+import { A } from "@solidjs/router";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
@@ -17,17 +18,23 @@ export default function DashboardPage() {
         <div class="flex flex-row w-full gap-4 items-start justify-between">
           <div class="flex flex-col gap-4 w-full">
             <div class="flex flex-col gap-2 w-full">
-              <span class="font-medium">Metrics</span>
+              <A href="/metrics" class="font-bold w-max hover:underline underline-offset-2">
+                Metrics
+              </A>
               <Metrics />
             </div>
             <div class="flex flex-col gap-2 w-full">
-              <span class="font-medium">Your Events</span>
+              <A href="/events" class="font-bold w-max hover:underline underline-offset-2">
+                Your Events
+              </A>
               <UpcomingPlans />
             </div>
           </div>
           <div class="w-max flex-col gap-4 hidden lg:flex">
             <div class="flex flex-col gap-2">
-              <span class="font-medium">Notifications</span>
+              <A href="/notifications" class="font-bold w-max hover:underline underline-offset-2">
+                Notifications
+              </A>
               <Notifications />
             </div>
           </div>

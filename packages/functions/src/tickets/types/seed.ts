@@ -7,3 +7,8 @@ export const main = ApiHandler(async () => {
   const createdTickets = await TicketTypes.create(TicketTypes.DEFAULT_TICKET_TYPES, null);
   return json(createdTickets);
 });
+
+export const upsert = ApiHandler(async () => {
+  const createdTickets = await TicketTypes.upsert(TicketTypes.DEFAULT_TICKET_TYPES, null);
+  return json(createdTickets);
+});
