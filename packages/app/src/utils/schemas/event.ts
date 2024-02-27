@@ -41,6 +41,7 @@ const BaseEventSchema = z.object({
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
   description: z.string().optional().nullable(),
   days: z.array(z.date()).length(2),
+  time_slots: z.array(z.array(z.date()).length(2)),
   capacity: CapacitySchema,
   location: ConcertLocationSchema,
   tickets: z.array(BaseTicketSchema),

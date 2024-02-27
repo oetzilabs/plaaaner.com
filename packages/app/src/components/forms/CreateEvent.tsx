@@ -45,7 +45,19 @@ import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/rou
 import { clientOnly } from "@solidjs/start";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import tz from "dayjs/plugin/timezone";
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Calendar,
@@ -76,6 +88,7 @@ import { TextFieldTextArea } from "../ui/textarea";
 import { EditTicketForm } from "./EditTicketForm";
 dayjs.extend(tz);
 dayjs.extend(advancedFormat);
+dayjs.extend(customParseFormat);
 
 const ClientMap = clientOnly(() => import("../ClientMap"));
 
@@ -96,6 +109,58 @@ const TabMovement: Record<"forward" | "backward", Record<TabValue, TabValue | un
   },
 };
 
+const TimeSlotChange = (props: {
+  value: {
+    start: Date;
+    end: Date;
+  };
+  onChange: (start: Date, end: Date) => void;
+}) => {
+  const [start, setStart] = createSignal(props.value.start);
+  const [end, setEnd] = createSignal(props.value.end);
+  const dateFormat = ["h:mm", "hh:mm"];
+  return (
+    <div class="flex flex-col gap-4 w-full">
+      <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+        <div class="flex flex-row items-center justify-between w-full">
+          <TextFieldLabel class="w-full flex flex-col gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Start Time
+            <TextFieldInput
+              class="w-full"
+              placeholder="Start time"
+              type="time"
+              value={dayjs(start()).format("hh:mm")}
+              onChange={(e) => {
+                setStart(dayjs(e.target.value, dateFormat).toDate());
+              }}
+            />
+          </TextFieldLabel>
+        </div>
+      </TextField>
+      <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+        <div class="flex flex-row items-center justify-between w-full">
+          <TextFieldLabel class="w-full flex flex-col gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            End Time
+            <TextFieldInput
+              class="w-full"
+              placeholder="End time"
+              type="time"
+              value={dayjs(end()).format("hh:mm")}
+              onChange={(e) => {
+                setEnd(dayjs(e.target.value, dateFormat).toDate());
+              }}
+            />
+          </TextFieldLabel>
+        </div>
+      </TextField>
+      <AlertDialogFooter>
+        <AlertDialogClose>Cancel</AlertDialogClose>
+        <AlertDialogAction onClick={() => props.onChange(start(), end())}>Continue</AlertDialogAction>
+      </AlertDialogFooter>
+    </div>
+  );
+};
+
 export default function CreatePlanForm(props: { event_type: z.infer<typeof CreateEventFormSchema>["event_type"] }) {
   const previousEvents = createAsync(() => getPreviousEvents());
   const recommendedEvents = createAsync(() => getRecommendedEvents());
@@ -109,6 +174,10 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
     name: "",
     description: "",
     days: [dayjs().startOf("day").toDate(), dayjs().startOf("day").add(1, "day").toDate()],
+    time_slots: [
+      [dayjs().startOf("day").toDate(), dayjs().endOf("day").toDate()],
+      [dayjs().add(1, "day").startOf("day").toDate(), dayjs().add(1, "day").endOf("day").toDate()],
+    ],
     tickets: [],
     capacity: {
       capacity_type: "none",
@@ -236,7 +305,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
               "none" | number
             >
           ) - totalTickets;
-    if (ticket.ticket_type.name.toLowerCase().startsWith("free")) {
+    if (ticket.ticket_type.payment_type === "FREE") {
       return remainingTickets;
     }
     const paidTickets = newEvent().tickets.filter((t) => t.ticket_type.name.startsWith("paid"));
@@ -411,31 +480,33 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
               </TextField>
             </TabsContent>
             <TabsContent value="time" class="flex flex-col gap-6 w-full">
-              <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
-                <div class="flex flex-row items-center justify-between w-full">
-                  <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    When is the {props.event_type}?
-                  </TextFieldLabel>
-                  <Button
-                    size="sm"
-                    variant={
-                      dayjs(newEvent().days?.[0]).isSame(dayjs().startOf("day"), "day") ? "secondary" : "outline"
-                    }
-                    class="w-max gap-2 items-center justify-center"
-                    type="button"
-                    onClick={() => {
-                      setNewEvent((ev) => {
-                        return {
-                          ...ev,
-                          day: dayjs().startOf("day").toDate(),
-                        };
-                      });
-                    }}
-                  >
-                    <Calendar class="w-3 h-3" />
-                    Today
-                  </Button>
-                </div>
+              <div class="flex flex-col gap-2 w-full">
+                <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+                  <div class="flex flex-row items-center justify-between w-full">
+                    <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      When is the {props.event_type}?
+                    </TextFieldLabel>
+                    <Button
+                      size="sm"
+                      variant={
+                        dayjs(newEvent().days?.[0]).isSame(dayjs().startOf("day"), "day") ? "secondary" : "outline"
+                      }
+                      class="w-max gap-2 items-center justify-center"
+                      type="button"
+                      onClick={() => {
+                        setNewEvent((ev) => {
+                          return {
+                            ...ev,
+                            day: dayjs().startOf("day").toDate(),
+                          };
+                        });
+                      }}
+                    >
+                      <Calendar class="w-3 h-3" />
+                      Today
+                    </Button>
+                  </div>
+                </TextField>
                 <DatePicker
                   numOfMonths={2}
                   selectionMode="range"
@@ -445,12 +516,20 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                   onValueChange={(date) => {
                     const tz = timezone();
                     const days = date.value.map((d) => dayjs(d.toDate(tz)).startOf("day").toDate());
-                    setNewEvent((ev) => {
-                      return {
-                        ...ev,
-                        days,
-                      };
-                    });
+                    if (days.length > 1) {
+                      setNewEvent((ev) => {
+                        return {
+                          ...ev,
+                          days,
+                          time_slots: Array.from({ length: dayjs(days[1]).diff(dayjs(days[0]), "days") + 1 }).map(
+                            (x, i) => [
+                              dayjs(days[0]).add(i, "days").startOf("day").toDate(),
+                              dayjs(days[0]).add(i, "days").endOf("day").toDate(),
+                            ]
+                          ),
+                        };
+                      });
+                    }
                   }}
                 >
                   <DatePickerInput />
@@ -586,7 +665,66 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                     </DatePickerView>
                   </DatePickerContent>
                 </DatePicker>
-              </TextField>
+                <div class="flex flex-col gap-2 w-full">
+                  <div class="flex flex-col gap-2 w-full items-center justify-between">
+                    <div class="w-full">
+                      <span class="text-sm font-medium">{newEvent().time_slots.length} Time slots</span>
+                    </div>
+                    <div></div>
+                  </div>
+                  <div class="flex flex-col gap-2 w-full">
+                    <For each={newEvent().time_slots}>
+                      {(time_slot, index) => (
+                        <AlertDialog>
+                          <AlertDialogTrigger>
+                            <div class="flex flex-row w-full items-center justify-between border border-neutral-200 dark:border-neutral-800 rounded-md cursor-pointer hover:bg-muted/50">
+                              <div class="w-max flex flex-col items-center justify-center px-5 py-3 min-w-20">
+                                <div class="text-base font-black w-max">{dayjs(time_slot[0]).format("Do MMM")}</div>
+                                <div class="text-xs font-medium">{dayjs(time_slot[0]).format("ddd")}</div>
+                              </div>
+                              <div class="w-full flex flex-row items-center justify-around px-3">
+                                <div class="font-mono">{dayjs(time_slot[0]).format("h:mm A")}</div>
+                                <Minus class="size-4" />
+                                <div class="font-mono">{dayjs(time_slot[1]).format("h:mm A")}</div>
+                              </div>
+                            </div>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Change time slot for {dayjs(time_slot[0]).format("Do MMM YYYY")}
+                              </AlertDialogTitle>
+                            </AlertDialogHeader>
+                            <TimeSlotChange
+                              onChange={(start, end) => {
+                                const ts = [...newEvent().time_slots];
+                                ts[index()][0] = dayjs(ts[index()][0])
+                                  .set("hour", dayjs(start).hour())
+                                  .set("minute", dayjs(start).minute())
+                                  .toDate();
+                                ts[index()][1] = dayjs(ts[index()][1])
+                                  .set("hour", dayjs(end).hour())
+                                  .set("minute", dayjs(end).minute())
+                                  .toDate();
+                                setNewEvent((e) => {
+                                  return {
+                                    ...e,
+                                    time_slots: ts,
+                                  };
+                                });
+                              }}
+                              value={{
+                                start: time_slot[0],
+                                end: time_slot[1],
+                              }}
+                            />
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </For>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
             <TabsContent value="location" class="flex flex-col gap-6 w-full">
               <div class="flex flex-col items-start justify-between gap-2 w-full">
@@ -957,7 +1095,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                                   <TableCell class="uppercase">{ticket.ticket_type.name}</TableCell>
                                   <TableCell>{ticket.name}</TableCell>
                                   <TableCell>
-                                    {ticket.ticket_type.name.toLowerCase().startsWith("free") ? (
+                                    {ticket.ticket_type.payment_type === "FREE" ? (
                                       "Free"
                                     ) : (
                                       <div>
@@ -1404,7 +1542,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                     each={rE().slice(0, 3)}
                     fallback={
                       <div class="lg:max-w-72 w-full flex flex-col gap-2 border border-neutral-200 dark:border-neutral-800 rounded p-2 items-center justify-center">
-                        <span class="text-xs text-muted-foreground">There are no recommended {props.event_type}s</span>
+                        <span class="text-xs text-muted-foreground">There are no recommendations</span>
                       </div>
                     }
                   >

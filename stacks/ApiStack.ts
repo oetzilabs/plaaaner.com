@@ -59,6 +59,12 @@ export function ApiStack({ stack }: StackContext) {
           description: "This is the ticket_types seeding function",
         },
       },
+      "POST /seed/tickets/types/upsert": {
+        function: {
+          handler: "packages/functions/src/tickets/types/seed.upsert",
+          description: "This is the ticket_types upsert function",
+        },
+      },
       "GET /ticket_types/all": {
         function: {
           handler: "packages/functions/src/tickets/types/index.all",

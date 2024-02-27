@@ -1,8 +1,8 @@
 import { A } from "@solidjs/router";
 import { AppSearch } from "./AppSearch";
 import ModeToggle from "./ModeToogle";
-import { Logo } from "./ui/custom/logo";
 import UserMenu from "./UserMenu";
+import { Logo } from "./ui/custom/logo";
 
 export function Header() {
   return (

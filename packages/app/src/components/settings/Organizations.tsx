@@ -151,7 +151,7 @@ export const Organizations = () => {
                                 ticket_type.ticket_type.name.startsWith("default"),
                             })}
                           >
-                            {ticket_type.ticket_type.name}
+                            {ticket_type.ticket_type.name} ({ticket_type.ticket_type.payment_type})
                           </Badge>
                         )}
                       </For>
