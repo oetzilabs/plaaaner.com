@@ -8,6 +8,7 @@ import { users } from "./users";
 import { organizations_events } from "./organizations_events";
 import { workspaces_organizations } from "./workspaces_organizations";
 import { users_organizations } from "./user_organizations";
+import { organizations_ticket_types } from "./organizations_ticket_types";
 
 export const organizations = schema.table("organizations", {
   ...Entity.defaults,
@@ -25,6 +26,7 @@ export const organizations_relation = relations(organizations, ({ many, one }) =
   events: many(organizations_events),
   workspaces: many(workspaces_organizations),
   users: many(users_organizations),
+  ticket_types: many(organizations_ticket_types),
 }));
 
 export type OrganizationSelect = typeof organizations.$inferSelect;

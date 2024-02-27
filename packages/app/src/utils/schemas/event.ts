@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ConcertLocationSchema } from "./shared";
+import type { TicketTypeSelect } from "@/core/drizzle/sql/schema";
 
 const TicketPrice = z.number({ required_error: "Price is required" }).min(0).step(0.01);
 const TicketCurrency = z.discriminatedUnion("currency_type", [
@@ -17,41 +18,14 @@ export const TicketShape = z.union([
   z.literal("custom"),
 ]);
 
-const BaseTicketSchema = z.object({
+export const BaseTicketSchema = z.object({
   name: z.string({ required_error: "Name is required" }).max(50),
   shape: TicketShape,
   price: TicketPrice,
   currency: TicketCurrency,
   quantity: z.number({ required_error: "Quantity is required" }).min(0),
+  ticket_type: z.custom<TicketTypeSelect>(),
 });
-
-export const TicketSchema = z.discriminatedUnion("ticket_type", [
-  BaseTicketSchema.merge(
-    z.object({
-      ticket_type: z.literal("free"),
-    })
-  ),
-  BaseTicketSchema.merge(
-    z.object({
-      ticket_type: z.literal("free:vip"),
-    })
-  ),
-  BaseTicketSchema.merge(
-    z.object({
-      ticket_type: z.literal("paid:vip"),
-    })
-  ),
-  BaseTicketSchema.merge(
-    z.object({
-      ticket_type: z.literal("paid:regular"),
-    })
-  ),
-  BaseTicketSchema.merge(
-    z.object({
-      ticket_type: z.literal("paid:student"),
-    })
-  ),
-]);
 
 const CapacitySchema = z.discriminatedUnion("capacity_type", [
   z.object({ capacity_type: z.literal("none"), value: z.literal("none") }),
@@ -65,12 +39,11 @@ const CapacitySchema = z.discriminatedUnion("capacity_type", [
 const BaseEventSchema = z.object({
   referenced_from: z.string().optional(),
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
-  description: z.string().min(3).optional().nullable(),
-  days: z.array(z.date()).optional(),
-  duration: z.number().optional(),
+  description: z.string().optional().nullable(),
+  days: z.array(z.date()).length(2),
   capacity: CapacitySchema,
   location: ConcertLocationSchema,
-  tickets: z.array(TicketSchema),
+  tickets: z.array(BaseTicketSchema),
 });
 
 export const CreateEventFormSchema = z.discriminatedUnion("event_type", [
@@ -86,7 +59,7 @@ export const CreateEventFormSchema = z.discriminatedUnion("event_type", [
   ),
   BaseEventSchema.merge(
     z.object({
-      event_type: z.literal("tournaments"),
+      event_type: z.literal("tournament"),
     })
   ),
   BaseEventSchema.merge(
@@ -99,7 +72,7 @@ export const CreateEventFormSchema = z.discriminatedUnion("event_type", [
 export const EventType = z.union([
   z.literal("event"),
   z.literal("concert"),
-  z.literal("tournaments"),
+  z.literal("tournament"),
   z.literal("custom-event"),
 ]);
 

@@ -1,4 +1,5 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
+import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { action, cache, redirect } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 import { appendHeader, getCookie } from "vinxi/http";
@@ -183,3 +184,78 @@ export const getNoneConnectedOrganizations = cache(async () => {
   const orgs = await Organization.notConnectedToUserById(user.id);
   return orgs;
 }, "allOrganizations");
+
+export const getTicketTypes = cache(async () => {
+  "use server";
+  const event = getRequestEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session } = await lucia.validateSession(sessionId);
+
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  if (!session.organization_id) {
+    return [] as Awaited<ReturnType<typeof Organization.getTicketTypes>>;
+  }
+
+  const org_ticket_types = await Organization.getTicketTypes(session.organization_id);
+
+  return org_ticket_types;
+}, "organization_ticket_types");
+
+export const fillDefaultTicketTypes = action(async () => {
+  "use server";
+  const event = getRequestEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session } = await lucia.validateSession(sessionId);
+
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  if (!session.organization_id) {
+    return [] as Awaited<ReturnType<typeof Organization.fillDefaultTicketTypes>>;
+  }
+
+  const org_ticket_types = await Organization.fillDefaultTicketTypes(session.organization_id);
+
+  return org_ticket_types;
+}, "organization_ticket_types");
+
+export const getDefaultTicketTypeCount = cache(async () => {
+  "use server";
+  const event = getRequestEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session } = await lucia.validateSession(sessionId);
+
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  if (!session.organization_id) {
+    return 0;
+  }
+
+  const org_ticket_types = await TicketTypes.getDefaultCount();
+
+  return org_ticket_types;
+}, "organization_ticket_types_count");
