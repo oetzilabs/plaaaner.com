@@ -16,8 +16,8 @@ export default function IndexPage() {
         <div class="flex flex-col items-center overflow-x-clip px-10 "></div>
         <div class="flex flex-col gap-8 items-center text-xl">
           <div class="flex flex-col gap-2 items-center text-xl">
-            <p>If you are interested in learning more about our plans,</p>
-            <p>you can get started or learn more.</p>
+            <p class="text-center">If you are interested in learning more about our plans,</p>
+            <p class="text-center">you can get started or learn more.</p>
           </div>
           <div class="flex flex-row gap-2 items-center">
             <A class={cn(buttonVariants({ size: "lg", variant: "default" }))} href="/dashboard">

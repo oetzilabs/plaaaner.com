@@ -17,7 +17,7 @@ import { useColorMode } from "@kobalte/core";
 type Option = {
   label: string;
   value: string;
-  onSelect?: (user: User) => Promise<void>;
+  onSelect(user: User): Promise<void>;
 };
 
 type List = {
@@ -114,11 +114,11 @@ export const AppSearch = () => {
   return (
     <div class="flex flex-row items-center">
       <div
-        class="flex flex-row items-center justify-between rounded-lg border border-neutral-200 dark:border-neutral-800 px-2.5 py-1.5 gap-2.5 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background"
+        class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-2.5 py-1.5 gap-2.5 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-max"
         onClick={() => setOpenSearch(true)}
       >
         <Search class="w-4 h-4" />
-        <div class="min-w-[300px] max-w-full text-sm">Search...</div>
+        <div class="sr-only md:min-w-[300px] md:not-sr-only max-w-full text-sm">Search...</div>
       </div>
       <CommandDialog<Option, List>
         open={openSearch()}
@@ -135,10 +135,13 @@ export const AppSearch = () => {
           </CommandItem>
         )}
         sectionComponent={(props) => <CommandHeading>{props.section.rawValue.label}</CommandHeading>}
-        class="rounded-lg border shadow-md"
+        class="md:rounded-lg md:border md:shadow-md"
         onChange={(e: Option) => {
           const u = user();
-          e.onSelect?.(u);
+          if (!u) {
+            return;
+          }
+          e.onSelect(u);
         }}
       >
         <CommandInput />

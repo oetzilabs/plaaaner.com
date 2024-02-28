@@ -20,7 +20,7 @@ export const Greeting = () => {
           <A
             href="/plan/create"
             class={cn(
-              "gap-2",
+              "gap-2 w-max flex",
               buttonVariants({
                 variant: "default",
                 size: "sm",
@@ -28,7 +28,7 @@ export const Greeting = () => {
             )}
           >
             <Plus class="w-4 h-4" />
-            Create Plan
+            <span class="w-max">Create Plan</span>
           </A>
         </Show>
       </div>
