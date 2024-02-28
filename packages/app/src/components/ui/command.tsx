@@ -47,7 +47,7 @@ export const CommandList = <Option, OptGroup>(
   return (
     <ComboboxPrimitive.Listbox
       cmdk-list=""
-      class={cn("max-h-[300px] overflow-y-auto overflow-x-hidden p-1", local.class)}
+      class={cn("max-h-full md:max-h-[300px] overflow-y-auto overflow-x-hidden p-1", local.class)}
       {...rest}
     />
   );
@@ -73,7 +73,6 @@ export const CommandInput: VoidComponent<ComboboxPrimitive.ComboboxInputProps> =
 
 export const CommandItem: ParentComponent<ComboboxPrimitive.ComboboxItemProps> = (props) => {
   const [local, rest] = splitProps(props, ["class", "item", "onSelect"]);
-
 
   return (
     <ComboboxPrimitive.Item

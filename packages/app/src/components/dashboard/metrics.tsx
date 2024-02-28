@@ -16,7 +16,7 @@ export const Metrics = () => {
   const metrics = createAsync(() => getMetrics());
 
   return (
-    <div class="w-full grid grid-cols-3 gap-2">
+    <div class="w-full grid md:grid-cols-3 grid-cols-1 gap-2">
       <For each={metrics()}>
         {(stat) => (
           <div class="flex flex-col gap-0.5 p-4 rounded-md border border-neutral-200 dark:border-neutral-800">

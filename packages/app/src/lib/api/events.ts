@@ -76,6 +76,7 @@ export const createNewEvent = action(async (data: z.infer<typeof CreateEventForm
   const plan_description = data.description;
 
   const [start_time, end_time] = data.days;
+  const time_slots = data.time_slots;
 
   const plan_location = data.location;
 

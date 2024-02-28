@@ -42,6 +42,7 @@ import { today } from "@internationalized/date";
 import { As } from "@kobalte/core";
 import { createUndoHistory } from "@solid-primitives/history";
 import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
+import { omit, update } from "@solid-primitives/signal-builders";
 import { clientOnly } from "@solidjs/start";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
@@ -77,6 +78,7 @@ import {
   Redo,
   Sparkles,
   Ticket,
+  Trash,
   Undo,
 } from "lucide-solid";
 import { For, Match, Show, Switch, createMemo, createSignal, onMount } from "solid-js";
@@ -86,6 +88,7 @@ import { z } from "zod";
 import URLPreview from "../URLPreview";
 import { TextFieldTextArea } from "../ui/textarea";
 import { EditTicketForm } from "./EditTicketForm";
+import { createMediaQuery } from "@solid-primitives/media";
 dayjs.extend(tz);
 dayjs.extend(advancedFormat);
 dayjs.extend(customParseFormat);
@@ -157,7 +160,23 @@ const TimeSlotChange = (props: {
       </TextField>
       <AlertDialogFooter>
         <AlertDialogClose>Cancel</AlertDialogClose>
-        <AlertDialogAction onClick={() => props.onChange(start(), end())}>Save</AlertDialogAction>
+        <AlertDialogAction
+          onClick={(e) => {
+            // first check if start and end is correctly entered
+            const s = start();
+            const _e = end();
+
+            if (dayjs(_e).isBefore(s)) {
+              toast.info("End time has to be after start time");
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            props.onChange(start(), end());
+          }}
+        >
+          Save
+        </AlertDialogAction>
       </AlertDialogFooter>
     </div>
   );
@@ -170,16 +189,21 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
   const defaultFreeTicketType = createAsync(() => getDefaultFreeTicketType());
   const createEvent = useAction(createNewEvent);
   const isCreatingEvent = useSubmission(createNewEvent);
+  const isSmall = createMediaQuery("(max-width: 768px)", true);
 
   const DEFAULT_EVENT: z.infer<typeof CreateEventFormSchema> = {
     event_type: props.event_type,
     name: "",
     description: "",
     days: [dayjs().startOf("day").toDate(), dayjs().startOf("day").add(1, "day").toDate()],
-    time_slots: [
-      [dayjs().startOf("day").toDate(), dayjs().endOf("day").toDate()],
-      [dayjs().add(1, "day").startOf("day").toDate(), dayjs().add(1, "day").endOf("day").toDate()],
-    ],
+    time_slots: {
+      [dayjs().startOf("day").format("YYYY-MM-DD")]: {
+        [dayjs().startOf("day").format("YYYY-MM-DD h:mm A")]: {
+          start: dayjs().startOf("day").toDate(),
+          end: dayjs().endOf("day").toDate(),
+        },
+      },
+    },
     tickets: [],
     capacity: {
       capacity_type: "none",
@@ -358,6 +382,17 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
     await createEvent(nE);
   };
 
+  const time_slots = () => newEvent().time_slots;
+
+  const time_slots_length = () =>
+    Object.values(time_slots()).reduce((acc, day) => {
+      // Access nested object within 'day'
+      const daySlots = Object.values(day);
+
+      // Add length of each day's time slot array to accumulator
+      return acc + daySlots.length;
+    }, 0);
+
   return (
     <div class="flex flex-col gap-4 items-start w-full">
       <div class="flex flex-col">
@@ -379,19 +414,19 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
           <Show when={event_type_id()}>{(eti) => <input hidden value={eti()} name="event_type_id" />}</Show>
           <Tabs defaultValue="general" value={currentTab()} onChange={(value) => setCurrentTab(value as TabValue)}>
             <TabsList>
-              <TabsTrigger value="general" class="text-sm font-medium leading-none gap-2 pl-3">
+              <TabsTrigger value="general" class="text-sm font-medium leading-none gap-2 pl-1.5 md:pl-3">
                 <Library class="w-3 h-3" />
                 General
               </TabsTrigger>
-              <TabsTrigger value="time" class="text-sm font-medium leading-none gap-2 pl-3">
+              <TabsTrigger value="time" class="text-sm font-medium leading-none gap-2 pl-1.5 md:pl-3">
                 <Clock class="w-3 h-3" />
                 Time
               </TabsTrigger>
-              <TabsTrigger value="location" class="text-sm font-medium leading-none gap-2 pl-3">
+              <TabsTrigger value="location" class="text-sm font-medium leading-none gap-2 pl-1.5 md:pl-3">
                 <MapPin class="w-3 h-3" />
                 Location
               </TabsTrigger>
-              <TabsTrigger value="tickets" class="text-sm font-medium leading-none gap-2 pl-3">
+              <TabsTrigger value="tickets" class="text-sm font-medium leading-none gap-2 pl-1.5 md:pl-3">
                 <Ticket class="w-3 h-3" />
                 {newEvent().capacity.capacity_type !== "none" &&
                 parseInt(
@@ -523,11 +558,16 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                         return {
                           ...ev,
                           days,
-                          time_slots: Array.from({ length: dayjs(days[1]).diff(dayjs(days[0]), "days") + 1 }).map(
-                            (x, i) => [
-                              dayjs(days[0]).add(i, "days").startOf("day").toDate(),
-                              dayjs(days[0]).add(i, "days").endOf("day").toDate(),
-                            ]
+                          time_slots: Object.fromEntries(
+                            Array.from({ length: dayjs(days[1]).diff(dayjs(days[0]), "days") + 1 }).map((x, i) => [
+                              dayjs(days[0]).add(i, "days").format("YYYY-MM-DD"),
+                              {
+                                [dayjs(days[0]).add(i, "days").format("YYYY-MM-DD h:mm A")]: {
+                                  start: dayjs(days[0]).add(i, "days").startOf("day").toDate(),
+                                  end: dayjs(days[0]).add(i, "days").endOf("day").toDate(),
+                                },
+                              },
+                            ])
                           ),
                         };
                       });
@@ -667,59 +707,141 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                     </DatePickerView>
                   </DatePickerContent>
                 </DatePicker>
-                <div class="flex flex-col gap-2 w-full">
+                <div class="flex flex-col gap-1 w-full">
                   <div class="flex flex-col gap-2 w-full items-center justify-between">
                     <div class="w-full">
-                      <span class="text-sm font-medium">{newEvent().time_slots.length} Time slots</span>
+                      <span class="text-sm font-medium">
+                        {time_slots_length()} Time slot{time_slots_length() === 1 ? "" : "s"}
+                      </span>
                     </div>
                     <div></div>
                   </div>
                   <div class="flex flex-col gap-2 w-full">
-                    <For each={newEvent().time_slots}>
-                      {(time_slot, index) => (
-                        <AlertDialog>
-                          <AlertDialogTrigger>
-                            <div class="flex flex-row w-full items-center justify-between border border-neutral-200 dark:border-neutral-800 rounded-md cursor-pointer hover:bg-muted/50">
-                              <div class="w-max flex flex-col items-center justify-center px-5 py-3 min-w-20">
-                                <div class="text-base font-black w-max">{dayjs(time_slot[0]).format("Do MMM")}</div>
-                                <div class="text-xs font-medium">{dayjs(time_slot[0]).format("ddd")}</div>
-                              </div>
-                              <div class="w-full flex flex-row items-center justify-around px-3">
-                                <div class="font-mono">{dayjs(time_slot[0]).format("h:mm A")}</div>
-                                <Minus class="size-4" />
-                                <div class="font-mono">{dayjs(time_slot[1]).format("h:mm A")}</div>
-                              </div>
-                            </div>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Change time slot for {dayjs(time_slot[0]).format("Do MMM YYYY")}
-                              </AlertDialogTitle>
-                            </AlertDialogHeader>
-                            <TimeSlotChange
-                              onChange={(start, end) => {
-                                const time_slots = [...newEvent().time_slots];
+                    <For
+                      each={Object.entries(newEvent().time_slots)}
+                      fallback={
+                        <div class="flex flex-col items-center justify-center text-muted-foreground border border-neutral-200 dark:border-neutral-800 rounded-md">
+                          There are no time slots
+                        </div>
+                      }
+                    >
+                      {([string_date, time_slots_obj]) => (
+                        <div class="flex flex-row w-full items-start justify-between border border-neutral-200 dark:border-neutral-800 rounded-md p-4 md:gap-8 gap-2">
+                          <div class="w-max flex flex-col items-center justify-center px-5 py-3 min-w-20">
+                            <div class="text-base font-black w-max">{dayjs(string_date).format("Do MMM")}</div>
+                            <div class="text-xs font-medium">{dayjs(string_date).format("ddd")}</div>
+                          </div>
+                          <div class="flex flex-col w-full gap-2">
+                            <For each={Object.entries(time_slots_obj)}>
+                              {([string_time_slot, time_slot]) => (
+                                <div class="flex flex-row items-center justify-between w-full gap-2">
+                                  <AlertDialog>
+                                    <AlertDialogTrigger class="w-full">
+                                      <div class="flex flex-row w-full items-center justify-between border border-neutral-200 dark:border-neutral-800 rounded-md cursor-pointer hover:bg-muted/50 py-2">
+                                        <div class="w-full flex flex-row items-center justify-around px-3">
+                                          <div class="font-mono">{dayjs(time_slot.start).format("h:mm A")}</div>
+                                          <Minus class="size-4" />
+                                          <div class="font-mono">{dayjs(time_slot.end).format("h:mm A")}</div>
+                                        </div>
+                                      </div>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                          Change time slot for {dayjs(time_slot.start).format("Do MMM YYYY")}
+                                        </AlertDialogTitle>
+                                      </AlertDialogHeader>
+                                      <TimeSlotChange
+                                        onChange={(start, end) => {
+                                          const time_slots_copy = time_slots();
 
-                                time_slots[index()][0] = dayjs(time_slot[0])
-                                  .set("hours", dayjs(start).hour())
-                                  .set("minutes", dayjs(start).minute())
-                                  .toDate();
+                                          time_slots_copy[string_date][string_time_slot].start = dayjs(time_slot.start)
+                                            .set("hours", dayjs(start).hour())
+                                            .set("minutes", dayjs(start).minute())
+                                            .toDate();
 
-                                time_slots[index()][1] = dayjs(time_slot[1])
-                                  .set("hours", dayjs(end).hour())
-                                  .set("minutes", dayjs(end).minute())
-                                  .toDate();
+                                          time_slots_copy[string_date][string_time_slot].end = dayjs(time_slot.end)
+                                            .set("hours", dayjs(end).hour())
+                                            .set("minutes", dayjs(end).minute())
+                                            .toDate();
 
-                                setNewEvent((e) => ({ ...e, time_slots }));
+                                          const new_newEvent = update(newEvent, "time_slots", time_slots_copy);
+                                          const nne = new_newEvent();
+                                          setNewEvent(nne);
+                                        }}
+                                        value={time_slot}
+                                      />
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                  <div class="flex flex-row items-center justify-center w-max">
+                                    <Button
+                                      variant="destructive"
+                                      size="icon"
+                                      class="w-max h-max p-3"
+                                      onClick={() => {
+                                        const time_slots_copy = time_slots();
+                                        const ts = time_slots_copy[string_date];
+                                        delete ts[string_time_slot];
+                                        time_slots_copy[string_date] = ts;
+
+                                        const new_newEvent = update(newEvent, "time_slots", time_slots_copy);
+                                        const nne = new_newEvent();
+                                        setNewEvent(nne);
+                                      }}
+                                    >
+                                      <Trash class="size-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </For>
+                            <Button
+                              class="flex gap-2 items-center"
+                              size="sm"
+                              onClick={() => {
+                                const time_slots_copy = time_slots();
+                                const the_day = time_slots_copy[string_date];
+                                const sortedTimeSlots = Object.values(the_day).sort(
+                                  (a, b) => b.start.getTime() - a.start.getTime()
+                                );
+                                if (sortedTimeSlots.length === 0) {
+                                  const newStartTime = dayjs(string_date).startOf("day");
+                                  const newEndTime = dayjs(string_date).endOf("day");
+                                  const newTimeSlot = { start: newStartTime.toDate(), end: newEndTime.toDate() };
+                                  const newTimeSlotString = newStartTime.format("YYYY-MM-DD h:mm A");
+
+                                  const new_newEvent = update(
+                                    newEvent,
+                                    "time_slots",
+                                    string_date,
+                                    newTimeSlotString,
+                                    newTimeSlot
+                                  );
+                                  const nne = new_newEvent();
+                                  setNewEvent(nne);
+                                  return;
+                                }
+                                const lastTimeSlot = sortedTimeSlots[0];
+                                const newStartTime = dayjs(lastTimeSlot.end).add(1, "minute");
+                                const newEndTime = dayjs(newStartTime).add(1, "hour");
+                                const newTimeSlot = { start: newStartTime.toDate(), end: newEndTime.toDate() };
+                                const newTimeSlotString = newStartTime.format("YYYY-MM-DD h:mm A");
+
+                                const new_newEvent = update(
+                                  newEvent,
+                                  "time_slots",
+                                  string_date,
+                                  newTimeSlotString,
+                                  newTimeSlot
+                                );
+                                const nne = new_newEvent();
+                                setNewEvent(nne);
                               }}
-                              value={{
-                                start: time_slot[0],
-                                end: time_slot[1],
-                              }}
-                            />
-                          </AlertDialogContent>
-                        </AlertDialog>
+                            >
+                              <Plus class="size-4" /> Add Slot
+                            </Button>
+                          </div>
+                        </div>
                       )}
                     </For>
                   </div>
@@ -1199,8 +1321,13 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                             tooManyTicketsCheck().type === "success:done"
                           }
                           onClick={() => {
-                            const totalTickets = newEvent().tickets.reduce((acc, t) => acc + t.quantity, 0);
                             const nc = newEvent();
+                            const tickets = nc.tickets;
+                            if (tickets.length >= 1 && tickets.some((t) => t.quantity === 0)) {
+                              toast.info(`Please setup the existing tickets first`);
+                              return;
+                            }
+                            const totalTickets = tickets.reduce((acc, t) => acc + t.quantity, 0);
                             const cp = nc.capacity;
                             const cpt = cp.capacity_type;
                             if (cpt === "none") {
@@ -1255,6 +1382,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                 variant="outline"
                 aria-label="Resets the Form"
                 class="gap-2"
+                size={isSmall() ? "icon" : "default"}
                 onClick={(e) => {
                   if (!formRef) return;
                   setNewEvent(DEFAULT_EVENT);
@@ -1263,7 +1391,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                 }}
                 disabled={isCreatingEvent.pending || isFormEmpty(newEvent())}
               >
-                Reset Form
+                <span class="sr-only md:not-sr-only">Reset Form</span>
                 <Eraser class="w-4 h-4" />
               </Button>
               <Button
@@ -1323,7 +1451,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                 <Switch
                   fallback={
                     <>
-                      <span class="text-sm font-medium leading-none">Create {props.event_type}</span>
+                      <span class="text-sm font-medium leading-none w-max">Create {props.event_type}</span>
                       <Plus class="w-4 h-4" />
                     </>
                   }
