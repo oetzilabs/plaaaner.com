@@ -118,7 +118,9 @@ const TimeSlotChange = (props: {
 }) => {
   const [start, setStart] = createSignal(props.value.start);
   const [end, setEnd] = createSignal(props.value.end);
+
   const dateFormat = ["h:mm", "hh:mm"];
+
   return (
     <div class="flex flex-col gap-4 w-full">
       <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
@@ -155,7 +157,7 @@ const TimeSlotChange = (props: {
       </TextField>
       <AlertDialogFooter>
         <AlertDialogClose>Cancel</AlertDialogClose>
-        <AlertDialogAction onClick={() => props.onChange(start(), end())}>Continue</AlertDialogAction>
+        <AlertDialogAction onClick={() => props.onChange(start(), end())}>Save</AlertDialogAction>
       </AlertDialogFooter>
     </div>
   );
@@ -697,21 +699,19 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                             </AlertDialogHeader>
                             <TimeSlotChange
                               onChange={(start, end) => {
-                                const ts = [...newEvent().time_slots];
-                                ts[index()][0] = dayjs(ts[index()][0])
-                                  .set("hour", dayjs(start).hour())
-                                  .set("minute", dayjs(start).minute())
+                                const time_slots = [...newEvent().time_slots];
+
+                                time_slots[index()][0] = dayjs(time_slot[0])
+                                  .set("hours", dayjs(start).hour())
+                                  .set("minutes", dayjs(start).minute())
                                   .toDate();
-                                ts[index()][1] = dayjs(ts[index()][1])
-                                  .set("hour", dayjs(end).hour())
-                                  .set("minute", dayjs(end).minute())
+
+                                time_slots[index()][1] = dayjs(time_slot[1])
+                                  .set("hours", dayjs(end).hour())
+                                  .set("minutes", dayjs(end).minute())
                                   .toDate();
-                                setNewEvent((e) => {
-                                  return {
-                                    ...e,
-                                    time_slots: ts,
-                                  };
-                                });
+
+                                setNewEvent((e) => ({ ...e, time_slots }));
                               }}
                               value={{
                                 start: time_slot[0],
