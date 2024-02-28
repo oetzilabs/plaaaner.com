@@ -14,6 +14,7 @@
   "devDependencies": {
     "@oetzilabs-plaaaner-com/core": "workspace:*",
     "@types/aws-lambda": "8.10.124",
+    "@types/leaflet": "^1.9.8",
     "@types/node": "^20.11.19",
     "@types/node-fetch": "2.6.6",
     "autoprefixer": "10.4.17",
@@ -49,6 +50,8 @@
     "clsx": "2.1.0",
     "dayjs": "1.11.10",
     "embla-carousel-solid": "8.0.0-rc22",
+    "leaflet": "^1.9.4",
+    "leaflet-rotate": "^0.2.8",
     "lucia": "^3.0.1",
     "lucide-solid": "0.341.0",
     "node-fetch": "3.3.2",

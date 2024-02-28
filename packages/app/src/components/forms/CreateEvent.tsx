@@ -917,7 +917,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                           "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent().location.location_type === "online",
+                              newEvent().location.location_type !== "venue",
                             "bg-secondary": newEvent().location.location_type === "venue",
                           }
                         )}
@@ -932,7 +932,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                           "flex flex-row items-center justify-center gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent().location.location_type === "venue",
+                              newEvent().location.location_type !== "festival",
                             "bg-secondary": newEvent().location.location_type === "festival",
                           }
                         )}
@@ -941,34 +941,34 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                         Festival <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
-                    <RadioGroupItem value="other">
-                      <RadioGroupItemLabel
-                        class={cn(
-                          "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
-                          {
-                            "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent().location.location_type === "venue",
-                            "bg-secondary": newEvent().location.location_type === "other",
-                          }
-                        )}
-                      >
-                        <Clover class="size-4" />
-                        Other <RadioGroupItemControl class="hidden" />
-                      </RadioGroupItemLabel>
-                    </RadioGroupItem>
                     <RadioGroupItem value="online">
                       <RadioGroupItemLabel
                         class={cn(
                           "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                           {
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                              newEvent().location.location_type === "venue",
+                              newEvent().location.location_type !== "online",
                             "bg-secondary": newEvent().location.location_type === "online",
                           }
                         )}
                       >
                         <Globe class="size-4" />
                         Online <RadioGroupItemControl class="hidden" />
+                      </RadioGroupItemLabel>
+                    </RadioGroupItem>{" "}
+                    <RadioGroupItem value="other">
+                      <RadioGroupItemLabel
+                        class={cn(
+                          "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
+                          {
+                            "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
+                              newEvent().location.location_type !== "other",
+                            "bg-secondary": newEvent().location.location_type === "other",
+                          }
+                        )}
+                      >
+                        <Clover class="size-4" />
+                        Other <RadioGroupItemControl class="hidden" />
                       </RadioGroupItemLabel>
                     </RadioGroupItem>
                   </div>
@@ -989,6 +989,19 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                               newEvent().location.url
                             : urlQuery()
                         }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const value = e.currentTarget.value;
+                            setLocationQuery(value);
+                            setNewEvent((ev) => ({
+                              ...ev,
+                              location: {
+                                ...ev.location,
+                                address: value,
+                              },
+                            }));
+                          }
+                        }}
                         onChange={(e) => {
                           const value = e.currentTarget.value;
                           setURLQuery(value);
@@ -1019,6 +1032,19 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                               newEvent().location.address
                             : locationQuery()
                         }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const value = e.currentTarget.value;
+                            setLocationQuery(value);
+                            setNewEvent((ev) => ({
+                              ...ev,
+                              location: {
+                                ...ev.location,
+                                address: value,
+                              },
+                            }));
+                          }
+                        }}
                         onChange={(e) => {
                           const value = e.currentTarget.value;
                           setLocationQuery(value);
@@ -1049,6 +1075,19 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                               newEvent().location.address
                             : locationQuery()
                         }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const value = e.currentTarget.value;
+                            setLocationQuery(value);
+                            setNewEvent((ev) => ({
+                              ...ev,
+                              location: {
+                                ...ev.location,
+                                address: value,
+                              },
+                            }));
+                          }
+                        }}
                         onChange={(e) => {
                           const value = e.currentTarget.value;
                           setLocationQuery(value);
