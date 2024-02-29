@@ -75,7 +75,7 @@ export const FormControls = (props: {
           }}
           disabled={event.isCreating.pending || isFormEmpty(event.newPlan())}
         >
-          <span class={cn("sr-only md:not-sr-only", { "sr-only": isSmall() })}>Reset Form</span>
+          <span class={cn("sr-only md:not-sr-only", { "md:sr-only": isSmall() })}>Reset Form</span>
           <Eraser class="w-4 h-4" />
         </Button>
         <Button

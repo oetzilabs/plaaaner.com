@@ -62,9 +62,9 @@ export const TabMovement: Record<"forward" | "backward", Record<TabValue, TabVal
 };
 
 export const [CreatePlanProvider, usePlanProvider] = createContextProvider((props: CreatePlanProviderProps) => {
-  const previousPlans = createAsync(() => getPreviousEvents());
-  const recommendedPlans = createAsync(() => getRecommendedEvents());
-  const event_type_id = createAsync(() => getEventTypeId(props.event_type));
+  const previousPlans = createAsync(() => getPreviousEvents(), { deferStream: true });
+  const recommendedPlans = createAsync(() => getRecommendedEvents(), { deferStream: true });
+  const event_type_id = createAsync(() => getEventTypeId(props.event_type), { deferStream: true });
   const createPlan = useAction(createNewEvent);
   const isCreating = useSubmission(createNewEvent);
 
@@ -82,7 +82,7 @@ export const [CreatePlanProvider, usePlanProvider] = createContextProvider((prop
       },
       {
         limit: 1000,
-      },
+      }
     );
   });
 
