@@ -12,6 +12,9 @@ import {
 import { TextFieldInput, TextField, TextFieldLabel } from "@/components/ui/textfield";
 import { Skeleton } from "@/components/ui/skeleton";
 import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import tz from "dayjs/plugin/timezone";
 import { Calendar, Minus, Plus, Trash } from "lucide-solid";
 import { createSignal, For, onMount } from "solid-js";
 import { usePlanProvider } from "../CreatePlanProvider";
@@ -34,6 +37,9 @@ import {
 } from "@/components/ui/date-picker";
 import { toast } from "solid-sonner";
 import { update } from "@solid-primitives/signal-builders";
+dayjs.extend(tz);
+dayjs.extend(advancedFormat);
+dayjs.extend(customParseFormat);
 
 const [timezone, setTimeZone] = createSignal("UTC");
 
@@ -120,7 +126,6 @@ export const Time = () => {
   if (!plan)
     return (
       <div class="flex flex-col gap-2 w-full">
-        <Skeleton class="w-full h-8" />
         <Skeleton class="w-full h-8" />
         <div class="flex flex-col gap-1 w-full">
           <div class="flex flex-col gap-2 w-full items-center justify-between">
