@@ -39,7 +39,7 @@ export const Events = {
           date: z.string(),
           location: z.string(),
         }),
-      ])
+      ]),
     )
     .implement(async (data) => {
       const session = document.cookie.split(";").find((c) => c.startsWith("session="));
@@ -97,7 +97,7 @@ export const Concerts = {
           date: z.string(),
           location: z.string(),
         }),
-      ])
+      ]),
     )
     .implement(async (data) => {
       const session = document.cookie.split(";").find((c) => c.startsWith("session="));

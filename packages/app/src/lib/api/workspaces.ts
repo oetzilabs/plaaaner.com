@@ -134,7 +134,7 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
     },
     {
       sessionId: sessionId,
-    }
+    },
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.nativeEvent.context.session = session;

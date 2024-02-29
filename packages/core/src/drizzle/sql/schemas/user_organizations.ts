@@ -9,8 +9,12 @@ import { users } from "./users";
 
 export const users_organizations = schema.table("users_organizations", {
   ...Entity.defaults,
-  organization_id: uuid("organization_id").references(() => organizations.id).notNull(),
-  user_id: uuid("user_id").references(() => users.id).notNull(),
+  organization_id: uuid("organization_id")
+    .references(() => organizations.id)
+    .notNull(),
+  user_id: uuid("user_id")
+    .references(() => users.id)
+    .notNull(),
 });
 
 export const users_organizations_relation = relations(users_organizations, ({ many, one }) => ({
@@ -33,4 +37,3 @@ export const UserOrganizationUpdateSchema = UserOrganizationCreateSchema.partial
   .extend({
     id: z.string().uuid(),
   });
-

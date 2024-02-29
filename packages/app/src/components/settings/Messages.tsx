@@ -59,7 +59,7 @@ export const Messages = () => {
                   {
                     "bg-accent text-accent-foreground border border-neutral-300 dark:border-neutral-700 shadow-sm":
                       messagingSettings()?.type === n.type,
-                  }
+                  },
                 )}
                 disabled={isChangingMessageSettings.pending}
                 onClick={() => handleMessageSettingChange(n.type)}

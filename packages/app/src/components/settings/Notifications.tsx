@@ -58,7 +58,7 @@ export const Notifications = () => {
                   {
                     "bg-accent text-accent-foreground border border-neutral-300 dark:border-neutral-700 shadow-sm":
                       notifcationSettings()?.type === n.type,
-                  }
+                  },
                 )}
                 disabled={isChangingNotificationSettings.pending}
                 onClick={() => handleNotificationChange(n.type)}

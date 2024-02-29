@@ -1,8 +1,7 @@
 import { cache, redirect } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 
-
-export const getTaggedEntity = cache(async (tag:string) => {
+export const getTaggedEntity = cache(async (tag: string) => {
   "use server";
   const event = getRequestEvent()!;
   if (!event.nativeEvent.context.user) {
@@ -14,5 +13,4 @@ export const getTaggedEntity = cache(async (tag:string) => {
     content: tag,
     tag: "JD",
   };
-
 }, "taggedEntity");

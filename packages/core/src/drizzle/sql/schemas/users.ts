@@ -20,8 +20,8 @@ export const sessions = schema.table("session", {
     withTimezone: true,
     mode: "date",
   })
-  .notNull()
-  .defaultNow(),
+    .notNull()
+    .defaultNow(),
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
     mode: "date",
@@ -58,7 +58,7 @@ export const UserUpdateSchema = createInsertSchema(users)
 export const sessionRelation = relations(sessions, ({ one }) => ({
   user: one(users, {
     fields: [sessions.userId],
-    references: [users.id]
+    references: [users.id],
   }),
 }));
 
@@ -68,4 +68,3 @@ export const SessionUpdateSchema = createInsertSchema(sessions)
   .partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({ id: z.string().uuid() });
-

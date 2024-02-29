@@ -7,12 +7,16 @@ import { relations } from "drizzle-orm";
 import { organizations } from "./organization";
 import { users } from "./users";
 
-export const joinType = pgEnum('joinType', ["request", "invite"]);
+export const joinType = pgEnum("joinType", ["request", "invite"]);
 
 export const organizations_joins = schema.table("organizations_joins", {
   ...Entity.defaults,
-  organization_id: uuid("organization_id").references(() => organizations.id).notNull(),
-  user_id: uuid("user_id").references(() => users.id).notNull(),
+  organization_id: uuid("organization_id")
+    .references(() => organizations.id)
+    .notNull(),
+  user_id: uuid("user_id")
+    .references(() => users.id)
+    .notNull(),
   type: joinType("type").notNull(),
   expiresAt: timestamp("expires_at", {
     withTimezone: true,

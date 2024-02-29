@@ -29,4 +29,3 @@ export const EventTypeCreateSchema = createInsertSchema(event_types);
 export const EventTypeUpdateSchema = EventTypeCreateSchema.partial().omit({ createdAt: true, updatedAt: true }).extend({
   id: z.string().uuid(),
 });
-

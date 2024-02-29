@@ -56,7 +56,7 @@ export const Organizations = () => {
                   variant: "default",
                   size: "sm",
                 }),
-                "w-max gap-2 items-center"
+                "w-max gap-2 items-center",
               )}
             >
               <Plus class="size-4" />

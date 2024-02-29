@@ -35,4 +35,7 @@ declare module "lucia" {
 }
 
 type DatabaseUserAttributes = Omit<UserSelect, "id">;
-type DatabaseSessionAttributes = Omit<SessionSelect, "id" | "userID" | "expiresAt" | "userId" | "createdAt" | "updatedAt">;
+type DatabaseSessionAttributes = Omit<
+  SessionSelect,
+  "id" | "userID" | "expiresAt" | "userId" | "createdAt" | "updatedAt"
+>;

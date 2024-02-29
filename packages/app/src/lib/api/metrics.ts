@@ -53,4 +53,3 @@ export const getMetrics = cache(async () => {
   // const n = await Notifications.findManyByUserId(user.id);
   // return n;
 }, "metrics");
-

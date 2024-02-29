@@ -80,22 +80,22 @@ export default function DateCalendar(props: { onChange: (date: Date | string) =>
                   dayjs(day).isSame(dayjs(date()), "day")
                     ? "default"
                     : isToday(day)
-                    ? isToday(date()!)
-                      ? "default"
-                      : "outline"
-                    : "ghost"
+                      ? isToday(date()!)
+                        ? "default"
+                        : "outline"
+                      : "ghost"
                 }
                 class="text-center"
                 onClick={() => {
                   setDate(
                     dayjs(date())
                       .date(i() + 1)
-                      .toDate()
+                      .toDate(),
                   );
                   props.onChange(
                     dayjs(date())
                       .date(i() + 1)
-                      .toDate()
+                      .toDate(),
                   );
                 }}
               >

@@ -82,7 +82,7 @@ export const setCurrentOrganization = action(async (data: FormData) => {
     },
     {
       sessionId: sessionId,
-    }
+    },
   );
   // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());

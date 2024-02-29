@@ -4,5 +4,5 @@ import { json } from "./utils";
 
 export const main = ApiHandler(async (_evt) => {
   const removed = await Workspace.removeCorrupt();
-  return json({removed});
-})
+  return json({ removed });
+});

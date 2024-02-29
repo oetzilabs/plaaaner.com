@@ -61,7 +61,7 @@ export const createOrganization = action(async (form: FormData) => {
     },
     {
       sessionId: sessionId,
-    }
+    },
   );
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());

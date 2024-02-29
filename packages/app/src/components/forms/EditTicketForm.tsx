@@ -32,14 +32,14 @@ export const EditTicketForm = (props: {
   };
 
   const stepsPerCurrency = (currency: z.infer<typeof BaseTicketSchema>["currency"]["currency_type"]) =>
-    ((
-      {
+    (
+      ({
         usd: 0.01,
         eur: 0.01,
         chf: 0.05,
         other: 0.01,
-      } as Record<z.infer<typeof BaseTicketSchema>["currency"]["currency_type"], number>
-    )[currency]);
+      }) as Record<z.infer<typeof BaseTicketSchema>["currency"]["currency_type"], number>
+    )[currency];
 
   const getTickets = createAsync(() => getTicketTypes(), { deferStream: true });
 
@@ -92,7 +92,7 @@ export const EditTicketForm = (props: {
                         {
                           "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default",
                           "bg-secondary": ticket().shape === "default",
-                        }
+                        },
                       )}
                     >
                       Default <RadioGroupItemControl class="hidden" />
@@ -105,7 +105,7 @@ export const EditTicketForm = (props: {
                         {
                           "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default-1",
                           "bg-secondary": ticket().shape === "default-1",
-                        }
+                        },
                       )}
                     >
                       Default 1 <RadioGroupItemControl class="hidden" />
@@ -118,7 +118,7 @@ export const EditTicketForm = (props: {
                         {
                           "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default-2",
                           "bg-secondary": ticket().shape === "default-2",
-                        }
+                        },
                       )}
                     >
                       Default 2<RadioGroupItemControl class="hidden" />
@@ -131,7 +131,7 @@ export const EditTicketForm = (props: {
                         {
                           "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "custom",
                           "bg-secondary": ticket().shape === "custom",
-                        }
+                        },
                       )}
                     >
                       Custom <RadioGroupItemControl class="hidden" />
