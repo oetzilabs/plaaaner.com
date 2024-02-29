@@ -42,7 +42,7 @@ import { today } from "@internationalized/date";
 import { As } from "@kobalte/core";
 import { createUndoHistory } from "@solid-primitives/history";
 import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
-import { omit, update } from "@solid-primitives/signal-builders";
+import { update } from "@solid-primitives/signal-builders";
 import { clientOnly } from "@solidjs/start";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
@@ -52,7 +52,6 @@ import {
   AlertDialog,
   AlertDialogClose,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -233,7 +232,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
       },
       {
         limit: 1000,
-      }
+      },
     );
   });
 
@@ -329,7 +328,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
             newEvent().capacity.value as Exclude<
               z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
               "none" | number
-            >
+            >,
           ) - totalTickets;
     if (ticket.ticket_type.payment_type === "FREE") {
       return remainingTickets;
@@ -433,7 +432,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                   newEvent().capacity.value as Exclude<
                     z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
                     "none"
-                  > as string
+                  > as string,
                 ) > 0
                   ? newEvent().capacity.value
                   : ""}{" "}
@@ -443,7 +442,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                   newEvent().capacity.value as Exclude<
                     z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
                     "none"
-                  > as string
+                  > as string,
                 ) === 1
                   ? ""
                   : "s"}
@@ -559,7 +558,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                           ...ev,
                           days,
                           time_slots: Object.fromEntries(
-                            Array.from({ length: dayjs(days[1]).diff(dayjs(days[0]), "days") + 1 }).map((x, i) => [
+                            Array.from({ length: dayjs(days[1]).diff(dayjs(days[0]), "days") + 1 }).map((_, i) => [
                               dayjs(days[0]).add(i, "days").format("YYYY-MM-DD"),
                               {
                                 [dayjs(days[0]).add(i, "days").format("YYYY-MM-DD h:mm A")]: {
@@ -567,7 +566,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                                   end: dayjs(days[0]).add(i, "days").endOf("day").toDate(),
                                 },
                               },
-                            ])
+                            ]),
                           ),
                         };
                       });
@@ -802,7 +801,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                                 const time_slots_copy = time_slots();
                                 const the_day = time_slots_copy[string_date];
                                 const sortedTimeSlots = Object.values(the_day).sort(
-                                  (a, b) => b.start.getTime() - a.start.getTime()
+                                  (a, b) => b.start.getTime() - a.start.getTime(),
                                 );
                                 if (sortedTimeSlots.length === 0) {
                                   const newStartTime = dayjs(string_date).startOf("day");
@@ -815,7 +814,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                                     "time_slots",
                                     string_date,
                                     newTimeSlotString,
-                                    newTimeSlot
+                                    newTimeSlot,
                                   );
                                   const nne = new_newEvent();
                                   setNewEvent(nne);
@@ -832,7 +831,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                                   "time_slots",
                                   string_date,
                                   newTimeSlotString,
-                                  newTimeSlot
+                                  newTimeSlot,
                                 );
                                 const nne = new_newEvent();
                                 setNewEvent(nne);
@@ -919,7 +918,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type !== "venue",
                             "bg-secondary": newEvent().location.location_type === "venue",
-                          }
+                          },
                         )}
                       >
                         <Container class="size-4" />
@@ -934,7 +933,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type !== "festival",
                             "bg-secondary": newEvent().location.location_type === "festival",
-                          }
+                          },
                         )}
                       >
                         <PartyPopper class="size-4" />
@@ -949,7 +948,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type !== "online",
                             "bg-secondary": newEvent().location.location_type === "online",
-                          }
+                          },
                         )}
                       >
                         <Globe class="size-4" />
@@ -964,7 +963,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                             "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                               newEvent().location.location_type !== "other",
                             "bg-secondary": newEvent().location.location_type === "other",
-                          }
+                          },
                         )}
                       >
                         <Clover class="size-4" />
@@ -1195,7 +1194,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                                   newEvent().capacity.value === String(value)) ||
                                 (newEvent().capacity.capacity_type === "custom" && value === "custom") ||
                                 (newEvent().capacity.capacity_type === "none" && value === "none"),
-                            }
+                            },
                           )}
                         >
                           {value} <RadioGroupItemControl class="hidden" />
@@ -1422,7 +1421,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                 aria-label="Resets the Form"
                 class="gap-2"
                 size={isSmall() ? "icon" : "default"}
-                onClick={(e) => {
+                onClick={() => {
                   if (!formRef) return;
                   setNewEvent(DEFAULT_EVENT);
                   formRef.reset();
@@ -1439,7 +1438,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                 size="icon"
                 aria-label="Undo last action"
                 class="gap-2"
-                onClick={(e) => {
+                onClick={() => {
                   const eH = eventHistory();
                   eH.undo();
                 }}
@@ -1453,7 +1452,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                 aria-label="Redo last action"
                 class="gap-2"
                 size="icon"
-                onClick={(e) => {
+                onClick={() => {
                   const eH = eventHistory();
                   eH.redo();
                 }}
@@ -1584,7 +1583,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                     {
                       "lg:w-max": pE().length > 0,
                       "w-full sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1": pE().length === 0,
-                    }
+                    },
                   )}
                 >
                   <For
@@ -1595,7 +1594,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                       </div>
                     }
                   >
-                    {(plan, index) => (
+                    {(plan) => (
                       <Card
                         class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
                           "border-indigo-500 bg-indigo-400 dark:bg-indigo-600": plan.id === newEvent().referenced_from,
@@ -1702,7 +1701,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                     {
                       "lg:w-max": rE().length > 0,
                       "w-full sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1": rE().length === 0,
-                    }
+                    },
                   )}
                 >
                   <For
@@ -1713,7 +1712,7 @@ export default function CreatePlanForm(props: { event_type: z.infer<typeof Creat
                       </div>
                     }
                   >
-                    {(plan, index) => (
+                    {(plan) => (
                       <Card
                         class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
                           "border-indigo-500 bg-indigo-400 dark:bg-indigo-600": plan.id === newEvent().referenced_from,

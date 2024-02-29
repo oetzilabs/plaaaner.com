@@ -18,7 +18,7 @@ const generateAuthUrl = (provider: string) => {
   url.searchParams.set(
     "redirect_uri",
     (import.meta.env.NODE_ENV === "production" ? "https://plaaaner.com" : "http://localhost:3000") +
-      "/api/auth/callback"
+      "/api/auth/callback",
   );
   return url.toString();
 };

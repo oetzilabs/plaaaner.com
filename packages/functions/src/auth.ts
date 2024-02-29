@@ -80,7 +80,7 @@ export const handler = AuthHandler({
                   new URLSearchParams({ email: claims.email }).toString(),
               },
             };
-          }
+          },
         );
       },
       async onCodeInvalid() {

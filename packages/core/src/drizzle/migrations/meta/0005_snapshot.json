@@ -45,12 +45,8 @@
           "name": "session_user_id_users_id_fk",
           "tableFrom": "session",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -155,12 +151,8 @@
           "name": "workspaces_owner_users_id_fk",
           "tableFrom": "workspaces",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -217,12 +209,8 @@
           "name": "users_workspaces_user_id_users_id_fk",
           "tableFrom": "users_workspaces",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -230,12 +218,8 @@
           "name": "users_workspaces_workspace_id_workspaces_id_fk",
           "tableFrom": "users_workspaces",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -304,12 +288,8 @@
           "name": "events_event_type_id_event_types_id_fk",
           "tableFrom": "events",
           "tableTo": "event_types",
-          "columnsFrom": [
-            "event_type_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_type_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -317,12 +297,8 @@
           "name": "events_owner_users_id_fk",
           "tableFrom": "events",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -385,12 +361,8 @@
           "name": "event_types_owner_users_id_fk",
           "tableFrom": "event_types",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -447,12 +419,8 @@
           "name": "event_participants_participant_id_users_id_fk",
           "tableFrom": "event_participants",
           "tableTo": "users",
-          "columnsFrom": [
-            "participant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["participant_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -460,12 +428,8 @@
           "name": "event_participants_event_id_events_id_fk",
           "tableFrom": "event_participants",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -528,12 +492,8 @@
           "name": "tickets_ticket_type_id_ticket_types_id_fk",
           "tableFrom": "tickets",
           "tableTo": "ticket_types",
-          "columnsFrom": [
-            "ticket_type_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ticket_type_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -541,12 +501,8 @@
           "name": "tickets_owner_users_id_fk",
           "tableFrom": "tickets",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -609,12 +565,8 @@
           "name": "ticket_types_owner_users_id_fk",
           "tableFrom": "ticket_types",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

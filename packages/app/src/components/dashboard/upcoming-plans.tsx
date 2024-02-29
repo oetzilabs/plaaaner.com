@@ -32,7 +32,9 @@ export const UpcomingPlans = () => {
             </div>
             <Separator />
             <div class="flex w-full flex-col gap-2">
-              <span class="text-xs font-medium">{plan.todos.length} Todo<Show when={plan.todos.length > 1}>s</Show></span>
+              <span class="text-xs font-medium">
+                {plan.todos.length} Todo<Show when={plan.todos.length > 1}>s</Show>
+              </span>
               <div class="flex flex-col gap-1 w-full">
                 <For each={plan.todos.slice(0, 2)}>
                   {(todo) => (

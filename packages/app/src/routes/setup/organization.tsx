@@ -9,7 +9,14 @@ import {
   getAllOrganizations,
 } from "@/lib/api/organizations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Combobox, ComboboxContent, ComboboxItem, ComboboxTrigger, ComboboxInput, ComboboxHiddenSelect } from "@/components/ui/combobox";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxTrigger,
+  ComboboxInput,
+  ComboboxHiddenSelect,
+} from "@/components/ui/combobox";
 
 export default function SetupProfilePage() {
   const organization = createAsync(() => getOrganization());

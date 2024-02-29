@@ -21,13 +21,11 @@ export const Notifications = () => {
                 size: "sm",
                 variant: "ghost",
               }),
-              "w-full h-auto p-4 flex flex-col items-start gap-2 border border-neutral-200 dark:border-neutral-800"
+              "w-full h-auto p-4 flex flex-col items-start gap-2 border border-neutral-200 dark:border-neutral-800",
             )}
           >
             <span class="text-xs font-medium">{n.message}</span>
-            <div class="flex flex-row gap-1 font-normal text-muted-foreground">
-              {n.contents}
-            </div>
+            <div class="flex flex-row gap-1 font-normal text-muted-foreground">{n.contents}</div>
           </A>
         )}
       </For>

@@ -136,7 +136,7 @@ export const Workspaces = () => {
               "flex flex-row items-center gap-2 justify-center",
               buttonVariants({
                 variant: "default",
-              })
+              }),
             )}
           >
             <Plus class="w-4 h-4" />

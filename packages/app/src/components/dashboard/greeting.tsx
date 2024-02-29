@@ -24,7 +24,7 @@ export const Greeting = () => {
               buttonVariants({
                 variant: "default",
                 size: "sm",
-              })
+              }),
             )}
           >
             <Plus class="w-4 h-4" />

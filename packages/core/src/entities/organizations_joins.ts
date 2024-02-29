@@ -2,11 +2,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
-import {
-  OrganizationJoinCreateSchema,
-  OrganizationJoinUpdateSchema,
-  organizations_joins,
-} from "../drizzle/sql/schema";
+import { OrganizationJoinCreateSchema, OrganizationJoinUpdateSchema, organizations_joins } from "../drizzle/sql/schema";
 import { User } from "./users";
 
 export * as OrganizationJoin from "./organizations_joins";
@@ -64,7 +60,7 @@ export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).impleme
   });
   if (!userOs) return [];
 
-  return userOs.joins
+  return userOs.joins;
 });
 
 export const all = z.function(z.tuple([])).implement(async () => {
@@ -83,7 +79,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ])
+    ]),
   )
   .implement(async (input) => {
     const [updatedOrganizationJoin] = await db
@@ -113,4 +109,3 @@ export const safeParseCreate = OrganizationJoinCreateSchema.safeParse;
 export const safeParseUpdate = OrganizationJoinUpdateSchema.safeParse;
 
 export type Frontend = NonNullable<Awaited<ReturnType<typeof findById>>>;
-

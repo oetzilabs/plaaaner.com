@@ -28,11 +28,11 @@ export const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export const Button: ParentComponent<ButtonPrimitive.ButtonRootProps & VariantProps<typeof buttonVariants>> = (
-  props
+  props,
 ) => {
   const [local, rest] = splitProps(props, ["class", "variant", "size"]);
 
@@ -43,7 +43,7 @@ export const Button: ParentComponent<ButtonPrimitive.ButtonRootProps & VariantPr
           size: local.size,
           variant: local.variant,
         }),
-        local.class
+        local.class,
       )}
       {...rest}
     />

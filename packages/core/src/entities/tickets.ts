@@ -70,7 +70,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ])
+    ]),
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db

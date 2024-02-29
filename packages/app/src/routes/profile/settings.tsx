@@ -34,10 +34,7 @@ export default function ProfileSettingsPage() {
         <h1 class="text-3xl font-medium">Settings</h1>
       </div>
       <div class="flex flex-col items-start gap-2 w-full">
-        <Tabs
-          class="w-full py-0"
-          orientation="vertical"
-        >
+        <Tabs class="w-full py-0" orientation="vertical">
           <TabsList class="w-max h-full">
             <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="account">
               <User class="w-4 h-4" />

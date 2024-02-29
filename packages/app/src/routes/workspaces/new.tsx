@@ -70,10 +70,7 @@ export default function NewWorkspace() {
                     />
                   </TextFieldLabel>
                 </TextField>
-                <Checkbox
-                  onChange={(b) => setNewWorkspace((nw) => ({ ...nw, connect: b }))}
-                  class="flex flex-row"
-                >
+                <Checkbox onChange={(b) => setNewWorkspace((nw) => ({ ...nw, connect: b }))} class="flex flex-row">
                   <CheckboxLabel class="text-sm font-bold flex flex-row items-center justify-start gap-2">
                     <CheckboxControl />
                     Connect to Workspace

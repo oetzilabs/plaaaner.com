@@ -13,7 +13,7 @@ export const DialogOverlay: ParentComponent<DialogPrimitive.DialogOverlayProps> 
     <DialogPrimitive.Overlay
       class={cn(
         "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0",
-        local.class
+        local.class,
       )}
       {...rest}
     />
@@ -30,7 +30,7 @@ export const DialogContent: ParentComponent<DialogPrimitive.DialogContentProps> 
         <DialogPrimitive.Content
           class={cn(
             "fixed top-0 left-0 md:left-[50%] md:top-[50%] z-50 grid w-full max-w-lg md:translate-x-[-50%] md:translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 md:data-[expanded]:zoom-in-95 md:data-[closed]:slide-out-to-left-1/2 md:data-[closed]:slide-out-to-top-[48%] md:data-[expanded]:slide-in-from-left-1/2 md:data-[expanded]:slide-in-from-top-[48%] sm:rounded-lg md:w-full",
-            local.class
+            local.class,
           )}
           {...rest}
         >

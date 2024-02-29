@@ -46,8 +46,8 @@ const BaseEventSchema = z.object({
       z.object({
         start: z.date(),
         end: z.date(),
-      })
-    )
+      }),
+    ),
   ),
   capacity: CapacitySchema,
   location: ConcertLocationSchema,
@@ -58,22 +58,22 @@ export const CreateEventFormSchema = z.discriminatedUnion("event_type", [
   BaseEventSchema.merge(
     z.object({
       event_type: z.literal("event"),
-    })
+    }),
   ),
   BaseEventSchema.merge(
     z.object({
       event_type: z.literal("concert"),
-    })
+    }),
   ),
   BaseEventSchema.merge(
     z.object({
       event_type: z.literal("tournament"),
-    })
+    }),
   ),
   BaseEventSchema.merge(
     z.object({
       event_type: z.literal("custom-event"),
-    })
+    }),
   ),
 ]);
 

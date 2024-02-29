@@ -109,7 +109,7 @@ export const DatePickerTableCell = (props: DatePickerTableCellProps) => {
     <DatePickerPrimitive.TableCell
       class={cn(
         "flex-1 p-0 text-center text-sm aria-selected:bg-accent aria-selected:text-accent-foreground aria-selected:first-of-type:rounded-l-md aria-selected:last-of-type:rounded-r-md",
-        local.class
+        local.class,
       )}
       {...rest}
     />
@@ -125,7 +125,7 @@ export const DatePickerTableCellTrigger = (props: DatePickerTableCellTriggerProp
       variant="ghost"
       class={cn(
         "h-8 w-full p-0 font-normal aria-disabled:cursor-not-allowed aria-disabled:text-muted-foreground aria-disabled:opacity-50 aria-disabled:hover:bg-transparent data-[selected]:bg-primary data-[selected]:text-primary-foreground data-[selected]:hover:bg-primary data-[selected]:hover:text-primary-foreground data-[selected]:focus:bg-primary data-[selected]:focus:text-primary-foreground [&[data-today]:not([data-selected])]:bg-accent [&[data-today]:not([data-selected])]:text-accent-foreground",
-        local.class
+        local.class,
       )}
       {...rest}
     />
@@ -147,7 +147,7 @@ export const DatePickerContent = (props: DatePickerContentProps) => {
         <DatePickerPrimitive.Content
           class={cn(
             "rounded-md border bg-popover p-3 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-            local.class
+            local.class,
           )}
           {...rest}
         >

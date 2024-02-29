@@ -106,7 +106,7 @@ export const Events = {
         z.object({
           event_type: EventType,
         }),
-      ])
+      ]),
     )
     .implement(async ({ event_type }) => {
       return new Promise<
@@ -210,7 +210,7 @@ export const Events = {
         z.object({
           event_type: EventType,
         }),
-      ])
+      ]),
     )
     .implement(async ({ event_type }) => {
       return new Promise<

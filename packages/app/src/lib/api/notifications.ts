@@ -34,10 +34,12 @@ export const getNotifications = cache(async () => {
       reference_type: "comment",
       message: `${user.username} mentioned you.`,
       contents: `This is a test message @oezguerisbert`,
-      tags: [{
-        lookup: "@oezguerisbert",
-        link: "/user/@oezguerisbert",
-      }],
+      tags: [
+        {
+          lookup: "@oezguerisbert",
+          link: "/user/@oezguerisbert",
+        },
+      ],
       link: "/events/1",
     },
     {
@@ -49,10 +51,12 @@ export const getNotifications = cache(async () => {
       reference_type: "event",
       message: "You have been mentioned in an event",
       contents: `This is a test message @oezguerisbert`,
-      tags: [{
-        lookup: "@oezguerisbert",
-        link: "/user/@oezguerisbert",
-      }],
+      tags: [
+        {
+          lookup: "@oezguerisbert",
+          link: "/user/@oezguerisbert",
+        },
+      ],
       link: "/events/1",
     },
     {
@@ -63,10 +67,12 @@ export const getNotifications = cache(async () => {
       reference_id: "1",
       reference_type: "thread",
       message: "You have been mentioned in a thread",
-      tags: [{
-        lookup: "@oezguerisbert",
-        link: "/user/@oezguerisbert",
-      }],
+      tags: [
+        {
+          lookup: "@oezguerisbert",
+          link: "/user/@oezguerisbert",
+        },
+      ],
       contents: `This is a test message @oezguerisbert`,
       link: "/events/1",
     },
