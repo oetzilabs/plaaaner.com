@@ -4,7 +4,7 @@ import { Accessor, Show, createSignal } from "solid-js";
 import { toast } from "solid-sonner";
 import { z } from "zod";
 import { cn } from "../../lib/utils";
-import { BaseTicketSchema } from "../../utils/schemas/event";
+import { BaseTicketSchema } from "../../utils/schemas/plan";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../ui/dialog";
 import {

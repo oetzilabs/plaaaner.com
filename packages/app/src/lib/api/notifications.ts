@@ -40,7 +40,7 @@ export const getNotifications = cache(async () => {
           link: "/user/@oezguerisbert",
         },
       ],
-      link: "/events/1",
+      link: "/plans/1",
     },
     {
       id: "2",
@@ -57,7 +57,7 @@ export const getNotifications = cache(async () => {
           link: "/user/@oezguerisbert",
         },
       ],
-      link: "/events/1",
+      link: "/plans/1",
     },
     {
       id: "3",
@@ -74,7 +74,7 @@ export const getNotifications = cache(async () => {
         },
       ],
       contents: `This is a test message @oezguerisbert`,
-      link: "/events/1",
+      link: "/plans/1",
     },
   ];
   // const n = await Notifications.findManyByUserId(user.id);

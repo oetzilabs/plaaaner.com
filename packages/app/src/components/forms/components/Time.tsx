@@ -126,26 +126,21 @@ export const Time = () => {
   if (!plan)
     return (
       <div class="flex flex-col gap-2 w-full">
-        <Skeleton class="w-full h-8" />
-        <div class="flex flex-col gap-1 w-full">
-          <div class="flex flex-col gap-2 w-full items-center justify-between">
-            <div class="w-full">
-              <Skeleton class="w-32 h-8" />
-            </div>
-            <div></div>
-          </div>
-          <div class="flex flex-col gap-2 w-full">
-            <For
-              each={[0, 1]}
-              fallback={
-                <div class="flex flex-col items-center justify-center text-muted-foreground border border-neutral-200 dark:border-neutral-800 rounded-md">
-                  There are no time slots
-                </div>
-              }
-            >
-              {() => <Skeleton class="w-full h-20" />}
-            </For>
-          </div>
+        <div class="flex flex-row gap-2 w-full justify-between">
+          <Skeleton class="w-full h-8" />
+          <Skeleton class="w-32 h-8" />
+        </div>
+        <div class="flex flex-col gap-2 w-full">
+          <For
+            each={[0, 1]}
+            fallback={
+              <div class="flex flex-col items-center justify-center text-muted-foreground border border-neutral-200 dark:border-neutral-800 rounded-md">
+                There are no time slots
+              </div>
+            }
+          >
+            {() => <Skeleton class="w-full h-20" />}
+          </For>
         </div>
       </div>
     );
@@ -167,7 +162,7 @@ export const Time = () => {
         <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
           <div class="flex flex-row items-center justify-between w-full">
             <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              When is the {plan.newPlan().event_type}?
+              When is the {plan.newPlan().plan_type}?
             </TextFieldLabel>
             <Button
               size="sm"
@@ -211,7 +206,7 @@ export const Time = () => {
                           end: dayjs(days[0]).add(i, "days").endOf("day").toDate(),
                         },
                       },
-                    ]),
+                    ])
                   ),
                 };
               });
@@ -370,10 +365,9 @@ export const Time = () => {
               }
             >
               {([string_date, time_slots_obj]) => (
-                <div class="flex flex-row w-full items-start justify-between border border-neutral-200 dark:border-neutral-800 rounded-md p-4 md:gap-8 gap-2">
-                  <div class="w-max flex flex-col items-center justify-center px-5 py-3 min-w-20">
-                    <div class="text-base font-black w-max">{dayjs(string_date).format("Do MMM")}</div>
-                    <div class="text-xs font-medium">{dayjs(string_date).format("ddd")}</div>
+                <div class="flex flex-col w-full items-start justify-between border border-neutral-200 dark:border-neutral-800 rounded-md p-4 gap-2">
+                  <div class="w-max flex flex-col items-center justify-center min-w-20">
+                    <div class="text-base font-black w-max">{dayjs(string_date).format("ddd Do MMM")}</div>
                   </div>
                   <div class="flex flex-col w-full gap-2">
                     <For each={Object.entries(time_slots_obj)}>
@@ -446,7 +440,7 @@ export const Time = () => {
                         const time_slots_copy = time_slots();
                         const the_day = time_slots_copy[string_date];
                         const sortedTimeSlots = Object.values(the_day).sort(
-                          (a, b) => b.start.getTime() - a.start.getTime(),
+                          (a, b) => b.start.getTime() - a.start.getTime()
                         );
                         if (sortedTimeSlots.length === 0) {
                           const newStartTime = dayjs(string_date).startOf("day");
@@ -459,7 +453,7 @@ export const Time = () => {
                             "time_slots",
                             string_date,
                             newTimeSlotString,
-                            newTimeSlot,
+                            newTimeSlot
                           );
                           const nnp = new_newPlan();
                           plan.setNewPlan(nnp);
@@ -476,7 +470,7 @@ export const Time = () => {
                           "time_slots",
                           string_date,
                           newTimeSlotString,
-                          newTimeSlot,
+                          newTimeSlot
                         );
                         const nnp = new_newPlan();
                         plan.setNewPlan(nnp);

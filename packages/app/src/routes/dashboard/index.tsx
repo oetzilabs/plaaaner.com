@@ -25,7 +25,7 @@ export default function DashboardPage() {
             </div>
             <div class="flex flex-col gap-2 w-full">
               <A href="/events" class="font-bold w-max hover:underline underline-offset-2">
-                Your Events
+                Your Plans
               </A>
               <UpcomingPlans />
             </div>

@@ -1,12 +1,12 @@
-import { For } from "solid-js";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../components/ui/card";
-import { A } from "@solidjs/router";
-import { Button } from "../../../components/ui/button";
+import { Button } from "@/components/ui/button";
+import { CardDescription } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { As } from "@kobalte/core";
-import { Separator } from "../../../components/ui/separator";
+import { A } from "@solidjs/router";
+import { For } from "solid-js";
 
 export default function PlanCreateEventPage() {
-  const typesOfEvents = [
+  const typesOfPlans = [
     {
       title: "Event",
       description:
@@ -31,14 +31,14 @@ export default function PlanCreateEventPage() {
 
   return (
     <div class="flex flex-col py-10 gap-8">
-      <h1 class="text-3xl font-medium">Create your event</h1>
+      <h1 class="text-3xl font-medium">Create your plan</h1>
       <div class="p-4 pb-8 w-full border border-neutral-200 dark:border-neutral-800 rounded-md flex flex-col gap-8">
         <h2 class="text-2xl font-semibold">Choose a plan</h2>
         <p class="text-neutral-500 dark:text-neutral-400">
-          Choose the type of event you want to create and get started.
+          Choose the type of plan you want to create and get started.
         </p>
         <div class="w-full grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ">
-          <For each={typesOfEvents}>
+          <For each={typesOfPlans}>
             {(plan) => (
               <div class="flex flex-col shadow-none hover:shadow-lg transition-shadow border border-neutral-200 dark:border-neutral-800 px-4 py-3 rounded-md gap-2">
                 <span class="text-lg font-medium">{plan.title}</span>

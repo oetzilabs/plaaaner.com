@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-solid";
-import { createNewEvent, getEventTypeId, getPreviousEvents, getRecommendedEvents } from "@/lib/api/events";
-import { CreateEventFormSchema } from "@/utils/schemas/event";
+import { createNewPlan, getPlanTypeId, getPreviousPlans, getRecommendedPlans } from "@/lib/api/plans";
+import { CreatePlanFormSchema } from "@/utils/schemas/plan";
 import { Button } from "@/components/ui/button";
 import { createContextProvider } from "@solid-primitives/context";
 import { createUndoHistory } from "@solid-primitives/history";
@@ -12,12 +12,12 @@ import { Skeleton } from "../ui/skeleton";
 import { Sidebar } from "./components/Sidebar";
 import { Form } from "./components/Form";
 
-type EventFormSchema = z.infer<typeof CreateEventFormSchema>;
+type PlanFormSchema = z.infer<typeof CreatePlanFormSchema>;
 
-type DefaultEventFunction = (event_type: EventFormSchema["event_type"]) => EventFormSchema;
+type DefaultPlanFunction = (plan_type: PlanFormSchema["plan_type"]) => PlanFormSchema;
 
-export const DEFAULT_PLAN: DefaultEventFunction = (event_type) => ({
-  event_type,
+export const DEFAULT_PLAN: DefaultPlanFunction = (plan_type) => ({
+  plan_type,
   name: "",
   description: "",
   days: [dayjs().startOf("day").toDate(), dayjs().startOf("day").add(1, "day").toDate()],
@@ -41,7 +41,7 @@ export const DEFAULT_PLAN: DefaultEventFunction = (event_type) => ({
 });
 
 type CreatePlanProviderProps = {
-  event_type: EventFormSchema["event_type"];
+  plan_type: PlanFormSchema["plan_type"];
 };
 
 export type TabValue = "general" | "time" | "location" | "tickets";
@@ -62,17 +62,17 @@ export const TabMovement: Record<"forward" | "backward", Record<TabValue, TabVal
 };
 
 export const [CreatePlanProvider, usePlanProvider] = createContextProvider((props: CreatePlanProviderProps) => {
-  const previousPlans = createAsync(() => getPreviousEvents(), { deferStream: true });
-  const recommendedPlans = createAsync(() => getRecommendedEvents(), { deferStream: true });
-  const event_type_id = createAsync(() => getEventTypeId(props.event_type), { deferStream: true });
-  const createPlan = useAction(createNewEvent);
-  const isCreating = useSubmission(createNewEvent);
+  const previousPlans = createAsync(() => getPreviousPlans(), { deferStream: true });
+  const recommendedPlans = createAsync(() => getRecommendedPlans(), { deferStream: true });
+  const plan_type_id = createAsync(() => getPlanTypeId(props.plan_type), { deferStream: true });
+  const createPlan = useAction(createNewPlan);
+  const isCreating = useSubmission(createNewPlan);
 
-  const [newPlan, setNewPlan] = createSignal<z.infer<typeof CreateEventFormSchema>>(DEFAULT_PLAN(props.event_type));
-  const [trackClearEvent, clearEventHistory] = createSignal(undefined, { equals: false });
-  const eventHistory = createMemo(() => {
+  const [newPlan, setNewPlan] = createSignal<z.infer<typeof CreatePlanFormSchema>>(DEFAULT_PLAN(props.plan_type));
+  const [trackClearPlan, clearPlanHistory] = createSignal(undefined, { equals: false });
+  const planHistory = createMemo(() => {
     // track what should rerun the memo
-    trackClearEvent();
+    trackClearPlan();
     return createUndoHistory(
       () => {
         const v = newPlan();
@@ -144,22 +144,22 @@ export const [CreatePlanProvider, usePlanProvider] = createContextProvider((prop
     setNewPlan,
     previousPlans,
     recommendedPlans,
-    event_type_id,
+    plan_type_id,
     createPlan,
     isCreating: isCreating,
-    clearEventHistory,
-    eventHistory,
+    clearPlanHistory,
+    planHistory,
   };
 });
 
 const Title = () => {
-  const event = usePlanProvider();
-  if (!event) return <Skeleton class="w-40 h-8" />;
-  return <h1 class="text-3xl font-semibold w-full capitalize">Create {event.newPlan().event_type}</h1>;
+  const plan = usePlanProvider();
+  if (!plan) return <Skeleton class="w-40 h-8" />;
+  return <h1 class="text-3xl font-semibold w-full capitalize">Create {plan.newPlan().plan_type}</h1>;
 };
 
-export const isFormEmpty = (plan: EventFormSchema) => {
-  return JSON.stringify(plan) === JSON.stringify(DEFAULT_PLAN(plan.event_type));
+export const isFormEmpty = (plan: PlanFormSchema) => {
+  return JSON.stringify(plan) === JSON.stringify(DEFAULT_PLAN(plan.plan_type));
 };
 
 export const CreatePlan = (props: CreatePlanProviderProps) => {
@@ -167,7 +167,7 @@ export const CreatePlan = (props: CreatePlanProviderProps) => {
   let formRef: HTMLFormElement;
 
   return (
-    <CreatePlanProvider event_type={props.event_type}>
+    <CreatePlanProvider plan_type={props.plan_type}>
       <div class="flex flex-col gap-4 items-start w-full">
         <div class="flex flex-col">
           <Button

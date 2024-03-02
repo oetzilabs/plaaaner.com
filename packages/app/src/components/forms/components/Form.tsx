@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { CreateEventFormSchema } from "@/utils/schemas/event";
+import { CreatePlanFormSchema } from "@/utils/schemas/plan";
 import { createMediaQuery } from "@solid-primitives/media";
 import { useNavigate } from "@solidjs/router";
 import { ArrowLeft, CheckCheck, Clock, Eraser, Library, Loader2, MapPin, Plus, Redo, Ticket, Undo } from "lucide-solid";
@@ -19,8 +19,8 @@ export const FormControls = (props: {
   currentTab: Accessor<TabValue>;
   setCurrentTab: Setter<TabValue>;
 }) => {
-  const event = usePlanProvider();
-  if (!event)
+  const plan = usePlanProvider();
+  if (!plan)
     return (
       <div class="flex flex-row items-center justify-between gap-2 w-full">
         <div class="flex flex-row items-center gap-2">
@@ -47,11 +47,11 @@ export const FormControls = (props: {
   };
 
   const isAllowedToCreatePlan = () => {
-    const firstCondition = CreateEventFormSchema.safeParse(event.newPlan());
+    const firstCondition = CreatePlanFormSchema.safeParse(plan.newPlan());
     if (!firstCondition.success) {
       return false;
     }
-    const sn = event.suggestNewNames();
+    const sn = plan.suggestNewNames();
     const secondCondition = sn.length === 0;
     return firstCondition.success && secondCondition;
   };
@@ -69,11 +69,11 @@ export const FormControls = (props: {
           size={isSmall() ? "icon" : "default"}
           onClick={() => {
             if (!props.formRef) return;
-            event.setNewPlan(DEFAULT_PLAN(event.newPlan().event_type));
+            plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type));
             props.formRef.reset();
-            event.clearEventHistory();
+            plan.clearPlanHistory();
           }}
-          disabled={event.isCreating.pending || isFormEmpty(event.newPlan())}
+          disabled={plan.isCreating.pending || isFormEmpty(plan.newPlan())}
         >
           <span class={cn("sr-only md:not-sr-only", { "md:sr-only": isSmall() })}>Reset Form</span>
           <Eraser class="w-4 h-4" />
@@ -85,10 +85,10 @@ export const FormControls = (props: {
           aria-label="Undo last action"
           class="gap-2"
           onClick={() => {
-            const eH = event.eventHistory();
+            const eH = plan.planHistory();
             eH.undo();
           }}
-          disabled={event.isCreating.pending || isFormEmpty(event.newPlan())}
+          disabled={plan.isCreating.pending || isFormEmpty(plan.newPlan())}
         >
           <Undo class="w-4 h-4" />
         </Button>
@@ -99,10 +99,10 @@ export const FormControls = (props: {
           class="gap-2"
           size="icon"
           onClick={() => {
-            const eH = event.eventHistory();
+            const eH = plan.planHistory();
             eH.redo();
           }}
-          disabled={event.isCreating.pending || isFormEmpty(event.newPlan()) || !event.eventHistory().canRedo()}
+          disabled={plan.isCreating.pending || isFormEmpty(plan.newPlan()) || !plan.planHistory().canRedo()}
         >
           <Redo class="w-4 h-4" />
         </Button>
@@ -111,7 +111,7 @@ export const FormControls = (props: {
         <Button
           size="icon"
           variant={props.currentTab() === "general" ? "outline" : "secondary"}
-          disabled={event.isCreating.pending || props.currentTab() === "general"}
+          disabled={plan.isCreating.pending || props.currentTab() === "general"}
           aria-label="Previous Tab"
           onClick={() => handleTabChange("backward")}
         >
@@ -120,7 +120,7 @@ export const FormControls = (props: {
         <Button
           size="icon"
           variant={props.currentTab() === "tickets" ? "outline" : "secondary"}
-          disabled={event.isCreating.pending || props.currentTab() === "tickets"}
+          disabled={plan.isCreating.pending || props.currentTab() === "tickets"}
           aria-label="Next Tab"
           onClick={() => handleTabChange("forward")}
         >
@@ -128,29 +128,29 @@ export const FormControls = (props: {
         </Button>
         <Button
           type="submit"
-          aria-label={`Create ${event.newPlan().event_type}`}
+          aria-label={`Create ${plan.newPlan().plan_type}`}
           class="flex flex-row items-center justify-between gap-2 capitalize"
-          disabled={event.isCreating.pending || !isAllowedToCreatePlan()}
+          disabled={plan.isCreating.pending || !isAllowedToCreatePlan()}
         >
           <Switch
             fallback={
               <>
-                <span class="text-sm font-medium leading-none w-max">Create {event.newPlan().event_type}</span>
+                <span class="text-sm font-medium leading-none w-max">Create {plan.newPlan().plan_type}</span>
                 <Plus class="w-4 h-4" />
               </>
             }
           >
-            <Match when={event.isCreating.pending}>
-              <span class="text-sm font-medium leading-none">Creating {event.newPlan().event_type}...</span>
+            <Match when={plan.isCreating.pending}>
+              <span class="text-sm font-medium leading-none">Creating {plan.newPlan().plan_type}...</span>
               <Loader2 class="w-4 h-4 animate-spin" />
             </Match>
-            <Match when={event.isCreating.result}>
-              <span class="text-sm font-medium leading-none">{event.newPlan().event_type} Created!</span>
+            <Match when={plan.isCreating.result}>
+              <span class="text-sm font-medium leading-none">{plan.newPlan().plan_type} Created!</span>
               <CheckCheck class="w-4 h-4" />
             </Match>
           </Switch>
         </Button>
-        <Show when={!event.isCreating.pending && event.isCreating.result}>
+        <Show when={!plan.isCreating.pending && plan.isCreating.result}>
           {(data) => (
             <Button
               variant="secondary"
@@ -158,7 +158,7 @@ export const FormControls = (props: {
                 navigate(`/plans/${data().id}`);
               }}
             >
-              <span class="text-sm font-medium leading-none capitalize">View {event.newPlan().event_type}</span>
+              <span class="text-sm font-medium leading-none capitalize">View {plan.newPlan().plan_type}</span>
             </Button>
           )}
         </Show>
@@ -168,8 +168,8 @@ export const FormControls = (props: {
 };
 
 const TicketsTabTrigger = () => {
-  const event = usePlanProvider();
-  if (!event)
+  const plan = usePlanProvider();
+  if (!plan)
     return (
       <div class="flex flex-row items-center gap-2">
         <Skeleton class="size-4" />
@@ -179,22 +179,22 @@ const TicketsTabTrigger = () => {
 
   return (
     <span>
-      {event.newPlan().capacity.capacity_type !== "none" &&
+      {plan.newPlan().capacity.capacity_type !== "none" &&
       parseInt(
-        event.newPlan().capacity.value as Exclude<
-          z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
+        plan.newPlan().capacity.value as Exclude<
+          z.infer<typeof CreatePlanFormSchema>["capacity"]["value"],
           "none"
-        > as string,
+        > as string
       ) > 0
-        ? event.newPlan().capacity.value
+        ? plan.newPlan().capacity.value
         : ""}{" "}
       Ticket
-      {event.newPlan().capacity.capacity_type !== "none" &&
+      {plan.newPlan().capacity.capacity_type !== "none" &&
       parseInt(
-        event.newPlan().capacity.value as Exclude<
-          z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
+        plan.newPlan().capacity.value as Exclude<
+          z.infer<typeof CreatePlanFormSchema>["capacity"]["value"],
           "none"
-        > as string,
+        > as string
       ) === 1
         ? ""
         : "s"}
@@ -224,7 +224,7 @@ export const Form = (props: {
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col gap-6 xl:w-1/2 lg:w-2/3 w-full self-start" ref={props.formRef!}>
-      <Show when={plan.event_type_id()}>{(eti) => <input hidden value={eti()} name="plan_type_id" />}</Show>
+      <Show when={plan.plan_type_id()}>{(eti) => <input hidden value={eti()} name="plan_type_id" />}</Show>
       <Tabs
         defaultValue="general"
         value={props.currentTab()}

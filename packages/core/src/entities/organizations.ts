@@ -232,10 +232,31 @@ export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).i
   return orgs;
 });
 
-export const getTicketTypes = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
+export const getAllTicketTypes = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
+  const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
+    with: {
+      ticket_type: true,
+    },
+  });
+  return orgs_ticket_types.map((ott) => ott.ticket_type);
+});
+
+export const getAllNonDeletedTicketTypes = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
   const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
     where(fields, operators) {
       return operators.isNull(fields.deletedAt);
+    },
+    with: {
+      ticket_type: true,
+    },
+  });
+  return orgs_ticket_types.map((ott) => ott.ticket_type);
+});
+
+export const getTicketTypesByOrganization = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
+  const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
+    where(fields, operators) {
+      return operators.and(operators.eq(fields.organization_id, organization_id), operators.isNull(fields.deletedAt));
     },
     with: {
       ticket_type: true,

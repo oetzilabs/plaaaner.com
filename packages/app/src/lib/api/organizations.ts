@@ -61,7 +61,7 @@ export const createOrganization = action(async (form: FormData) => {
     },
     {
       sessionId: sessionId,
-    },
+    }
   );
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
@@ -202,10 +202,10 @@ export const getTicketTypes = cache(async () => {
   }
 
   if (!session.organization_id) {
-    return [] as Awaited<ReturnType<typeof Organization.getTicketTypes>>;
+    return [] as Awaited<ReturnType<typeof Organization.getTicketTypesByOrganization>>;
   }
 
-  const org_ticket_types = await Organization.getTicketTypes(session.organization_id);
+  const org_ticket_types = await Organization.getTicketTypesByOrganization(session.organization_id);
 
   return org_ticket_types;
 }, "organization_ticket_types");

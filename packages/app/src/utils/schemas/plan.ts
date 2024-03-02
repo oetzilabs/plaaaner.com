@@ -36,7 +36,7 @@ const CapacitySchema = z.discriminatedUnion("capacity_type", [
   }),
 ]);
 
-const BaseEventSchema = z.object({
+const BasePlanSchema = z.object({
   referenced_from: z.string().optional(),
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
   description: z.string().optional().nullable(),
@@ -46,45 +46,45 @@ const BaseEventSchema = z.object({
       z.object({
         start: z.date(),
         end: z.date(),
-      }),
-    ),
+      })
+    )
   ),
   capacity: CapacitySchema,
   location: ConcertLocationSchema,
   tickets: z.array(BaseTicketSchema),
 });
 
-export const CreateEventFormSchema = z.discriminatedUnion("event_type", [
-  BaseEventSchema.merge(
+export const CreatePlanFormSchema = z.discriminatedUnion("plan_type", [
+  BasePlanSchema.merge(
     z.object({
-      event_type: z.literal("event"),
-    }),
+      plan_type: z.literal("event"),
+    })
   ),
-  BaseEventSchema.merge(
+  BasePlanSchema.merge(
     z.object({
-      event_type: z.literal("concert"),
-    }),
+      plan_type: z.literal("concert"),
+    })
   ),
-  BaseEventSchema.merge(
+  BasePlanSchema.merge(
     z.object({
-      event_type: z.literal("tournament"),
-    }),
+      plan_type: z.literal("tournament"),
+    })
   ),
-  BaseEventSchema.merge(
+  BasePlanSchema.merge(
     z.object({
-      event_type: z.literal("custom-event"),
-    }),
+      plan_type: z.literal("custom-event"),
+    })
   ),
 ]);
 
-export const EventType = z.union([
+export const PlanType = z.union([
   z.literal("event"),
   z.literal("concert"),
   z.literal("tournament"),
   z.literal("custom-event"),
 ]);
 
-export const RefinedCreateEventFormSchema = CreateEventFormSchema.refine((data) => {
+export const RefinedCreatePlanFormSchema = CreatePlanFormSchema.refine((data) => {
   if (data.capacity.capacity_type === "none") {
     return true;
   }
