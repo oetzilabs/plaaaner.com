@@ -2,15 +2,15 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
-import { EventCreateSchema, EventUpdateSchema, events } from "../drizzle/sql/schema";
+import { PlanCreateSchema, PlanUpdateSchema, plans } from "../drizzle/sql/schema";
 
-export * as Events from "./events";
+export * as Plans from "./plans";
 
 export const create = z
-  .function(z.tuple([EventCreateSchema, z.string().uuid()]))
+  .function(z.tuple([PlanCreateSchema, z.string().uuid()]))
   .implement(async (userInput, userId) => {
     const [x] = await db
-      .insert(events)
+      .insert(plans)
       .values({ ...userInput, owner_id: userId })
       .returning();
 
@@ -20,15 +20,15 @@ export const create = z
 export const countAll = z.function(z.tuple([])).implement(async () => {
   const [x] = await db
     .select({
-      count: sql`COUNT(${events.id})`,
+      count: sql`COUNT(${plans.id})`,
     })
-    .from(events);
+    .from(plans);
   return x.count;
 });
 
 export const findById = z.function(z.tuple([z.string()])).implement(async (input) => {
-  return db.query.events.findFirst({
-    where: (events, operations) => operations.eq(events.id, input),
+  return db.query.plans.findFirst({
+    where: (plans, operations) => operations.eq(plans.id, input),
     with: {
       owner: true,
     },
@@ -36,14 +36,14 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
 });
 
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {
-  return db.query.events.findFirst({
-    where: (events, operations) => operations.eq(events.name, input),
+  return db.query.plans.findFirst({
+    where: (plans, operations) => operations.eq(plans.name, input),
     with: {},
   });
 });
 
 export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
-  return db.query.events.findMany({
+  return db.query.plans.findMany({
     with: {},
     where(fields, operations) {
       return operations.isNull(fields.deletedAt);
@@ -52,7 +52,7 @@ export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
 });
 
 export const all = z.function(z.tuple([])).implement(async () => {
-  return db.query.events.findMany({
+  return db.query.plans.findMany({
     with: {},
   });
 });
@@ -60,7 +60,7 @@ export const all = z.function(z.tuple([])).implement(async () => {
 export const update = z
   .function(
     z.tuple([
-      createInsertSchema(events)
+      createInsertSchema(plans)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
@@ -68,9 +68,9 @@ export const update = z
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
-      .update(events)
+      .update(plans)
       .set({ ...input, updatedAt: new Date() })
-      .where(eq(events.id, input.id))
+      .where(eq(plans.id, input.id))
       .returning();
     return updatedOrganization;
   });
@@ -83,16 +83,16 @@ export const setOwner = z
   .function(z.tuple([z.string().uuid(), z.string().uuid()]))
   .implement(async (organization_id, user_id) => {
     const [updated] = await db
-      .update(events)
+      .update(plans)
       .set({ owner_id: user_id })
-      .where(eq(events.id, organization_id))
+      .where(eq(plans.id, organization_id))
       .returning();
     return updated;
   });
 
 export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
-  const ws = await db.query.events.findFirst({
-    where: (events, operations) => and(operations.eq(events.owner_id, user_id), isNull(events.deletedAt)),
+  const ws = await db.query.plans.findFirst({
+    where: (plans, operations) => and(operations.eq(plans.owner_id, user_id), isNull(plans.deletedAt)),
     orderBy(fields, operators) {
       return operators.desc(fields.createdAt);
     },
@@ -101,27 +101,27 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
 });
 
 export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
-  const organizationEvents = await db.query.organizations_events.findMany({
-    where: (events, operations) =>
-      and(operations.eq(events.organization_id, organization_id), isNull(events.deletedAt)),
+  const organizationPlans = await db.query.organizations_plans.findMany({
+    where: (plans, operations) =>
+      and(operations.eq(plans.organization_id, organization_id), isNull(plans.deletedAt)),
     orderBy(fields, operators) {
       return operators.desc(fields.createdAt);
     },
     with: {
-      event: true,
+      plan: true,
     },
   });
-  return organizationEvents.map((oe) => oe.event);
+  return organizationPlans.map((oe) => oe.plan);
 });
 
 export const recommendNewPlans = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
-  // const previousEvents = await findByOrganizationId(organization_id);
+  // const previousPlans = await findByOrganizationId(organization_id);
 
   return [] as Awaited<ReturnType<typeof findByOrganizationId>>;
 });
 
 export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
-  const ws = await db.query.events.findFirst({
+  const ws = await db.query.plans.findFirst({
     where: (fields, operators) => and(operators.eq(fields.owner_id, user_id), operators.isNull(fields.deletedAt)),
     orderBy(fields, operators) {
       return operators.desc(fields.createdAt);
@@ -137,7 +137,7 @@ export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).i
     },
   });
   const userOrgs = usersOrgsResult.map((uo) => uo.organization_id);
-  const orgs = await db.query.events.findMany({
+  const orgs = await db.query.plans.findMany({
     where(fields, operators) {
       return operators.and(operators.notInArray(fields.id, userOrgs), operators.isNull(fields.deletedAt));
     },
@@ -149,7 +149,7 @@ export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).i
 });
 
 export const getTypeId = z.function(z.tuple([z.string()])).implement(async (t) => {
-  const et = await db.query.event_types.findFirst({
+  const et = await db.query.plan_types.findFirst({
     where(fields, operators) {
       return operators.eq(fields.name, t);
     },
@@ -157,7 +157,7 @@ export const getTypeId = z.function(z.tuple([z.string()])).implement(async (t) =
   return et;
 });
 
-export const safeParseCreate = EventCreateSchema.safeParse;
-export const safeParseUpdate = EventUpdateSchema.safeParse;
+export const safeParseCreate = PlanCreateSchema.safeParse;
+export const safeParseUpdate = PlanUpdateSchema.safeParse;
 
 export type Frontend = NonNullable<Awaited<ReturnType<typeof findById>>>;

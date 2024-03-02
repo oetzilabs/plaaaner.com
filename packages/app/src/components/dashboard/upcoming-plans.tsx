@@ -13,12 +13,12 @@ export const UpcomingPlans = () => {
   const plans = createAsync(() => getPlans());
 
   return (
-    <div class="grid xl:grid-cols-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full gap-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full gap-2">
       <For each={plans()}>
         {(plan) => (
           <A
             class="flex flex-col gap-4 items-start p-4 w-full h-full justify-start border border-neutral-200 dark:border-neutral-800 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900 group shadow-sm hover:shadow"
-            href={plan.link}
+            href={`plans/${plan.id}`}
           >
             <div class="flex flex-col gap-2 w-full">
               <div class="flex flex-col gap-0.5">

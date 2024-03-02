@@ -11,7 +11,7 @@
     "@types/node": "20.9.0",
     "@types/uuid": "9.0.7",
     "drizzle-kit": "0.20.14",
-    "sst": "2.40.3",
+    "sst": "2.40.6",
     "vitest": "0.34.6"
   },
   "dependencies": {

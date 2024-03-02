@@ -1,7 +1,7 @@
 import { JSX, splitProps } from "solid-js";
 import { cn } from "../../../lib/utils";
 import { z } from "zod";
-import { TicketShape } from "../../../utils/schemas/event";
+import { TicketShape } from "../../../utils/schemas/plan";
 
 type TicketProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   colors?: string[];

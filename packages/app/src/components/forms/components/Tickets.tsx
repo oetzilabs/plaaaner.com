@@ -7,7 +7,7 @@ import {
   RadioGroupLabel,
 } from "@/components/ui/radio-group";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
-import { getDefaultFreeTicketType } from "@/lib/api/events";
+import { getDefaultFreeTicketType } from "@/lib/api/plans";
 import { cn } from "@/lib/utils";
 import { createAsync } from "@solidjs/router";
 import { For, Show, Switch } from "solid-js";
@@ -18,7 +18,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHeader, TableRow } from
 import { Match } from "solid-js";
 import { EditTicketForm } from "../EditTicketForm";
 import { z } from "zod";
-import { BaseTicketSchema, CreateEventFormSchema } from "@/utils/schemas/event";
+import { BaseTicketSchema, CreatePlanFormSchema } from "@/utils/schemas/plan";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-solid";
 
@@ -38,9 +38,9 @@ export const Tickets = () => {
         ? 0
         : parseInt(
             plan.newPlan().capacity.value as Exclude<
-              z.infer<typeof CreateEventFormSchema>["capacity"]["value"],
+              z.infer<typeof CreatePlanFormSchema>["capacity"]["value"],
               "none" | number
-            >,
+            >
           ) - totalTickets;
     if (ticket.ticket_type.payment_type === "FREE") {
       return remainingTickets;
@@ -63,20 +63,20 @@ export const Tickets = () => {
     const cpt = cp.capacity_type;
     if (cpt === "none") {
       return {
-        message: `You have not set a capacity for the ${nc.event_type}.`,
+        message: `You have not set a capacity for the ${nc.plan_type}.`,
         type: "error",
       };
     }
     const cpv = parseInt(String(cp.value));
     if (totalTickets === cpv) {
       return {
-        message: `You have reached the maximum capacity of tickets for this ${nc.event_type}.`,
+        message: `You have reached the maximum capacity of tickets for this ${nc.plan_type}.`,
         type: "success:done",
       } as const;
     }
     if (totalTickets > cpv) {
       return {
-        message: `You have exceeded the maximum capacity of tickets for this ${nc.event_type}.\nPlease reduce the quantity.`,
+        message: `You have exceeded the maximum capacity of tickets for this ${nc.plan_type}.\nPlease reduce the quantity.`,
         type: "error",
       } as const;
     }
@@ -145,7 +145,7 @@ export const Tickets = () => {
                           plan.newPlan().capacity.value === String(value)) ||
                         (plan.newPlan().capacity.capacity_type === "custom" && value === "custom") ||
                         (plan.newPlan().capacity.capacity_type === "none" && value === "none"),
-                    },
+                    }
                   )}
                 >
                   {value} <RadioGroupItemControl class="hidden" />
@@ -319,14 +319,16 @@ export const Tickets = () => {
                     const cpt = cp.capacity_type;
                     if (cpt === "none") {
                       toast.error("Error Adding Ticket", {
-                        description: `You have not set a capacity for the ${plan.newPlan().event_type}.`,
+                        description: `You have not set a capacity for the ${plan.newPlan().plan_type}.`,
                       });
                       return;
                     }
                     const cpv = parseInt(String(cp.value));
                     if (totalTickets >= cpv) {
                       toast.error("Error Adding Ticket", {
-                        description: `You have reached the maximum capacity of tickets for this ${plan.newPlan().event_type}.`,
+                        description: `You have reached the maximum capacity of tickets for this ${
+                          plan.newPlan().plan_type
+                        }.`,
                       });
                       return;
                     }

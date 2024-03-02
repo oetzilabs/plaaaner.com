@@ -35,7 +35,7 @@ export default function App() {
   const storageManager = cookieStorageManagerSSR(isServer ? "kb-color-mode=dark" : document.cookie);
   return (
     <QueryClientProvider client={queryClient}>
-      <SolidQueryDevtools initialIsOpen={false} />
+    {/*<SolidQueryDevtools initialIsOpen={false} />*/}
       <Router
         root={(props) => (
           <>
@@ -61,6 +61,7 @@ export default function App() {
                     class="w-full flex flex-col container px-4"
                     style={{
                       "flex-grow": "1",
+                      "min-height": "100vh",
                     }}
                   >
                     <SessionProvider>{props.children}</SessionProvider>

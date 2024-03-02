@@ -1,13 +1,13 @@
 import { CreatePlan } from "@/components/forms/CreatePlanProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { EventType } from "@/utils/schemas/event";
+import { PlanType } from "@/utils/schemas/plan";
 import { As } from "@kobalte/core";
 import { A, useParams } from "@solidjs/router";
 
 export default function PlanCreateEventPage() {
   const params = useParams();
-  const v = EventType.safeParse(params.event_type);
+  const v = PlanType.safeParse(params.plan_type);
   if (!v.success) {
     return (
       <div class="flex flex-col py-40 w-max mx-auto">
@@ -31,7 +31,7 @@ export default function PlanCreateEventPage() {
   return (
     <div class="flex flex-col py-10">
       <div class="px-4 lg:px-0 w-full">
-        <CreatePlan event_type={v.data} />
+        <CreatePlan plan_type={v.data} />
       </div>
     </div>
   );

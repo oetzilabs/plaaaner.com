@@ -12,9 +12,9 @@ export const General = () => {
 
   return (
     <>
-      <TextField class="w-full flex flex-col gap-2" aria-label={`${plan.newPlan().event_type} Name`}>
+      <TextField class="w-full flex flex-col gap-2" aria-label={`${plan.newPlan().plan_type} Name`}>
         <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          The Name of the <span class="capitalize">{plan.newPlan().event_type}</span>
+          The Name of the <span class="capitalize">{plan.newPlan().plan_type}</span>
         </TextFieldLabel>
         <TextFieldInput
           value={plan.newPlan().name}
@@ -31,7 +31,7 @@ export const General = () => {
             {(v) => (
               <>
                 <span class="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  <span class="capitalize">{plan.newPlan().event_type}</span> '{plan.newPlan().name}' exists already!
+                  <span class="capitalize">{plan.newPlan().plan_type}</span> '{plan.newPlan().name}' exists already!
                   Suggested Names:
                 </span>
                 <div class="grid grid-cols-3 gap-2">
@@ -66,10 +66,10 @@ export const General = () => {
       </TextField>
       <TextField class="w-full flex flex-col gap-2">
         <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          What is the {plan.newPlan().event_type} about? (optional)
+          What is the {plan.newPlan().plan_type} about? (optional)
         </TextFieldLabel>
         <TextFieldInput
-          aria-label={`What is the ${plan.newPlan().event_type} about? (optional)`}
+          aria-label={`What is the ${plan.newPlan().plan_type} about? (optional)`}
           value={plan.newPlan().description ?? ""}
           onChange={(e) => {
             const value = e.currentTarget.value;

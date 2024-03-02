@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CreateEventFormSchema, EventType } from "../schemas/event";
+import { CreatePlanFormSchema, PlanType } from "../schemas/plan";
 import { UserSchema } from "../../components/providers/Authentication";
 import { setCookie } from "vinxi/http";
 import { isServer } from "@tanstack/solid-query";
@@ -104,20 +104,20 @@ export const Events = {
     .function(
       z.tuple([
         z.object({
-          event_type: EventType,
+          plan_type: PlanType,
         }),
-      ]),
+      ])
     )
-    .implement(async ({ event_type }) => {
+    .implement(async ({ plan_type }) => {
       return new Promise<
-        (z.infer<typeof CreateEventFormSchema> & {
+        (z.infer<typeof CreatePlanFormSchema> & {
           id: string;
         })[]
       >((resolve) => {
         setTimeout(() => {
           return resolve([
             {
-              event_type,
+              plan_type,
               id: "r:1",
               name: "recommended-test-1",
               description: "Description 1",
@@ -154,7 +154,7 @@ export const Events = {
               ],
             },
             {
-              event_type,
+              plan_type,
               id: "r:2",
               name: "recommended-test-2",
               description: "Description 2",
@@ -208,20 +208,20 @@ export const Events = {
     .function(
       z.tuple([
         z.object({
-          event_type: EventType,
+          plan_type: PlanType,
         }),
-      ]),
+      ])
     )
-    .implement(async ({ event_type }) => {
+    .implement(async ({ plan_type }) => {
       return new Promise<
-        (z.infer<typeof CreateEventFormSchema> & {
+        (z.infer<typeof CreatePlanFormSchema> & {
           id: string;
         })[]
       >((resolve) => {
         setTimeout(() => {
           return resolve([
             {
-              event_type,
+              plan_type,
               id: "1",
               name: "test-1",
               description: "Description 1",
@@ -258,7 +258,7 @@ export const Events = {
               ],
             },
             {
-              event_type,
+              plan_type,
               id: "2",
               name: "test-2",
               description: "Description 2",
@@ -343,7 +343,7 @@ export const Dashboard = {
       workspace: {
         id: string;
         name: string;
-        plans: (z.infer<typeof CreateEventFormSchema> & {
+        plans: (z.infer<typeof CreatePlanFormSchema> & {
           id: string;
         })[];
       };
@@ -357,7 +357,7 @@ export const Dashboard = {
             name: "My workspace",
             plans: [
               {
-                event_type: "concert",
+                plan_type: "concert",
                 id: "1",
                 name: "test-1",
                 description: "Description 1",
@@ -394,7 +394,7 @@ export const Dashboard = {
                 ],
               },
               {
-                event_type: "tournaments",
+                plan_type: "tournaments",
                 id: "1",
                 name: "test-1",
                 description: "Description 1",

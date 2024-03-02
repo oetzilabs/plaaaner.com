@@ -9,8 +9,8 @@ import { For } from "solid-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Sidebar = (props: { formRef: HTMLFormElement }) => {
-  const event = usePlanProvider();
-  if (!event)
+  const plan = usePlanProvider();
+  if (!plan)
     return (
       <div class="flex flex-row items-center gap-2">
         <Skeleton class="size-4" />
@@ -19,17 +19,17 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
     );
   return (
     <div class="lg:w-max w-full flex flex-col gap-8">
-      <Show when={event.previousPlans() != undefined && event.previousPlans()}>
+      <Show when={plan.previousPlans() != undefined && plan.previousPlans()}>
         {(pE) => (
           <div class="w-full flex flex-col gap-4">
             <div class="w-full flex flex-row items-center justify-between w-min-72">
               <div
                 class={cn("flex flex-row gap-2 items-center", {
-                  "opacity-50": event.newPlan().referenced_from !== undefined,
+                  "opacity-50": plan.newPlan().referenced_from !== undefined,
                 })}
               >
                 <History class="size-4" />
-                <h3 class="text-base font-medium capitalize">Previous {event.newPlan().event_type}</h3>
+                <h3 class="text-base font-medium capitalize">Previous {plan.newPlan().plan_type}</h3>
               </div>
               <div class="flex flex-row items-center gap-2">
                 <Button
@@ -39,10 +39,10 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                   onClick={() => {
                     if (!props.formRef) return;
                     props.formRef.reset();
-                    event.setNewPlan(DEFAULT_PLAN(event.newPlan().event_type));
+                    plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type));
                   }}
                   aria-label="Resets the Form"
-                  disabled={event.isCreating.pending || isFormEmpty(event.newPlan())}
+                  disabled={plan.isCreating.pending || isFormEmpty(plan.newPlan())}
                 >
                   Reset Form
                   <Eraser class="w-3 h-3" />
@@ -50,16 +50,16 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 <Button
                   size="sm"
                   class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                  variant={event.newPlan().referenced_from === undefined ? "outline" : "secondary"}
+                  variant={plan.newPlan().referenced_from === undefined ? "outline" : "secondary"}
                   onClick={() => {
-                    const eH = event.eventHistory();
+                    const eH = plan.planHistory();
                     eH.undo();
                   }}
-                  aria-label={`Undo Fill From Previous ${event.newPlan().event_type}`}
+                  aria-label={`Undo Fill From Previous ${plan.newPlan().plan_type}`}
                   disabled={
-                    event.newPlan().referenced_from === undefined ||
-                    event.isCreating.pending ||
-                    isFormEmpty(event.newPlan())
+                    plan.newPlan().referenced_from === undefined ||
+                    plan.isCreating.pending ||
+                    isFormEmpty(plan.newPlan())
                   }
                 >
                   Undo
@@ -70,11 +70,11 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
             <Show when={pE().length > 0}>
               <Alert
                 class={cn("lg:max-w-72 w-full flex flex-col gap-2 bg-muted rounded", {
-                  "opacity-50": event.newPlan().referenced_from !== undefined,
+                  "opacity-50": plan.newPlan().referenced_from !== undefined,
                 })}
               >
                 <AlertDescription class="text-xs">
-                  You can also fill the form with a previous {event.newPlan().event_type} to save time.
+                  You can also fill the form with a previous {plan.newPlan().plan_type} to save time.
                 </AlertDescription>
               </Alert>
             </Show>
@@ -84,54 +84,53 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 {
                   "lg:w-max": pE().length > 0,
                   "w-full sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1": pE().length === 0,
-                },
+                }
               )}
             >
               <For
                 each={pE().slice(0, 3)}
                 fallback={
                   <div class="max-w-full w-full flex flex-col gap-2 border border-neutral-200 dark:border-neutral-800 rounded p-2 items-center justify-center">
-                    <span class="text-xs text-muted-foreground">
-                      There are no previous {event.newPlan().event_type}s
-                    </span>
+                    <span class="text-xs text-muted-foreground">There are no previous {plan.newPlan().plan_type}s</span>
                   </div>
                 }
               >
-                {(plan) => (
+                {(innerPlan) => (
                   <Card
                     class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
-                      "border-indigo-500 bg-indigo-400 dark:bg-indigo-600": plan.id === event.newPlan().referenced_from,
-                      "hover:bg-neutral-100 dark:hover:bg-neutral-900": event.newPlan().referenced_from === undefined,
-                      "opacity-100": event.newPlan().referenced_from === plan.id,
+                      "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
+                        innerPlan.id === plan.newPlan().referenced_from,
+                      "hover:bg-neutral-100 dark:hover:bg-neutral-900": plan.newPlan().referenced_from === undefined,
+                      "opacity-100": plan.newPlan().referenced_from === innerPlan.id,
                       "opacity-50":
-                        event.newPlan().referenced_from !== undefined && event.newPlan().referenced_from !== plan.id,
-                      "cursor-default": event.newPlan().referenced_from !== undefined,
+                        plan.newPlan().referenced_from !== undefined && plan.newPlan().referenced_from !== innerPlan.id,
+                      "cursor-default": plan.newPlan().referenced_from !== undefined,
                     })}
                     onClick={() => {
-                      if (event.newPlan().referenced_from !== undefined) return;
-                      event.setNewPlan((ev) => ({
+                      if (plan.newPlan().referenced_from !== undefined) return;
+                      plan.setNewPlan((ev) => ({
                         ...ev,
-                        ...plan,
-                        referenced_from: plan.id,
+                        ...innerPlan,
+                        referenced_from: innerPlan.id,
                       }));
                     }}
                   >
                     <CardHeader class="flex flex-col p-3 pb-2 ">
                       <CardTitle
                         class={cn("text-sm", {
-                          "text-white": plan.id === event.newPlan().referenced_from,
+                          "text-white": innerPlan.id === plan.newPlan().referenced_from,
                         })}
                       >
-                        {plan.name}
+                        {innerPlan.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent class="p-3 pt-0 pb-4">
                       <CardDescription
                         class={cn("text-xs", {
-                          "text-white": plan.id === event.newPlan().referenced_from,
+                          "text-white": innerPlan.id === plan.newPlan().referenced_from,
                         })}
                       >
-                        <p>{plan.description}</p>
+                        <p>{innerPlan.description}</p>
                       </CardDescription>
                     </CardContent>
                   </Card>
@@ -141,13 +140,13 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
           </div>
         )}
       </Show>
-      <Show when={event.recommendedPlans() != undefined && event.recommendedPlans()}>
+      <Show when={plan.recommendedPlans() != undefined && plan.recommendedPlans()}>
         {(rE) => (
           <div class="w-full flex flex-col gap-4">
             <div class="w-full flex flex-row items-center justify-between w-min-72">
               <div
                 class={cn("flex flex-row gap-2 items-center", {
-                  "opacity-50": event.newPlan().referenced_from !== undefined,
+                  "opacity-50": plan.newPlan().referenced_from !== undefined,
                 })}
               >
                 <Sparkles class="w-4 h-4" />
@@ -161,10 +160,10 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                   onClick={() => {
                     if (!props.formRef) return;
                     props.formRef.reset();
-                    event.setNewPlan(DEFAULT_PLAN(event.newPlan().event_type));
+                    plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type));
                   }}
                   aria-label="Resets the Form"
-                  disabled={event.isCreating.pending || isFormEmpty(event.newPlan())}
+                  disabled={plan.isCreating.pending || isFormEmpty(plan.newPlan())}
                 >
                   Reset Form
                   <Eraser class="w-3 h-3" />
@@ -172,16 +171,16 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 <Button
                   size="sm"
                   class="w-max h-7 p-0 items-center text-xs justify-center gap-2 px-2 pl-3"
-                  variant={event.newPlan().referenced_from === undefined ? "outline" : "secondary"}
+                  variant={plan.newPlan().referenced_from === undefined ? "outline" : "secondary"}
                   onClick={() => {
-                    const eH = event.eventHistory();
+                    const eH = plan.planHistory();
                     eH.undo();
                   }}
-                  aria-label={`Undo Fill From Previous ${event.newPlan().event_type}`}
+                  aria-label={`Undo Fill From Previous ${plan.newPlan().plan_type}`}
                   disabled={
-                    event.newPlan().referenced_from === undefined ||
-                    event.isCreating.pending ||
-                    isFormEmpty(event.newPlan())
+                    plan.newPlan().referenced_from === undefined ||
+                    plan.isCreating.pending ||
+                    isFormEmpty(plan.newPlan())
                   }
                 >
                   Undo
@@ -192,11 +191,11 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
             <Show when={rE().length > 0}>
               <Alert
                 class={cn("lg:max-w-72 w-full flex flex-col gap-2 bg-muted rounded", {
-                  "opacity-50": event.newPlan().referenced_from !== undefined,
+                  "opacity-50": plan.newPlan().referenced_from !== undefined,
                 })}
               >
                 <AlertDescription class="text-xs">
-                  You can also fill the form with a recommended {event.newPlan().event_type} to save time.
+                  You can also fill the form with a recommended {plan.newPlan().plan_type} to save time.
                 </AlertDescription>
               </Alert>
             </Show>
@@ -206,7 +205,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 {
                   "lg:w-max": rE().length > 0,
                   "w-full sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1": rE().length === 0,
-                },
+                }
               )}
             >
               <For
@@ -217,41 +216,42 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                   </div>
                 }
               >
-                {(plan) => (
+                {(innerPlan) => (
                   <Card
                     class={cn("rounded-md shadow-sm lg:w-max w-full lg:min-w-72 cursor-pointer ", {
-                      "border-indigo-500 bg-indigo-400 dark:bg-indigo-600": plan.id === event.newPlan().referenced_from,
-                      "hover:bg-neutral-100 dark:hover:bg-neutral-900": event.newPlan().referenced_from === undefined,
-                      "opacity-100": event.newPlan().referenced_from === plan.id,
+                      "border-indigo-500 bg-indigo-400 dark:bg-indigo-600":
+                        innerPlan.id === plan.newPlan().referenced_from,
+                      "hover:bg-neutral-100 dark:hover:bg-neutral-900": plan.newPlan().referenced_from === undefined,
+                      "opacity-100": plan.newPlan().referenced_from === innerPlan.id,
                       "opacity-50":
-                        event.newPlan().referenced_from !== undefined && event.newPlan().referenced_from !== plan.id,
-                      "cursor-default": event.newPlan().referenced_from !== undefined,
+                        plan.newPlan().referenced_from !== undefined && plan.newPlan().referenced_from !== innerPlan.id,
+                      "cursor-default": plan.newPlan().referenced_from !== undefined,
                     })}
                     onClick={() => {
-                      if (event.newPlan().referenced_from !== undefined) return;
-                      event.setNewPlan((ev) => ({
+                      if (plan.newPlan().referenced_from !== undefined) return;
+                      plan.setNewPlan((ev) => ({
                         ...ev,
                         ...plan,
-                        referenced_from: plan.id,
+                        referenced_from: innerPlan.id,
                       }));
                     }}
                   >
                     <CardHeader class="flex flex-col p-3 pb-2 ">
                       <CardTitle
                         class={cn("text-sm", {
-                          "text-white": plan.id === event.newPlan().referenced_from,
+                          "text-white": innerPlan.id === plan.newPlan().referenced_from,
                         })}
                       >
-                        {plan.name}
+                        {innerPlan.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent class="p-3 pt-0 pb-4">
                       <CardDescription
                         class={cn("text-xs", {
-                          "text-white": plan.id === event.newPlan().referenced_from,
+                          "text-white": innerPlan.id === plan.newPlan().referenced_from,
                         })}
                       >
-                        <p>{plan.description}</p>
+                        <p>{innerPlan.description}</p>
                       </CardDescription>
                     </CardContent>
                   </Card>

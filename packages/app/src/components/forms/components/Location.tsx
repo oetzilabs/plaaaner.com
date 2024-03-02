@@ -29,7 +29,7 @@ export const LocationTab = () => {
       <div class="flex flex-col items-start justify-between gap-2 w-full">
         <RadioGroup
           value={plan.newPlan().location.location_type}
-          aria-label={`Where is the ${plan.newPlan().event_type}?`}
+          aria-label={`Where is the ${plan.newPlan().plan_type}?`}
           onChange={(value) => {
             const v = value as ReturnType<typeof plan.newPlan>["location"]["location_type"];
             switch (v) {
@@ -85,7 +85,7 @@ export const LocationTab = () => {
           class="w-full flex flex-col gap-2"
         >
           <RadioGroupLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Where is the {plan.newPlan().event_type}?
+            Where is the {plan.newPlan().plan_type}?
           </RadioGroupLabel>
           <div class="grid grid-cols-2 gap-2 w-full">
             <RadioGroupItem value="venue">
@@ -96,7 +96,7 @@ export const LocationTab = () => {
                     "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                       plan.newPlan().location.location_type !== "venue",
                     "bg-secondary": plan.newPlan().location.location_type === "venue",
-                  },
+                  }
                 )}
               >
                 <Container class="size-4" />
@@ -111,7 +111,7 @@ export const LocationTab = () => {
                     "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                       plan.newPlan().location.location_type !== "festival",
                     "bg-secondary": plan.newPlan().location.location_type === "festival",
-                  },
+                  }
                 )}
               >
                 <PartyPopper class="size-4" />
@@ -126,7 +126,7 @@ export const LocationTab = () => {
                     "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                       plan.newPlan().location.location_type !== "online",
                     "bg-secondary": plan.newPlan().location.location_type === "online",
-                  },
+                  }
                 )}
               >
                 <Globe class="size-4" />
@@ -141,7 +141,7 @@ export const LocationTab = () => {
                     "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                       plan.newPlan().location.location_type !== "other",
                     "bg-secondary": plan.newPlan().location.location_type === "other",
-                  },
+                  }
                 )}
               >
                 <Clover class="size-4" />
@@ -156,7 +156,7 @@ export const LocationTab = () => {
           <Match when={plan.newPlan().location.location_type === "online"}>
             <TextField class="w-full flex flex-col gap-2" aria-label="Location">
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                What is the URL of the {plan.newPlan().event_type}?
+                What is the URL of the {plan.newPlan().plan_type}?
               </TextFieldLabel>
               <TextFieldInput
                 value={
@@ -199,7 +199,7 @@ export const LocationTab = () => {
           <Match when={plan.newPlan().location.location_type === "venue"}>
             <TextField class="w-full flex flex-col gap-2" aria-label="Location">
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Where is the {plan.newPlan().event_type} going to take place?
+                Where is the {plan.newPlan().plan_type} going to take place?
               </TextFieldLabel>
               <TextFieldInput
                 value={
@@ -242,7 +242,7 @@ export const LocationTab = () => {
           <Match when={plan.newPlan().location.location_type === "festival"}>
             <TextField class="w-full flex flex-col gap-2" aria-label="Location">
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Where is the {plan.newPlan().event_type} going to take place?
+                Where is the {plan.newPlan().plan_type} going to take place?
               </TextFieldLabel>
               <TextFieldInput
                 value={
@@ -285,7 +285,7 @@ export const LocationTab = () => {
           <Match when={plan.newPlan().location.location_type === "other"}>
             <TextField class="w-full flex flex-col gap-2" aria-label="Other Location">
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Where is the {plan.newPlan().event_type} going to take place?
+                Where is the {plan.newPlan().plan_type} going to take place?
               </TextFieldLabel>
               <TextFieldTextArea
                 autoResize
