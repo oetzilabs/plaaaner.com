@@ -1,17 +1,17 @@
-import { Api, StackContext, use } from "sst/constructs";
-import { StorageStack } from "./StorageStack";
-import { DNSStack } from "./DNSStack";
-import { SecretsStack } from "./SecretsStack";
-import { AuthStack } from "./AuthStack";
+import { Api as API, StackContext, use } from "sst/constructs";
+import { Storage } from "./Storage";
+import { Domain } from "./Domain";
+import { Secrets } from "./Secrets";
+import { Auth } from "./Auth";
 
-export function ApiStack({ stack }: StackContext) {
-  const dns = use(DNSStack);
+export function Api({ stack }: StackContext) {
+  const dns = use(Domain);
 
-  const bucket = use(StorageStack);
-  const secrets = use(SecretsStack);
-  const auth = use(AuthStack);
+  const bucket = use(Storage);
+  const secrets = use(Secrets);
+  const auth = use(Auth);
 
-  const api = new Api(stack, "api", {
+  const api = new API(stack, "api", {
     customDomain: {
       domainName: "api." + dns.domain,
       hostedZone: dns.zone.zoneName,
@@ -69,6 +69,24 @@ export function ApiStack({ stack }: StackContext) {
         function: {
           handler: "packages/functions/src/tickets/types/index.all",
           description: "This is the all ticket_types function",
+        },
+      },
+      "POST /seed/notifications/types": {
+        function: {
+          handler: "packages/functions/src/notifications/types/seed.main",
+          description: "This is the notification_types seeding function",
+        },
+      },
+      "POST /seed/notifications/types/upsert": {
+        function: {
+          handler: "packages/functions/src/notifications/types/seed.upsert",
+          description: "This is the notification_types upsert function",
+        },
+      },
+      "GET /notification_types/all": {
+        function: {
+          handler: "packages/functions/src/notifications/types/index.all",
+          description: "This is the all notification_types function",
         },
       },
     },

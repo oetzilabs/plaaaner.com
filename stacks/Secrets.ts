@@ -1,6 +1,6 @@
 import { Config, StackContext } from "sst/constructs";
 
-export function SecretsStack({ stack }: StackContext) {
+export function Secrets({ stack }: StackContext) {
   const secrets = Config.Secret.create(
     //
     stack,
