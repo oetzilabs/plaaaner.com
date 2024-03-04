@@ -55,7 +55,7 @@ export const findById = z.function(z.tuple([z.string().uuid()])).implement(async
 
 export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
   const org_notifications = await db.query.organizations_notifications.findMany({
-    where: (notifications, operations) => operations.eq(notifications.organization_id, input),
+    where: (fields, operations) => operations.eq(fields.organization_id, input),
     with: {
       notification: {
         with: {
@@ -105,8 +105,6 @@ export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid(
   return update({ id: input.id, deletedAt: new Date() });
 });
 
-const sns = new SNS();
-
 export const sendMissingNotifications = z.function(z.tuple([z.string().uuid()])).implement(async (userId) => {
   const _notifications = await db.select({ id: notifications.id }).from(notifications);
   const notificationsIds = _notifications.map((x) => x.id);
@@ -127,6 +125,7 @@ export const sendMissingNotifications = z.function(z.tuple([z.string().uuid()]))
 });
 
 export const publish = z.function(z.tuple([z.custom<Notify>()])).implement(async (n) => {
+  const sns = new SNS();
   const notificationString = JSON.stringify(n);
   const x = await sns.publish({
     TopicArn: Topic["notifications"].topicArn,
