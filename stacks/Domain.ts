@@ -4,7 +4,7 @@ import { StackContext } from "sst/constructs";
 const PRODUCTION = "plaaaner.com";
 const DEV = "dev.plaaaner.com";
 
-export function DNSStack(ctx: StackContext) {
+export function Domain(ctx: StackContext) {
   if (ctx.stack.stage === "production") {
     const zone = HostedZone.fromLookup(ctx.stack, "zone", {
       domainName: PRODUCTION,

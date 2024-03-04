@@ -1,12 +1,12 @@
 import { StackContext, use } from "sst/constructs";
-import { DNSStack } from "./DNSStack";
-import { SecretsStack } from "./SecretsStack";
-import { Auth } from "sst/constructs/future";
+import { Domain } from "./Domain";
+import { Secrets } from "./Secrets";
+import { Auth as AUTH } from "sst/constructs/future";
 
-export function AuthStack({ stack, app }: StackContext) {
-  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DATABASE_URL } = use(SecretsStack);
-  const dns = use(DNSStack);
-  const auth = new Auth(stack, "auth", {
+export function Auth({ stack, app }: StackContext) {
+  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DATABASE_URL } = use(Secrets);
+  const dns = use(Domain);
+  const auth = new AUTH(stack, "auth", {
     authenticator: {
       handler: "packages/functions/src/auth.handler",
       bind: [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DATABASE_URL],

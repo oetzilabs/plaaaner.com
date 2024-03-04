@@ -1,17 +1,16 @@
 import { SolidStartSite, StackContext, use } from "sst/constructs";
-import { ApiStack } from "./ApiStack";
-import { StorageStack } from "./StorageStack";
-import { DNSStack } from "./DNSStack";
-import { SecretsStack } from "./SecretsStack";
-import { AuthStack } from "./AuthStack";
+import { Api } from "./Api";
+import { Storage } from "./Storage";
+import { Domain } from "./Domain";
+import { Secrets } from "./Secrets";
+import { Auth } from "./Auth";
 
-export function SolidStartStack({ stack, app }: StackContext) {
-  const dns = use(DNSStack);
-  const api = use(ApiStack);
-  const auth = use(AuthStack);
-  // const { db } = use(DatabaseStack);
-  const bucket = use(StorageStack);
-  const secrets = use(SecretsStack);
+export function SolidStart({ stack, app }: StackContext) {
+  const dns = use(Domain);
+  const api = use(Api);
+  const auth = use(Auth);
+  const bucket = use(Storage);
+  const secrets = use(Secrets);
 
   const solidStartApp = new SolidStartSite(stack, `${app.name}-app`, {
     bind: [bucket, api, secrets.DATABASE_URL],
