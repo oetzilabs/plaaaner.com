@@ -47,25 +47,13 @@ const randomPersonTesimonial = {
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const loginViaEmail = createMutation(() => ({
-    mutationKey: ["login-via-email"],
-    mutationFn: async (email: string) => {
-      return Queries.Auth.loginViaEmail(email);
-    },
-    async onSuccess(data, variables, context) {
-      navigate("/");
-    },
-    onError(err, variables, context) {
-      toast.error(err.message);
-    },
-  }));
 
   const [email, setEmail] = createSignal("");
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     const _email = email();
-    await loginViaEmail.mutateAsync(_email);
+    toast.info("Login via Email is not implemented yet");
   };
 
   return (

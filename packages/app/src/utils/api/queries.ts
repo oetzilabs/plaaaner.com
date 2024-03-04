@@ -309,34 +309,6 @@ export const Events = {
     }),
 };
 
-export const Auth = {
-  loginViaEmail: z.function(z.tuple([z.string().email()])).implement(async (email) => {
-    const data = {
-      user: {
-        email,
-        id: "1",
-        image: "https://via.placeholder.com/150",
-        username: "alice",
-      },
-      token: "EXAMPLE_TOKEN", // TODO!: Implement token
-    } as {
-      user: z.infer<typeof UserSchema>;
-      token: string;
-    };
-    if (isServer) return data;
-    document.cookie = `session=${data.token}; max-age=${60 * 60 * 24 * 7}; path=/`;
-    document.cookie = `lastUsedProvider=email; max-age=${60 * 60 * 24 * 7}; path=/`;
-    return data;
-    // return fetch(`${API_BASE}/auth/login-via-email`, {
-    //   method: "POST",
-    //   body: JSON.stringify({ email }),
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // }).then((res) => res.json());
-  }),
-};
-
 export const Dashboard = {
   get: z.function(z.tuple([])).implement(async () => {
     return new Promise<{
