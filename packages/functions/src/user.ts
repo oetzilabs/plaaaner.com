@@ -1,7 +1,8 @@
 import { StatusCodes } from "http-status-codes";
 import { ApiHandler } from "sst/node/api";
 import { error, getUser, json } from "./utils";
-import { Workspace } from "@/core/entities/workspaces";
+import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
+import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 
 export const get = ApiHandler(async (_event) => {
@@ -37,4 +38,9 @@ export const session = ApiHandler(async (_event) => {
   // console.log("workspace", workspace);
 
   return json({ email: user.email, id: user.id, workspace_id: workspace.id, organization_id });
+});
+
+export const all = ApiHandler(async (_event) => {
+  const users = await User.all();
+  return json(users)
 });

@@ -1,3 +1,4 @@
+import { Notifications } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
 import { cache, redirect } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 
@@ -20,10 +21,28 @@ export const getNotificationSettings = cache(async () => {
 export const getNotifications = cache(async () => {
   "use server";
   const event = getRequestEvent()!;
+
+  if (!event.nativeEvent.context.session) {
+    throw redirect("/auth/login");
+  }
+
+  const session = event.nativeEvent.context.session;
+
+  if(!session.organization_id) {
+    throw redirect("/setup/organization")
+  }
+
   if (!event.nativeEvent.context.user) {
     throw redirect("/auth/login");
   }
+
+
   const user = event.nativeEvent.context.user;
+
+  const orgNotifications = await Notifications.findByOrganizationId(session.organization_id);
+
+  console.log(orgNotifications);
+
   return [
     {
       id: "1",

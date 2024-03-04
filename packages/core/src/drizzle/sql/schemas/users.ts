@@ -7,6 +7,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { users_organizations } from "./user_organizations";
 import { organizations_joins } from "./organizations_joins";
+import { notification_mentions } from "./notification_mentions";
 
 export const users = schema.table("users", {
   ...Entity.defaults,
@@ -46,6 +47,7 @@ export const userRelation = relations(users, ({ many }) => ({
   workspaces: many(users_workspaces),
   organizations: many(users_organizations),
   joins: many(organizations_joins),
+  notification_mentions: many(notification_mentions),
 }));
 
 export type UserSelect = typeof users.$inferSelect;

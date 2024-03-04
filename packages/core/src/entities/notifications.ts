@@ -5,11 +5,11 @@ import { db } from "../drizzle/sql";
 import {
   NotificationCreateSchema,
   NotificationUpdateSchema,
-  notification_types,
   notifications,
   user_dismissed_notifications,
 } from "../drizzle/sql/schema";
 import { Topic } from "sst/node/topic";
+import { SNS } from "@aws-sdk/client-sns";
 
 export * as Notifications from "./notifications";
 
@@ -53,11 +53,15 @@ export const findById = z.function(z.tuple([z.string().uuid()])).implement(async
   });
 });
 
-export const findOrganizationById = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
+export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
   const org_notifications = await db.query.organizations_notifications.findMany({
     where: (notifications, operations) => operations.eq(notifications.organization_id, input),
     with: {
-      notification: true,
+      notification: {
+        with: {
+          mentions: true,
+        },
+      },
     },
   });
 
@@ -101,50 +105,21 @@ export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid(
   return update({ id: input.id, deletedAt: new Date() });
 });
 
-export const getTypeId = z.function(z.tuple([z.string()])).implement(async (t) => {
-  const et = await db.query.notification_types.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.name, t);
-    },
-  });
-  return et;
-});
-
-export const getDefaultTypeId = z.function(z.tuple([])).implement(async () => {
-  const et = await db.query.notification_types.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.name, "default-notification-for-all-plans");
-    },
-    columns: {
-      id: true,
-    },
-  });
-  // TODO!: I have to provide a default notification type, for the case that the requested notification_type does not exist!
-  if (!et) {
-    throw new Error("DEFAULT NOTIFICATION IS NOT SEEDED!");
-  }
-  return et.id;
-});
-
-export const getAllTypes = z.function(z.tuple([])).implement(async () => {
-  const all_notification_types = await db.query.notification_types.findMany({});
-  return all_notification_types;
-});
-
 const sns = new SNS();
 
 export const sendMissingNotifications = z.function(z.tuple([z.string().uuid()])).implement(async (userId) => {
-  // get all notifications
-  // get all dismissed notifications
-  // filter out dismissed notifications
-  // send remaining notifications
-  const _notifications = await db.select().from(notifications);
+  const _notifications = await db.select({ id: notifications.id }).from(notifications);
   const notificationsIds = _notifications.map((x) => x.id);
   const dismissedNotifications = await db
     .select({ notificationId: user_dismissed_notifications.notificationId })
     .from(user_dismissed_notifications)
-    .where(eq(user_dismissed_notifications.userId, userId))
-    .where(inArray(user_dismissed_notifications.notificationId, notificationsIds));
+    .where(
+      and(
+        eq(user_dismissed_notifications.userId, userId),
+        inArray(user_dismissed_notifications.notificationId, notificationsIds)
+      )
+    );
+
   const notificationsToSend = _notifications.filter(
     (x) => !dismissedNotifications.find((y) => y.notificationId === x.id)
   );
@@ -164,7 +139,6 @@ export const publish = z.function(z.tuple([z.custom<Notify>()])).implement(async
 export const dismiss = z
   .function(z.tuple([z.string().uuid(), z.string().uuid()]))
   .implement(async (userId, notificationId) => {
-    // set dismissedAt to now
     const [x] = await db
       .insert(user_dismissed_notifications)
       .values({

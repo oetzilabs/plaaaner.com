@@ -1,6 +1,6 @@
 {
-  "id": "721d42e6-01f8-4795-b5da-7e41579ec922",
-  "prevId": "ec20c0f1-5473-4753-9590-bb9a58adc226",
+  "id": "fff36694-90e6-46b6-bb14-94aaff39a431",
+  "prevId": "721d42e6-01f8-4795-b5da-7e41579ec922",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -993,49 +993,27 @@
           "primaryKey": false,
           "notNull": false
         },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "summary": {
           "name": "summary",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "notification_type_id": {
-          "name": "notification_type_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
         "reference_id": {
           "name": "reference_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "notification_status",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'UNREAD'"
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "notifications_notification_type_id_notification_types_id_fk": {
-          "name": "notifications_notification_type_id_notification_types_id_fk",
-          "tableFrom": "notifications",
-          "tableTo": "notification_types",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "notification_type_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -1106,6 +1084,72 @@
         }
       },
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "notification_mentions": {
+      "name": "notification_mentions",
+      "schema": "plaaaner",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notification_id": {
+          "name": "notification_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "notification_mentions_user_id_users_id_fk": {
+          "name": "notification_mentions_user_id_users_id_fk",
+          "tableFrom": "notification_mentions",
+          "tableTo": "users",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "notification_mentions_notification_id_users_id_fk": {
+          "name": "notification_mentions_notification_id_users_id_fk",
+          "tableFrom": "notification_mentions",
+          "tableTo": "users",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "notification_mentions_user_id_notification_id_pk": {
+          "name": "notification_mentions_user_id_notification_id_pk",
+          "columns": [
+            "user_id",
+            "notification_id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
     "plans": {
@@ -1653,16 +1697,6 @@
       "values": {
         "request": "request",
         "invite": "invite"
-      }
-    },
-    "notification_status": {
-      "name": "notification_status",
-      "values": {
-        "READ": "READ",
-        "UNREAD": "UNREAD",
-        "SKIPPED": "SKIPPED",
-        "MUTED": "MUTED",
-        "ARCHIVED": "ARCHIVED"
       }
     },
     "ticketPaymentType": {

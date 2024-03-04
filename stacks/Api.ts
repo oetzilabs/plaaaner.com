@@ -71,22 +71,10 @@ export function Api({ stack }: StackContext) {
           description: "This is the all ticket_types function",
         },
       },
-      "POST /seed/notifications/types": {
+      "GET /users/all": {
         function: {
-          handler: "packages/functions/src/notifications/types/seed.main",
-          description: "This is the notification_types seeding function",
-        },
-      },
-      "POST /seed/notifications/types/upsert": {
-        function: {
-          handler: "packages/functions/src/notifications/types/seed.upsert",
-          description: "This is the notification_types upsert function",
-        },
-      },
-      "GET /notification_types/all": {
-        function: {
-          handler: "packages/functions/src/notifications/types/index.all",
-          description: "This is the all notification_types function",
+          handler: "packages/functions/src/user.all",
+          description: "This is the all users function",
         },
       },
     },
