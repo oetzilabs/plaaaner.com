@@ -14,7 +14,7 @@ export * from "./schemas/workspaces_organizations";
 export * from "./schemas/users_workspaces";
 
 export * from "./schemas/notifications";
-export * from "./schemas/notification_types";
+export * from "./schemas/notification_mentions";
 
 export * from "./schemas/plans";
 export * from "./schemas/plan_types";

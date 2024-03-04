@@ -14,6 +14,7 @@ import { Toaster } from "solid-sonner";
 // import { getCookie } from "vinxi/http";
 import "./app.css";
 import { SessionProvider } from "./components/SessionProvider";
+import { WebsocketProvider } from "./components/providers/Websocket";
 
 // const getServerCookies = () => {
 //   "use server";
@@ -35,7 +36,7 @@ export default function App() {
   const storageManager = cookieStorageManagerSSR(isServer ? "kb-color-mode=dark" : document.cookie);
   return (
     <QueryClientProvider client={queryClient}>
-    {/*<SolidQueryDevtools initialIsOpen={false} />*/}
+      {/*<SolidQueryDevtools initialIsOpen={false} />*/}
       <Router
         root={(props) => (
           <>
@@ -64,7 +65,9 @@ export default function App() {
                       "min-height": "100vh",
                     }}
                   >
-                    <SessionProvider>{props.children}</SessionProvider>
+                    <SessionProvider>
+                      <WebsocketProvider>{props.children}</WebsocketProvider>
+                    </SessionProvider>
                   </div>
                   <Footer />
                 </ColorModeProvider>

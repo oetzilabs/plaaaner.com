@@ -4,6 +4,7 @@ import { Storage } from "./Storage";
 import { Domain } from "./Domain";
 import { Secrets } from "./Secrets";
 import { Auth } from "./Auth";
+import { Websocket } from "./Websocket";
 
 export function SolidStart({ stack, app }: StackContext) {
   const dns = use(Domain);
@@ -11,6 +12,7 @@ export function SolidStart({ stack, app }: StackContext) {
   const auth = use(Auth);
   const bucket = use(Storage);
   const secrets = use(Secrets);
+  const ws = use(Websocket);
 
   const solidStartApp = new SolidStartSite(stack, `${app.name}-app`, {
     bind: [bucket, api, secrets.DATABASE_URL],
@@ -19,6 +21,7 @@ export function SolidStart({ stack, app }: StackContext) {
     environment: {
       VITE_API_URL: api.customDomainUrl || api.url,
       VITE_AUTH_URL: auth.url,
+      VITE_WS_LINK: ws.customDomainUrl || ws.url,
     },
     customDomain: {
       domainName: dns.domain,
