@@ -8,6 +8,9 @@ import { users } from "./users";
 import { plan_types } from "./plan_types";
 import { organizations_plans } from "./organizations_plans";
 import { plan_times } from "./plan_times";
+import { plan_comments } from "./plan_comments";
+import { plan_comments_mentions } from "./plan_comments_mentions";
+import { plan_comment_user_mention_notifications } from "./notifications/plan/comment_user_mention";
 
 export const plans = schema.table("plans", {
   ...Entity.defaults,
@@ -38,6 +41,9 @@ export const plans_relation = relations(plans, ({ many, one }) => ({
   }),
   organizations: many(organizations_plans),
   times: many(plan_times),
+  comments: many(plan_comments),
+  comments_mentions: many(plan_comments_mentions),
+  comment_user_mentions_notifications: many(plan_comment_user_mention_notifications),
 }));
 
 export type PlanSelect = typeof plans.$inferSelect;
