@@ -23,7 +23,7 @@ export const saveUser = action(async (data: FormData) => {
   return updatedUser;
 }, "users");
 
-export const loginViaEmail = action(async (email:string) => {
+export const loginViaEmail = action(async (email: string) => {
   "use server";
   const event = getEvent()!;
   if (!event.context.user) {
@@ -31,19 +31,16 @@ export const loginViaEmail = action(async (email:string) => {
   }
   const { id } = event.context.user;
   let user = await User.findByEmail(email);
-  if(!user) {
+  if (!user) {
     user = await User.create({ name: email, email });
     // TODO!: Send email to user with magic code, to verify.
   }
   // TODO!: Send email to user with magic code, to verify.
-  const session = await lucia.createSession(
-    user.id,
-    {
-      access_token: null,
-      organization_id: null,
-      workspace_id: null,
-    },
-  );
+  const session = await lucia.createSession(user.id, {
+    access_token: null,
+    organization_id: null,
+    workspace_id: null,
+  });
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
   return user;
@@ -107,7 +104,7 @@ export const setCurrentOrganization = action(async (data: FormData) => {
     },
     {
       sessionId: sessionId,
-    },
+    }
   );
   // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
