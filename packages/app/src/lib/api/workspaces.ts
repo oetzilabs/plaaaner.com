@@ -1,9 +1,8 @@
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { WorkspaceCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schemas/workspaces";
 import { action, cache, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
 import { z } from "zod";
-import { appendHeader, getCookie } from "vinxi/http";
+import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { lucia } from "../auth";
 
 const WorkspaceCreateSchemaWithConnect = WorkspaceCreateSchema.extend({
@@ -12,29 +11,29 @@ const WorkspaceCreateSchemaWithConnect = WorkspaceCreateSchema.extend({
 
 export const getWorkspaces = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     throw redirect("/auth/login");
   }
-  const user = event.nativeEvent.context.user;
+  const user = event.context.user;
   const ws = await Workspace.findManyByUserId(user.id);
   return ws;
 }, "workspaces");
 
 export const getWorkspace = cache(async (id: string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     throw redirect("/auth/login");
   }
-  const user = event.nativeEvent.context.user;
+  const user = event.context.user;
   const ws = await Workspace.findById(id);
   return ws;
 }, "workspace");
 
 export const connectToWorkspace = action(async (data: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
     throw redirect("/auth/login");
@@ -68,13 +67,13 @@ export const connectToWorkspace = action(async (data: FormData) => {
     }
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
-  event.nativeEvent.context.session = new_session;
+  event.context.session = new_session;
   return ws;
 }, "workspaces");
 
 export const disconnectFromWorkspace = action(async (data: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
     throw redirect("/auth/login");
@@ -103,14 +102,14 @@ export const disconnectFromWorkspace = action(async (data: FormData) => {
     }
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
-  event.nativeEvent.context.session = new_session;
+  event.context.session = new_session;
 
   return ws;
 }, "workspaces");
 
 export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreateSchemaWithConnect>) => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
     throw new Error("Unauthorized");
@@ -136,15 +135,15 @@ export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreat
       }
     );
     appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
-    event.nativeEvent.context.session = new_session;
+    event.context.session = new_session;
   }
   return workspace;
 }, "workspaces");
 
 export const deleteWorkspace = action(async (id: string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   const valid = z.string().uuid().safeParse(id);
@@ -159,8 +158,8 @@ export const deleteWorkspace = action(async (id: string) => {
 
 export const setWorkspaceOwner = action(async (id: string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   const valid = z.string().uuid().safeParse(id);
@@ -168,15 +167,15 @@ export const setWorkspaceOwner = action(async (id: string) => {
     return new Error("Invalid data");
   }
   const workspaceId = valid.data;
-  const ws = await Workspace.setOwner(workspaceId, event.nativeEvent.context.user.id);
+  const ws = await Workspace.setOwner(workspaceId, event.context.user.id);
 
   return ws;
 });
 
 export const setCurrentWorkspace = action(async (data: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
@@ -211,6 +210,6 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
     }
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
-  event.nativeEvent.context.session = session;
+  event.context.session = session;
   return ws;
 }, "session");

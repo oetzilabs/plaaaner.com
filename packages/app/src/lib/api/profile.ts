@@ -1,11 +1,11 @@
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
 import { action, cache, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
+import { getEvent } from "vinxi/http";
 
 export const updateProfile = action(async (form: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
-  const user = event.nativeEvent.context.user;
+  const event = getEvent()!;
+  const user = event.context.user;
   if (!user) {
     return redirect("/auth/login");
   }
@@ -26,11 +26,11 @@ export const updateProfile = action(async (form: FormData) => {
 
 export const getProfile = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     throw redirect("/auth/login");
   }
-  const user = event.nativeEvent.context.user;
+  const user = event.context.user;
   const u = await User.findById(user.id);
   return u;
 }, "profile");

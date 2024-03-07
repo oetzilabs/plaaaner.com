@@ -1,14 +1,14 @@
 import { Notifications } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
 import { cache, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
+import { getEvent } from "vinxi/http";
 
 export const getNotificationSettings = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     throw redirect("/auth/login");
   }
-  const user = event.nativeEvent.context.user;
+  const user = event.context.user;
   return {
     type: "everything",
     createdAt: new Date(),
@@ -20,28 +20,27 @@ export const getNotificationSettings = cache(async () => {
 
 export const getNotifications = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
-  if (!event.nativeEvent.context.session) {
+  if (!event.context.session) {
     throw redirect("/auth/login");
   }
 
-  const session = event.nativeEvent.context.session;
+  const session = event.context.session;
 
   if(!session.organization_id) {
     throw redirect("/setup/organization")
   }
 
-  if (!event.nativeEvent.context.user) {
+  if (!event.context.user) {
     throw redirect("/auth/login");
   }
 
 
-  const user = event.nativeEvent.context.user;
+  const user = event.context.user;
 
-  const orgNotifications = await Notifications.findByOrganizationId(session.organization_id);
+  // const orgNotifications = await Notifications.findByOrganizationId(session.organization_id);
 
-  console.log(orgNotifications);
 
   return [
     {

@@ -4,14 +4,14 @@ import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { getCookie } from "vinxi/http";
 import { lucia } from "../auth";
-import { getRequestEvent } from "solid-js/web";
 import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import dayjs from "dayjs";
+import { getEvent } from "vinxi/http";
 
 export const getPreviousPlans = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -33,11 +33,11 @@ export const getPreviousPlans = cache(async () => {
 
 export const getPlans = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     throw redirect("/auth/login");
   }
-  const user = event.nativeEvent.context.user;
+  const user = event.context.user;
   return [
     {
       id: "1",
@@ -98,7 +98,7 @@ export const getPlans = cache(async () => {
 
 export const getRecommendedPlans = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -120,7 +120,7 @@ export const getRecommendedPlans = cache(async () => {
 
 export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 

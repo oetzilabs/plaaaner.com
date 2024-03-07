@@ -1,24 +1,23 @@
 import { cache, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
 import { lucia } from ".";
-import { appendHeader, getCookie } from "vinxi/http";
+import { getCookie, getEvent } from "vinxi/http";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 
 export const getAuthenticatedUser = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.session) {
+  const event = getEvent()!;
+  if (!event.context.session) {
     return null;
   }
-  const { id } = event.nativeEvent.context.session;
+  const { id } = event.context.session;
   const { user } = await lucia.validateSession(id);
   return user;
 }, "user");
 
 export const getAuthenticatedSession = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
     return null;
@@ -31,24 +30,24 @@ export const getAuthenticatedSession = cache(async () => {
 
 export const getAuthenticatedSessions = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return redirect("/auth/login");
   }
-  const { id } = event.nativeEvent.context.user;
+  const { id } = event.context.user;
   const sessions = await lucia.getUserSessions(id);
   return sessions;
 }, "sessions");
 
 export const getCurrentOrganization = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
-  if (!event.nativeEvent.context.session) {
+  if (!event.context.session) {
     return redirect("/auth/login");
   }
 
-  const { id } = event.nativeEvent.context.session;
+  const { id } = event.context.session;
 
   const { user, session } = await lucia.validateSession(id);
 
@@ -71,7 +70,7 @@ export const getCurrentOrganization = cache(async () => {
 
 export const getCurrentWorkspace = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 

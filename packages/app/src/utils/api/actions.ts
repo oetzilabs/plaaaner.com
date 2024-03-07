@@ -1,30 +1,30 @@
 import { lucia } from "@/lib/auth";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { action, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
 import { appendHeader } from "vinxi/http";
 import { z } from "zod";
+import { getEvent } from "vinxi/http";
 
 export const logout = action(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.session) {
+  const event = getEvent()!;
+  if (!event.context.session) {
     return new Error("Unauthorized");
   }
-  await lucia.invalidateSession(event.nativeEvent.context.session.id);
+  await lucia.invalidateSession(event.context.session.id);
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
-  event.nativeEvent.context.session = null;
+  event.context.session = null;
   throw redirect("/auth/login", 303);
 }, "session");
 
 export const revokeAllSessions = action(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     console.log("Unauthorized");
     return false;
   }
-  const { id } = event.nativeEvent.context.user;
+  const { id } = event.context.user;
   await lucia.invalidateUserSessions(id);
 
   return true;
@@ -32,8 +32,8 @@ export const revokeAllSessions = action(async () => {
 
 export const changeNotificationSettings = action(async (type: string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   return { type };
@@ -41,8 +41,8 @@ export const changeNotificationSettings = action(async (type: string) => {
 
 export const changeMessageSettings = action(async (type: string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   return { type };
@@ -50,11 +50,11 @@ export const changeMessageSettings = action(async (type: string) => {
 
 export const disconnectFromOrganization = action(async (data: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
-  const { id } = event.nativeEvent.context.user;
+  const { id } = event.context.user;
   const valid = z.string().uuid().safeParse(data.get("organizationId"));
   if (!valid.success) {
     return new Error("Invalid data");
@@ -67,8 +67,8 @@ export const disconnectFromOrganization = action(async (data: FormData) => {
 
 export const deleteOrganization = action(async (id: string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   const valid = z.string().uuid().safeParse(id);
@@ -83,8 +83,8 @@ export const deleteOrganization = action(async (id: string) => {
 
 export const setOrganizationOwner = action(async (id: string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   const valid = z.string().uuid().safeParse(id);
@@ -92,7 +92,7 @@ export const setOrganizationOwner = action(async (id: string) => {
     return new Error("Invalid data");
   }
   const organizationId = valid.data;
-  const o = await Organization.setOwner(organizationId, event.nativeEvent.context.user.id);
+  const o = await Organization.setOwner(organizationId, event.context.user.id);
 
   return o;
 });
