@@ -1,8 +1,8 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { getAuthenticatedUser } from "@/lib/auth/util";
-import { deleteWorkspace, disconnectFromWorkspace, setCurrentWorkspace } from "@/lib/api/workspaces";
+import { deleteWorkspace, disconnectFromWorkspace, connectToWorkspace } from "@/lib/api/workspaces";
 import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
-import { For, Show, Suspense } from "solid-js";
+import { createEffect, For, Show, Suspense } from "solid-js";
 import { getWorkspaces } from "../../lib/api/workspaces";
 import { Badge } from "../ui/badge";
 import { Plus, Trash } from "lucide-solid";
@@ -12,6 +12,8 @@ import { Alert } from "../ui/alert";
 import { Skeleton } from "../ui/skeleton";
 import { useSession } from "../SessionProvider";
 import { cn } from "@/lib/utils";
+import { toast } from "solid-sonner";
+import { workspaces_organizations } from "@/core/drizzle/sql/schema";
 
 export const Workspaces = () => {
   const session = useSession();
@@ -19,7 +21,7 @@ export const Workspaces = () => {
   const workspaces = createAsync(() => getWorkspaces());
 
   const isDisconnectingFromWorkspace = useSubmission(disconnectFromWorkspace);
-  const isSettingCurrentWorkspace = useSubmission(setCurrentWorkspace);
+  const isConnectingToWorkspace = useSubmission(connectToWorkspace);
   const isDeletingWorkspace = useSubmission(deleteWorkspace);
   const removeWorkspace = useAction(deleteWorkspace);
 
@@ -78,7 +80,14 @@ export const Workspaces = () => {
                   </div>
                   <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-1 text-sm">
                     <span>Created {dayjs(workspace.createdAt).fromNow()}</span>
-                    <span>{workspace.users.length} Users</span>
+                    <div class="flex flex-row items-start justify-start gap-1 text-xs">
+                      <For
+                        each={workspace.users}
+                        fallback={<span class="text-muted-foreground">No users are connected to this workspace.</span>}
+                      >
+                        {(u) => <span class="text-muted-foreground">{u.user.name}</span>}
+                      </For>
+                    </div>
                   </div>
                   <div class="w-full flex items-center justify-between gap-2">
                     <div class="w-full"></div>
@@ -88,11 +97,7 @@ export const Workspaces = () => {
                           <span>Manage</span>
                         </As>
                       </Button>
-                      <form
-                        class="flex flex-col gap-2 items-end w-full py-0"
-                        action={setCurrentWorkspace}
-                        method="post"
-                      >
+                      <form class="flex flex-col gap-2 items-end w-full py-0" action={connectToWorkspace} method="post">
                         <input type="hidden" name="workspace_id" value={workspace.id} />
                         <Button
                           variant="secondary"
@@ -100,7 +105,7 @@ export const Workspaces = () => {
                           type="submit"
                           class="w-max"
                           aria-label="Connect to Workspace"
-                          disabled={isSettingCurrentWorkspace.pending || workspace.id === session?.()?.workspace_id}
+                          disabled={isConnectingToWorkspace.pending || workspace.id === session?.()?.workspace_id}
                         >
                           <span>Connect</span>
                         </Button>
@@ -110,7 +115,7 @@ export const Workspaces = () => {
                         action={disconnectFromWorkspace}
                         method="post"
                       >
-                        <input type="hidden" name="workspaceId" value={workspace.id} />
+                        <input type="hidden" name="workspace_id" value={workspace.id} />
                         <Button
                           variant="secondary"
                           size="sm"
@@ -136,7 +141,7 @@ export const Workspaces = () => {
               "flex flex-row items-center gap-2 justify-center",
               buttonVariants({
                 variant: "default",
-              }),
+              })
             )}
           >
             <Plus class="w-4 h-4" />

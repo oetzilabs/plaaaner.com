@@ -125,7 +125,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ]),
+    ])
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
@@ -169,14 +169,18 @@ export const setOwner = z
   });
 
 export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
-  const ws = await db.query.organizations.findFirst({
-    where: (organizations, operations) =>
-      and(operations.eq(organizations.owner_id, user_id), isNull(organizations.deletedAt)),
-    orderBy(fields, operators) {
-      return operators.desc(fields.createdAt);
+  const orgs = await db.query.users_organizations.findMany({
+    where: (fields, operations) => operations.eq(fields.user_id, user_id),
+    with: {
+      organization: {
+        with: {
+          owner: true,
+          users: true,
+        },
+      },
     },
   });
-  return ws;
+  return orgs.map((os) => os.organization);
 });
 
 export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
@@ -207,7 +211,7 @@ export const requestJoin = z
         expiresAt: dayjs().add(1, "week").toDate(),
         organization_id: org.id,
       },
-      user.id,
+      user.id
     );
 
     return organizationJoin;
@@ -241,36 +245,40 @@ export const getAllTicketTypes = z.function(z.tuple([z.string().uuid()])).implem
   return orgs_ticket_types.map((ott) => ott.ticket_type);
 });
 
-export const getAllNonDeletedTicketTypes = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
-  const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
-    where(fields, operators) {
-      return operators.isNull(fields.deletedAt);
-    },
-    with: {
-      ticket_type: true,
-    },
+export const getAllNonDeletedTicketTypes = z
+  .function(z.tuple([z.string().uuid()]))
+  .implement(async (organization_id) => {
+    const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
+      where(fields, operators) {
+        return operators.isNull(fields.deletedAt);
+      },
+      with: {
+        ticket_type: true,
+      },
+    });
+    return orgs_ticket_types.map((ott) => ott.ticket_type);
   });
-  return orgs_ticket_types.map((ott) => ott.ticket_type);
-});
 
-export const getTicketTypesByOrganization = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
-  const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
-    where(fields, operators) {
-      return operators.and(operators.eq(fields.organization_id, organization_id), operators.isNull(fields.deletedAt));
-    },
-    with: {
-      ticket_type: true,
-    },
+export const getTicketTypesByOrganization = z
+  .function(z.tuple([z.string().uuid()]))
+  .implement(async (organization_id) => {
+    const orgs_ticket_types = await db.query.organizations_ticket_types.findMany({
+      where(fields, operators) {
+        return operators.and(operators.eq(fields.organization_id, organization_id), operators.isNull(fields.deletedAt));
+      },
+      with: {
+        ticket_type: true,
+      },
+    });
+    return orgs_ticket_types.map((ott) => ott.ticket_type);
   });
-  return orgs_ticket_types.map((ott) => ott.ticket_type);
-});
 
 export const fillDefaultTicketTypes = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
   const existing = await db.query.ticket_types.findMany({
     where(fields, operators) {
       return operators.inArray(
         fields.name,
-        TicketTypes.DEFAULT_TICKET_TYPES.map((t) => t.name),
+        TicketTypes.DEFAULT_TICKET_TYPES.map((t) => t.name)
       );
     },
     columns: {

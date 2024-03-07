@@ -11,10 +11,7 @@ export default function DashboardPage() {
   return (
     <div class="flex flex-col gap-8 py-10">
       <div class="flex flex-col gap-4">
-        <div class="flex flex-col gap-2">
-          <Greeting />
-          <span class="text-xs text-muted-foreground">Here's what's happening with your workspace today.</span>
-        </div>
+        <Greeting />
         <div class="flex flex-row w-full gap-4 items-start justify-between">
           <div class="flex flex-col gap-4 w-full">
             <div class="flex flex-col gap-2 w-full">

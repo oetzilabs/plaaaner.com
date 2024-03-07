@@ -43,41 +43,58 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
   });
 });
 
+export const isConnectedToUser = z.function(z.tuple([z.string().uuid(), z.string().uuid()])).implement(async(workspace_id, user_id) => {
+    const isConnected = await db.query.users_workspaces.findFirst({
+      where: (fields, operators) =>
+        operators.and(operators.eq(fields.workspace_id, workspace_id), operators.eq(fields.user_id, user_id)),
+    });
+
+  return !!isConnected;
+});
+
+
 export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
-  const userWs = await db.query.users.findFirst({
-    where: (user, operations) => operations.eq(user.id, input),
+  const userWs = await db.query.workspaces.findMany({
+    where: (fields, operations) =>
+      operations.and(operations.eq(fields.owner_id, input), operations.isNull(fields.deletedAt)),
     with: {
-      workspaces: {
+      users: {
         with: {
-          workspace: {
-            with: {
-              users: {
-                with: {
-                  user: true,
-                },
-              },
-              owner: true,
-            },
-          },
+          user: true,
         },
       },
+      owner: true,
     },
   });
   if (!userWs) return [];
 
-  return userWs.workspaces.map((x) => x.workspace).filter((w) => w.deletedAt === null);
+  return userWs;
 });
 
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {
   return db.query.workspaces.findFirst({
     where: (workspaces, operations) => operations.eq(workspaces.name, input),
-    with: {},
+    with: {
+      users: {
+        with: {
+          user: true,
+        },
+      },
+      owner: true,
+    },
   });
 });
 
 export const all = z.function(z.tuple([])).implement(async () => {
   return db.query.workspaces.findMany({
-    with: {},
+    with: {
+      users: {
+        with: {
+          user: true,
+        },
+      },
+      owner: true,
+    },
   });
 });
 
@@ -88,7 +105,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ]),
+    ])
   )
   .implement(async (input) => {
     const [updatedWorkspace] = await db
@@ -106,8 +123,13 @@ export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid(
 export const connectUser = z
   .function(z.tuple([z.string().uuid(), z.string().uuid()]))
   .implement(async (workspace_id, user_id) => {
-    const [connected] = await db.insert(users_workspaces).values({ user_id, workspace_id }).returning();
-    return connected;
+    const isConnected = await db.query.users_workspaces.findFirst({
+      where: (fields, operators) =>
+        operators.and(operators.eq(fields.workspace_id, workspace_id), operators.eq(fields.user_id, user_id)),
+    });
+    if (!isConnected) {
+      await db.insert(users_workspaces).values({ user_id, workspace_id }).returning();
+    }
   });
 
 export const disconnectUser = z
