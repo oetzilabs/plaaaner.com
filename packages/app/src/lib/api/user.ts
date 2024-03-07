@@ -1,6 +1,6 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
-import { action, redirect } from "@solidjs/router";
+import { action, cache, redirect } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 import { appendHeader, getCookie } from "vinxi/http";
 import { z } from "zod";
@@ -22,6 +22,32 @@ export const saveUser = action(async (data: FormData) => {
   }
   const updatedUser = await User.update(valid.data);
   return updatedUser;
+}, "users");
+
+export const loginViaEmail = action(async (email:string) => {
+  "use server";
+  const event = getRequestEvent()!;
+  if (!event.nativeEvent.context.user) {
+    return new Error("Unauthorized");
+  }
+  const { id } = event.nativeEvent.context.user;
+  let user = await User.findByEmail(email);
+  if(!user) {
+    user = await User.create({ name: email, email });
+    // TODO!: Send email to user with magic code, to verify.
+  }
+  // TODO!: Send email to user with magic code, to verify.
+  const session = await lucia.createSession(
+    user.id,
+    {
+      access_token: null,
+      organization_id: null,
+      workspace_id: null,
+    },
+  );
+  appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
+  event.nativeEvent.context.session = session;
+  return user;
 }, "users");
 
 export const disableUser = action(async () => {

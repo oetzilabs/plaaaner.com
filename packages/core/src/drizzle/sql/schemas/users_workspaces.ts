@@ -1,5 +1,4 @@
-import { text, uuid } from "drizzle-orm/pg-core";
-import { Entity } from "./entity";
+import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -7,15 +6,26 @@ import { users } from "./users";
 import { workspaces } from "./workspaces";
 import { relations } from "drizzle-orm";
 
-export const users_workspaces = schema.table("users_workspaces", {
-  ...Entity.defaults,
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id),
-  workspace_id: uuid("workspace_id")
-    .notNull()
-    .references(() => workspaces.id),
-});
+export const users_workspaces = schema.table(
+  "users_workspaces",
+  {
+    user_id: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    workspace_id: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.workspace_id, table.user_id] }),
+  })
+);
 
 export const users_workspaces_relation = relations(users_workspaces, ({ one }) => ({
   user: one(users, {

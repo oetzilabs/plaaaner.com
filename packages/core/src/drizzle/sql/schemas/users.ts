@@ -13,6 +13,10 @@ export const users = schema.table("users", {
   ...Entity.defaults,
   name: text("name").notNull(),
   email: text("email").notNull(),
+  emailVerifiedAt: timestamp("email_verified_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
 });
 
 export const sessions = schema.table("session", {

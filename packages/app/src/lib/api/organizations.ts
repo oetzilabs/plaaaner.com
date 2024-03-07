@@ -68,22 +68,21 @@ export const createOrganization = action(async (form: FormData) => {
   event.nativeEvent.context.session = session;
 
   return redirect("/dashboard");
-}, "currentOrganization");
+}, "session");
 
 export const getOrganizations = cache(async () => {
   "use server";
   const event = getRequestEvent()!;
+  const user = event.nativeEvent.context.user;
 
-  if (!event.nativeEvent.context.user) {
+  if (!user) {
     throw redirect("/auth/login");
   }
-
-  const user = event.nativeEvent.context.user;
 
   const o = await Organization.findManyByUserId(user.id);
 
   return o;
-}, "organizations");
+}, "allOrganizations");
 
 export const getOrganization = cache(async () => {
   "use server";

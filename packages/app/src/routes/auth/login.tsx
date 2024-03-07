@@ -1,14 +1,14 @@
 import { As } from "@kobalte/core";
 import { A, useNavigate } from "@solidjs/router";
-import { createMutation } from "@tanstack/solid-query";
 import { For, JSX, createSignal } from "solid-js";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/custom/logo";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
 import { cn } from "@/lib/utils";
-import { Queries } from "@/utils/api/queries";
 import { SVGAttributes } from "lucide-solid/dist/types/types";
 import { toast } from "solid-sonner";
+import { loginViaEmail } from "@/lib/api/user";
+import { useSubmission, useAction } from "@solidjs/router"
 
 const generateAuthUrl = (provider: string) => {
   const url = new URL("/authorize", import.meta.env.VITE_AUTH_URL);
@@ -45,6 +45,11 @@ const randomPersonTesimonial = {
 };
 
 export default function LoginPage() {
+
+  const loginWithEmail = useAction(loginViaEmail);
+  const isLogginInViaEmail = useSubmission(loginViaEmail);
+
+
   const navigate = useNavigate();
 
 
@@ -54,7 +59,9 @@ export default function LoginPage() {
     e.preventDefault();
     const _email = email();
     toast.info("Login via Email is not implemented yet");
+    const result = await loginWithEmail(_email);
   };
+
 
   return (
     <div class="w-full h-screen flex flex-col items-center justify-center">
@@ -98,7 +105,7 @@ export default function LoginPage() {
                     autocomplete="email"
                     autocorrect="off"
                     class="w-full"
-                    disabled={loginViaEmail.isPending}
+                    disabled={isLogginInViaEmail.pending}
                   />
                 </TextField>
                 <Button
@@ -106,11 +113,11 @@ export default function LoginPage() {
                   size="lg"
                   type="submit"
                   class={cn("w-full", {
-                    "opacity-50 cursor-not-allowed": loginViaEmail.isPending,
+                    "opacity-50 cursor-not-allowed": isLogginInViaEmail.pending,
                   })}
-                  aria-busy={loginViaEmail.isPending}
+                  aria-busy={isLogginInViaEmail.pending}
                   aria-label="Continue with Email"
-                  disabled={loginViaEmail.isPending}
+                  disabled={isLogginInViaEmail.pending}
                 >
                   <span>Continue with Email</span>
                 </Button>

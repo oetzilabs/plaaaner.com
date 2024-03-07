@@ -114,7 +114,7 @@ export const handler = AuthHandler({
         if (input.provider === "google") {
           const claims = input.tokenset.claims();
           const email = claims.email;
-          const name = claims.name;
+          const name = claims.preferred_username ?? claims.name;
           if (!email || !name) {
             console.error("No email or name found in tokenset", input.tokenset);
             return response.http({

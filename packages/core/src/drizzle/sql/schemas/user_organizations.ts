@@ -1,4 +1,4 @@
-import { uuid } from "drizzle-orm/pg-core";
+import { primaryKey, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
@@ -7,15 +7,20 @@ import { relations } from "drizzle-orm";
 import { organizations } from "./organization";
 import { users } from "./users";
 
-export const users_organizations = schema.table("users_organizations", {
-  ...Entity.defaults,
-  organization_id: uuid("organization_id")
-    .references(() => organizations.id)
-    .notNull(),
-  user_id: uuid("user_id")
-    .references(() => users.id)
-    .notNull(),
-});
+export const users_organizations = schema.table(
+  "users_organizations",
+  {
+    organization_id: uuid("organization_id")
+      .references(() => organizations.id)
+      .notNull(),
+    user_id: uuid("user_id")
+      .references(() => users.id)
+      .notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.user_id, table.organization_id] }),
+  })
+);
 
 export const users_organizations_relation = relations(users_organizations, ({ many, one }) => ({
   organization: one(organizations, {
@@ -32,8 +37,6 @@ export type UserOrganizationSelect = typeof users_organizations.$inferSelect;
 export type UserOrganizationInsert = typeof users_organizations.$inferInsert;
 
 export const UserOrganizationCreateSchema = createInsertSchema(users_organizations);
-export const UserOrganizationUpdateSchema = UserOrganizationCreateSchema.partial()
-  .omit({ createdAt: true, updatedAt: true })
-  .extend({
-    id: z.string().uuid(),
-  });
+export const UserOrganizationUpdateSchema = UserOrganizationCreateSchema.partial().extend({
+  id: z.string().uuid(),
+});

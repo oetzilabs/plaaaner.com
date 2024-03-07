@@ -65,7 +65,9 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
       }
     },
     open: (e: any) => {
-      const userId = auth()!.userId;
+      const a = auth();
+      if(!a) return;
+      const userId = a.userId;
       if (!userId) return;
       try {
         const pm = createPingMessage();
