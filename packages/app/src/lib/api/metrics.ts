@@ -1,13 +1,13 @@
 import { cache, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
+import { getEvent } from "vinxi/http";
 
 export const getMetrics = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     throw redirect("/auth/login");
   }
-  const user = event.nativeEvent.context.user;
+  const user = event.context.user;
   const metrics = [
     {
       duration: "month",

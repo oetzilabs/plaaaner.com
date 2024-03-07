@@ -1,14 +1,13 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { action, cache, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
-import { appendHeader, getCookie } from "vinxi/http";
+import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
 
 export const createOrganization = action(async (form: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -65,15 +64,15 @@ export const createOrganization = action(async (form: FormData) => {
   );
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
-  event.nativeEvent.context.session = session;
+  event.context.session = session;
 
   return redirect("/dashboard");
 }, "session");
 
 export const getOrganizations = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  const user = event.nativeEvent.context.user;
+  const event = getEvent()!;
+  const user = event.context.user;
 
   if (!user) {
     throw redirect("/auth/login");
@@ -86,7 +85,7 @@ export const getOrganizations = cache(async () => {
 
 export const getOrganization = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -111,7 +110,7 @@ export const getOrganization = cache(async () => {
 
 export const requestOrganizationJoin = action(async (form: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -168,7 +167,7 @@ export const getAllOrganizations = cache(async () => {
 
 export const getNoneConnectedOrganizations = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
@@ -186,7 +185,7 @@ export const getNoneConnectedOrganizations = cache(async () => {
 
 export const getTicketTypes = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -211,7 +210,7 @@ export const getTicketTypes = cache(async () => {
 
 export const fillDefaultTicketTypes = action(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -236,7 +235,7 @@ export const fillDefaultTicketTypes = action(async () => {
 
 export const getDefaultTicketTypeCount = cache(async () => {
   "use server";
-  const event = getRequestEvent()!;
+  const event = getEvent()!;
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 

@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getWorkspace } from "@/lib/api/workspaces";
-import { setWorkspaceOwner } from "@/utils/api/actions";
+import { setWorkspaceOwner } from "@/lib/api/workspaces";
 import { createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
 import { Show } from "solid-js";
 

@@ -1,18 +1,17 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
-import { action, cache, redirect } from "@solidjs/router";
-import { getRequestEvent } from "solid-js/web";
-import { appendHeader, getCookie } from "vinxi/http";
+import { action, redirect } from "@solidjs/router";
+import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
 
 export const saveUser = action(async (data: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
-  const { id } = event.nativeEvent.context.user;
+  const { id } = event.context.user;
   const data_ = Object.fromEntries(data.entries());
   const d = { id, ...data_ };
   const valid = User.safeParseUpdate(d);
@@ -26,11 +25,11 @@ export const saveUser = action(async (data: FormData) => {
 
 export const loginViaEmail = action(async (email:string) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
-  const { id } = event.nativeEvent.context.user;
+  const { id } = event.context.user;
   let user = await User.findByEmail(email);
   if(!user) {
     user = await User.create({ name: email, email });
@@ -46,14 +45,14 @@ export const loginViaEmail = action(async (email:string) => {
     },
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
-  event.nativeEvent.context.session = session;
+  event.context.session = session;
   return user;
 }, "users");
 
 export const disableUser = action(async () => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
@@ -64,7 +63,7 @@ export const disableUser = action(async () => {
   if (!currentSession || !user) {
     throw new Error("Unauthorized");
   }
-  const { id } = event.nativeEvent.context.user;
+  const { id } = event.context.user;
   await User.markAsDeleted({
     id,
   });
@@ -75,8 +74,8 @@ export const disableUser = action(async () => {
 
 export const setCurrentOrganization = action(async (data: FormData) => {
   "use server";
-  const event = getRequestEvent()!;
-  if (!event.nativeEvent.context.user) {
+  const event = getEvent()!;
+  if (!event.context.user) {
     return new Error("Unauthorized");
   }
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
@@ -112,6 +111,6 @@ export const setCurrentOrganization = action(async (data: FormData) => {
   );
   // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
-  event.nativeEvent.context.session = session;
+  event.context.session = session;
   return o;
 }, "session");
