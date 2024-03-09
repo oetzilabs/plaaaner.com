@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fillDefaultTicketTypes, getDefaultTicketTypeCount, getOrganizations } from "@/lib/api/organizations";
+import { fillDefaultTicketTypes, getDefaultTicketTypeCount, getUserOrganizations } from "@/lib/api/organizations";
 import { setCurrentOrganization } from "@/lib/api/user";
 import { getAuthenticatedUser } from "@/lib/auth/util";
 import { deleteOrganization, disconnectFromOrganization } from "@/utils/api/actions";
@@ -31,7 +31,7 @@ import { Match } from "solid-js";
 export const Organizations = () => {
   const session = useSession();
   const user = createAsync(() => getAuthenticatedUser());
-  const organizations = createAsync(() => getOrganizations());
+  const organizations = createAsync(() => getUserOrganizations());
   const defaultTicketTypeCount = createAsync(() => getDefaultTicketTypeCount(), { deferStream: true });
 
   const isDisconnectingFromOrganization = useSubmission(disconnectFromOrganization);

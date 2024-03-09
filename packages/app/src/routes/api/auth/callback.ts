@@ -2,8 +2,9 @@ import type { APIEvent } from "@solidjs/start/server";
 import { lucia } from "@/lib/auth";
 import { appendHeader, sendRedirect } from "vinxi/http";
 
-export async function GET(event: APIEvent) {
-  const url = new URL(event.request.url);
+export async function GET(e: APIEvent) {
+  const event = e.nativeEvent;
+  const url = new URL(e.request.url);
   const code = url.searchParams.get("code");
   if (!code) {
     return sendRedirect(event, "/auth/error?error=missing_code", 303);
@@ -46,7 +47,7 @@ export async function GET(event: APIEvent) {
   });
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
-  event.nativeEvent.context.session = session;
+  event.context.session = session;
 
   if (!organization_id || !workspace_id) {
     return sendRedirect(event, "/setup/profile", 303);

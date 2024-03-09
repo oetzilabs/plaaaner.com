@@ -4,18 +4,16 @@ import { Header } from "@/components/Header";
 import { ColorModeProvider, ColorModeScript, cookieStorageManagerSSR } from "@kobalte/core";
 import { MetaProvider, Title } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
-import { FileRoutes } from "@solidjs/start";
+import { FileRoutes } from "@solidjs/start/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { AlertCircleIcon, CheckCheck, Info, Loader2 } from "lucide-solid";
 import { ErrorBoundary, Suspense } from "solid-js";
 import { isServer } from "solid-js/web";
 import { Toaster } from "solid-sonner";
-// import { getCookie } from "vinxi/http";
+import { SessionProvider } from "@/components/SessionProvider";
+import { WebsocketProvider } from "@/components/providers/Websocket";
+import { Button } from "@/components/ui/button";
 import "./app.css";
-import { SessionProvider } from "./components/SessionProvider";
-import { WebsocketProvider } from "./components/providers/Websocket";
-import { Button } from "./components/ui/button";
 
 // const getServerCookies = () => {
 //   "use server";
@@ -30,6 +28,7 @@ export default function App() {
       queries: {
         retry: false,
         staleTime: 5000,
+        refetchOnWindowFocus: false,
       },
     },
   });

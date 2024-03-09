@@ -2,6 +2,7 @@ import { cache, redirect } from "@solidjs/router";
 import { lucia } from ".";
 import { getCookie, getEvent } from "vinxi/http";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
+import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 
 export const getAuthenticatedUser = cache(async () => {
@@ -15,17 +16,42 @@ export const getAuthenticatedUser = cache(async () => {
   return user;
 }, "user");
 
+export type UserSession = {
+  id: string | null;
+  token: string | null;
+  expiresAt: Date | null;
+  user: Awaited<ReturnType<typeof User.findById>> | null;
+  organization: Awaited<ReturnType<typeof Organization.findById>> | null;
+  workspace: Awaited<ReturnType<typeof Workspace.findById>> | null;
+};
+
 export const getAuthenticatedSession = cache(async () => {
   "use server";
+  let userSession = {
+    id: null,
+    token: null,
+    expiresAt: null,
+    user: null,
+    organization: null,
+    workspace: null,
+  } as UserSession;
   const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
-    return null;
+    return userSession;
   }
   // console.log({ sessionId });
-  const { session, user } = await lucia.validateSession(sessionId);
-  // console.log({ session, user });
-  return session;
+  const { session } = await lucia.validateSession(sessionId);
+  if (!session) {
+    return userSession;
+  }
+
+  userSession.id = session.id;
+  if (session.organization_id) userSession.organization = await Organization.findById(session.organization_id);
+  if (session.workspace_id) userSession.workspace = await Workspace.findById(session.workspace_id);
+  if (session.userId) userSession.user = await User.findById(session.userId);
+
+  return userSession;
 }, "session");
 
 export const getAuthenticatedSessions = cache(async () => {
@@ -92,5 +118,3 @@ export const getCurrentWorkspace = cache(async () => {
 
   return workspace;
 }, "workspace");
-
-

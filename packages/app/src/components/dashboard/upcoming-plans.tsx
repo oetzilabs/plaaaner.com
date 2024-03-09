@@ -7,13 +7,14 @@ import { Progress } from "../ui/progress";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
+import type { UserSession } from "@/lib/auth/util";
 dayjs.extend(relativeTime);
 
-export const UpcomingPlans = () => {
+export const UpcomingPlans = (props: { session: UserSession }) => {
   const plans = createAsync(() => getPlans());
 
   return (
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full gap-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 w-full gap-2">
       <For each={plans()}>
         {(plan) => (
           <A

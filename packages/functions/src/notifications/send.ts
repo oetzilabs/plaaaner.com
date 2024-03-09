@@ -1,11 +1,11 @@
 import { ApiHandler, usePathParam } from "sst/node/api";
 import { error, getUser, json } from "../utils";
-import { Notifications, Notify } from "@taxi-kassede/core/entities/notifications";
+import { Notifications, Notify } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
 import { z } from "zod";
-import { WebsocketCore } from "@taxi-kassede/core/entities/websocket";
+import { WebsocketCore } from "@oetzilabs-plaaaner-com/core/src/entities/websocket";
 
 export const main = ApiHandler(async (event) => {
-  const user = await getUser(event);
+  const user = await getUser();
   if (user instanceof Error) {
     return error("User not authenticated");
   }
@@ -19,15 +19,15 @@ export const main = ApiHandler(async (event) => {
     return error("Invalid payload");
   }
 
-  const notification = await Notifications.create(valid.data);
+  // const notification = await Notifications.create(valid.data);
 
-  const x = await WebsocketCore.broadcast(notification);
+  // const x = await WebsocketCore.broadcast(notification);
 
-  return json(x);
+  return error("Not implemented.");
 });
 
 export const dismiss = ApiHandler(async (event) => {
-  const user = await getUser(event);
+  const user = await getUser();
   if (user instanceof Error) {
     return error("User not authenticated");
   }
@@ -47,7 +47,7 @@ export const dismiss = ApiHandler(async (event) => {
 });
 
 export const dismissAll = ApiHandler(async (event) => {
-  const user = await getUser(event);
+  const user = await getUser();
   if (user instanceof Error) {
     return error("User not authenticated");
   }
