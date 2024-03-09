@@ -2,7 +2,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { getAuthenticatedUser } from "@/lib/auth/util";
 import { deleteWorkspace, disconnectFromWorkspace, connectToWorkspace } from "@/lib/api/workspaces";
 import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
-import { createEffect, For, Show, Suspense } from "solid-js";
+import { For, Show, Suspense } from "solid-js";
 import { getWorkspaces } from "../../lib/api/workspaces";
 import { Badge } from "../ui/badge";
 import { Plus, Trash } from "lucide-solid";
@@ -12,8 +12,6 @@ import { Alert } from "../ui/alert";
 import { Skeleton } from "../ui/skeleton";
 import { useSession } from "../SessionProvider";
 import { cn } from "@/lib/utils";
-import { toast } from "solid-sonner";
-import { workspaces_organizations } from "@/core/drizzle/sql/schema";
 
 export const Workspaces = () => {
   const session = useSession();
@@ -63,7 +61,7 @@ export const Workspaces = () => {
                       <Show when={workspace.owner && workspace.owner_id === user()?.id}>
                         <Badge variant="default">Owner: {workspace.owner?.name}</Badge>
                       </Show>
-                      <Show when={workspace.id === session?.()?.workspace_id}>
+                      <Show when={workspace.id === session?.()?.workspace.id}>
                         <Badge variant="secondary">Current</Badge>
                       </Show>
                     </div>

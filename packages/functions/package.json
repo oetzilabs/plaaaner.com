@@ -7,6 +7,7 @@
     "typecheck": "tsc -noEmit"
   },
   "dependencies": {
+    "@oetzilabs-plaaaner-com/core": "workspace:*",
     "@aws-sdk/client-s3": "3.445.0",
     "@aws-sdk/client-sesv2": "^3.514.0",
     "@aws-sdk/s3-request-presigner": "3.445.0",

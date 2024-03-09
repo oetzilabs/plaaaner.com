@@ -1,21 +1,17 @@
 import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
-import { getAuthenticatedUser, getCurrentOrganization, getCurrentWorkspace } from "@/lib/auth/util";
+import type { UserSession } from "@/lib/auth/util";
 import { Show } from "solid-js";
-import { Button, buttonVariants } from "../ui/button";
+import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-solid";
 import { Badge } from "../ui/badge";
 import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxTrigger } from "@/components/ui/combobox";
-import { getOrganizations } from "@/lib/api/organizations";
-import {} from "@/lib/api/workspaces";
+import { getUserOrganizations } from "@/lib/api/organizations";
 import { setCurrentOrganization } from "@/lib/api/user";
 import { toast } from "solid-sonner";
 
-export const Greeting = () => {
-  const user = createAsync(() => getAuthenticatedUser());
-  const currentOrganization = createAsync(() => getCurrentOrganization());
-  const currentWorkspace = createAsync(() => getCurrentWorkspace());
-  const userOrganizations = createAsync(() => getOrganizations());
+export const Greeting = (props: { session: UserSession }) => {
+  const userOrganizations = createAsync(() => getUserOrganizations());
   const setUserOrganization = useAction(setCurrentOrganization);
   const isChangingOrganizations = useSubmission(setCurrentOrganization);
 
@@ -31,12 +27,12 @@ export const Greeting = () => {
       <div class="flex flex-col items-start gap-2 w-full">
         <Show when={userOrganizations() !== undefined && userOrganizations()}>
           {(uO) => (
-            <Show when={currentOrganization()} fallback={<Badge variant="outline">No Organization</Badge>}>
+            <Show when={props.session.organization} fallback={<Badge variant="outline">No Organization</Badge>}>
               {(cO) => (
                 <Combobox
                   options={uO() ?? []}
                   value={cO()}
-                  placeholder="Search framework…"
+                  placeholder="Search organization..."
                   optionValue="id"
                   optionLabel="name"
                   optionDisabled="deletedAt"
@@ -58,8 +54,8 @@ export const Greeting = () => {
           )}
         </Show>
         <div class="flex flex-row items-center justify-between w-full">
-          <Show when={user()}>{(u) => <h1 class="text-2xl font-bold">Welcome back, {u().username}</h1>}</Show>
-          <Show when={user()}>
+          <Show when={props.session.user}>{(u) => <h1 class="text-2xl font-bold">Welcome back, {u().name}</h1>}</Show>
+          <Show when={props.session.user}>
             <A
               href="/plan/create"
               class={cn(
@@ -76,8 +72,12 @@ export const Greeting = () => {
           </Show>
         </div>
       </div>
-      <Show when={currentWorkspace() !== undefined && currentWorkspace()}>
-        {(ws) => <span class="text-xs text-muted-foreground">Here's what's happening {ws().name !== "default" ? `at '${ws().name}'`: "with your workspace"} today:</span>}
+      <Show when={props.session.workspace}>
+        {(ws) => (
+          <span class="text-xs text-muted-foreground">
+            Here's what's happening {ws().name !== "default" ? `at '${ws().name}'` : "with your workspace"} today:
+          </span>
+        )}
       </Show>
     </div>
   );

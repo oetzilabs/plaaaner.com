@@ -3,6 +3,7 @@ import { getMetrics } from "@/lib/api/metrics";
 import { For, JSX } from "solid-js";
 import { Box, TrendingDown, TrendingUp } from "lucide-solid";
 import { cn } from "@/lib/utils";
+import type { UserSession } from "@/lib/auth/util";
 
 type MetricDirection = "up" | "down" | "neutral";
 
@@ -12,7 +13,7 @@ const metricIcons: Record<MetricDirection, JSX.Element> = {
   neutral: <Box class="w-4 h-4" />,
 };
 
-export const Metrics = () => {
+export const Metrics = (props: { session: UserSession }) => {
   const metrics = createAsync(() => getMetrics());
 
   return (

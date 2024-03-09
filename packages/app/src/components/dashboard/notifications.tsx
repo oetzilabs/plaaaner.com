@@ -5,9 +5,10 @@ import { buttonVariants } from "@/components/ui/button";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { cn } from "@/lib/utils";
+import type { UserSession } from "@/lib/auth/util";
 dayjs.extend(relativeTime);
 
-export const Notifications = () => {
+export const Notifications = (props: { session: UserSession }) => {
   const notifications = createAsync(() => getNotifications());
 
   return (

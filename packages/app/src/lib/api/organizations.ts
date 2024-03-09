@@ -69,7 +69,7 @@ export const createOrganization = action(async (form: FormData) => {
   return redirect("/dashboard");
 }, "session");
 
-export const getOrganizations = cache(async () => {
+export const getUserOrganizations = cache(async () => {
   "use server";
   const event = getEvent()!;
   const user = event.context.user;
