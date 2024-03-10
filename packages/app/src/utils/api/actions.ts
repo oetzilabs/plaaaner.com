@@ -1,7 +1,7 @@
 import { lucia } from "@/lib/auth";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { action, redirect } from "@solidjs/router";
-import { appendHeader } from "vinxi/http";
+import { appendHeader, getCookie } from "vinxi/http";
 import { z } from "zod";
 import { getEvent } from "vinxi/http";
 
@@ -29,6 +29,30 @@ export const revokeAllSessions = action(async () => {
 
   return true;
 }, "sessions");
+
+export const revokeSession = action(async(data:FormData) => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  if (!event.context.user) {
+    console.log("Unauthorized");
+    return false;
+  }
+
+  const d = Object.fromEntries(data.entries());
+  const validation = z.object({
+    session_id: z.string(),
+  }).safeParse(d);
+
+  if(!validation.success) {
+    throw validation.error;
+  }
+  await lucia.invalidateSession(validation.data.session_id);
+
+  return true;
+
+});
 
 export const changeNotificationSettings = action(async (type: string) => {
   "use server";

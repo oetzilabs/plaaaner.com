@@ -43,15 +43,26 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
   });
 });
 
-export const isConnectedToUser = z.function(z.tuple([z.string().uuid(), z.string().uuid()])).implement(async(workspace_id, user_id) => {
+export const findByOrganizationId = z.function(z.tuple([z.string()])).implement(async (input) => {
+  const ws = await db.query.workspaces_organizations.findMany({
+    where: (workspaces, operations) => operations.eq(workspaces.workspace_id, input),
+    with: {
+      workspace: true,
+    },
+  });
+  return ws.map((w) => w.workspace);
+});
+
+export const isConnectedToUser = z
+  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .implement(async (workspace_id, user_id) => {
     const isConnected = await db.query.users_workspaces.findFirst({
       where: (fields, operators) =>
         operators.and(operators.eq(fields.workspace_id, workspace_id), operators.eq(fields.user_id, user_id)),
     });
 
-  return !!isConnected;
-});
-
+    return !!isConnected;
+  });
 
 export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
   const userWs = await db.query.workspaces.findMany({

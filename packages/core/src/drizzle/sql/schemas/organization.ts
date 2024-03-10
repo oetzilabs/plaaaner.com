@@ -5,7 +5,6 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 import { users } from "./users";
-import { organizations_plans } from "./organizations_plans";
 import { workspaces_organizations } from "./workspaces_organizations";
 import { users_organizations } from "./user_organizations";
 import { organizations_ticket_types } from "./organizations_ticket_types";
@@ -23,7 +22,6 @@ export const organizations_relation = relations(organizations, ({ many, one }) =
     fields: [organizations.owner_id],
     references: [users.id],
   }),
-  events: many(organizations_plans),
   workspaces: many(workspaces_organizations),
   users: many(users_organizations),
   ticket_types: many(organizations_ticket_types),

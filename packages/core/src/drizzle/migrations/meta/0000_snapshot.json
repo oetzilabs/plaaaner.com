@@ -1,5 +1,5 @@
 {
-  "id": "adf3de12-8844-4437-a70d-787be4001f81",
+  "id": "ed684070-2b7a-48df-b614-5219b5d30a19",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -119,6 +119,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "email_verified_at": {
+          "name": "email_verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -278,83 +284,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "organizations_plans": {
-      "name": "organizations_plans",
-      "schema": "plaaaner",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "plan_id": {
-          "name": "plan_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "organizations_plans_organization_id_organizations_id_fk": {
-          "name": "organizations_plans_organization_id_organizations_id_fk",
-          "tableFrom": "organizations_plans",
-          "tableTo": "organizations",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "organizations_plans_plan_id_plans_id_fk": {
-          "name": "organizations_plans_plan_id_plans_id_fk",
-          "tableFrom": "organizations_plans",
-          "tableTo": "plans",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "organizations_ticket_types": {
       "name": "organizations_ticket_types",
       "schema": "plaaaner",
@@ -436,32 +365,6 @@
       "name": "users_organizations",
       "schema": "plaaaner",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "organization_id": {
           "name": "organization_id",
           "type": "uuid",
@@ -506,7 +409,15 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "users_organizations_user_id_organization_id_pk": {
+          "name": "users_organizations_user_id_organization_id_pk",
+          "columns": [
+            "user_id",
+            "organization_id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
     "workspaces": {
@@ -576,12 +487,17 @@
       "name": "workspaces_organizations",
       "schema": "plaaaner",
       "columns": {
-        "id": {
-          "name": "id",
+        "organization_id": {
+          "name": "organization_id",
           "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "primaryKey": false,
+          "notNull": true
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -589,30 +505,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -646,19 +538,32 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "workspaces_organizations_workspace_id_organization_id_pk": {
+          "name": "workspaces_organizations_workspace_id_organization_id_pk",
+          "columns": [
+            "workspace_id",
+            "organization_id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
-    "users_workspaces": {
-      "name": "users_workspaces",
+    "workspaces_plans": {
+      "name": "workspaces_plans",
       "schema": "plaaaner",
       "columns": {
-        "id": {
-          "name": "id",
+        "workspace_id": {
+          "name": "workspace_id",
           "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -666,19 +571,54 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workspaces_plans_workspace_id_workspaces_id_fk": {
+          "name": "workspaces_plans_workspace_id_workspaces_id_fk",
+          "tableFrom": "workspaces_plans",
+          "tableTo": "workspaces",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
+        "workspaces_plans_plan_id_plans_id_fk": {
+          "name": "workspaces_plans_plan_id_plans_id_fk",
+          "tableFrom": "workspaces_plans",
+          "tableTo": "plans",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "workspaces_plans_workspace_id_plan_id_pk": {
+          "name": "workspaces_plans_workspace_id_plan_id_pk",
+          "columns": [
+            "workspace_id",
+            "plan_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "users_workspaces": {
+      "name": "users_workspaces",
+      "schema": "plaaaner",
+      "columns": {
         "user_id": {
           "name": "user_id",
           "type": "uuid",
@@ -690,6 +630,13 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -723,360 +670,12 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "user_dismissed_system_notifications": {
-      "name": "user_dismissed_system_notifications",
-      "schema": "plaaaner",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "notification_id": {
-          "name": "notification_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dismissed_at": {
-          "name": "dismissed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_dismissed_system_notifications_notification_id_system_notifications_id_fk": {
-          "name": "user_dismissed_system_notifications_notification_id_system_notifications_id_fk",
-          "tableFrom": "user_dismissed_system_notifications",
-          "tableTo": "system_notifications",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "notification_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "user_dismissed_system_notifications_user_id_users_id_fk": {
-          "name": "user_dismissed_system_notifications_user_id_users_id_fk",
-          "tableFrom": "user_dismissed_system_notifications",
-          "tableTo": "users",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "system_notifications": {
-      "name": "system_notifications",
-      "schema": "plaaaner",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "organizations_notifications": {
-      "name": "organizations_notifications",
-      "schema": "plaaaner",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "organizations_notifications_organization_id_organizations_id_fk": {
-          "name": "organizations_notifications_organization_id_organizations_id_fk",
-          "tableFrom": "organizations_notifications",
-          "tableTo": "organizations",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "workspaces_notifications": {
-      "name": "workspaces_notifications",
-      "schema": "plaaaner",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "workspaces_notifications_workspace_id_workspaces_id_fk": {
-          "name": "workspaces_notifications_workspace_id_workspaces_id_fk",
-          "tableFrom": "workspaces_notifications",
-          "tableTo": "workspaces",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "plan_comment_mention_notifications": {
-      "name": "plan_comment_mention_notifications",
-      "schema": "plaaaner",
-      "columns": {
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "comment_id": {
-          "name": "comment_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "plan_id": {
-          "name": "plan_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "plan_comment_mention_notifications_user_id_users_id_fk": {
-          "name": "plan_comment_mention_notifications_user_id_users_id_fk",
-          "tableFrom": "plan_comment_mention_notifications",
-          "tableTo": "users",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "plan_comment_mention_notifications_comment_id_plan_comments_id_fk": {
-          "name": "plan_comment_mention_notifications_comment_id_plan_comments_id_fk",
-          "tableFrom": "plan_comment_mention_notifications",
-          "tableTo": "plan_comments",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "comment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "plan_comment_mention_notifications_plan_id_plans_id_fk": {
-          "name": "plan_comment_mention_notifications_plan_id_plans_id_fk",
-          "tableFrom": "plan_comment_mention_notifications",
-          "tableTo": "plans",
-          "schemaTo": "plaaaner",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
       "compositePrimaryKeys": {
-        "plan_comment_mention_notifications_user_id_plan_id_comment_id_pk": {
-          "name": "plan_comment_mention_notifications_user_id_plan_id_comment_id_pk",
+        "users_workspaces_workspace_id_user_id_pk": {
+          "name": "users_workspaces_workspace_id_user_id_pk",
           "columns": [
-            "user_id",
-            "plan_id",
-            "comment_id"
+            "workspace_id",
+            "user_id"
           ]
         }
       },
@@ -1134,7 +733,7 @@
           "name": "owner",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "starts_at": {
           "name": "starts_at",
@@ -1181,6 +780,72 @@
         }
       },
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "plan_tickets": {
+      "name": "plan_tickets",
+      "schema": "plaaaner",
+      "columns": {
+        "ticket_id": {
+          "name": "ticket_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "plan_tickets_ticket_id_tickets_id_fk": {
+          "name": "plan_tickets_ticket_id_tickets_id_fk",
+          "tableFrom": "plan_tickets",
+          "tableTo": "tickets",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "ticket_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "plan_tickets_plan_id_plans_id_fk": {
+          "name": "plan_tickets_plan_id_plans_id_fk",
+          "tableFrom": "plan_tickets",
+          "tableTo": "plans",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "plan_tickets_ticket_id_plan_id_pk": {
+          "name": "plan_tickets_ticket_id_plan_id_pk",
+          "columns": [
+            "ticket_id",
+            "plan_id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
     "plan_types": {
@@ -1606,7 +1271,37 @@
           "name": "owner",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "numeric(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "currency",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ticket_shape": {
+          "name": "ticket_shape",
+          "type": "ticket_shape",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -1632,6 +1327,20 @@
           "schemaTo": "plaaaner",
           "columnsFrom": [
             "owner"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tickets_plan_id_plans_id_fk": {
+          "name": "tickets_plan_id_plans_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "plans",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "plan_id"
           ],
           "columnsTo": [
             "id"
@@ -1781,6 +1490,474 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
+    },
+    "user_dismissed_organization_notifications": {
+      "name": "user_dismissed_organization_notifications",
+      "schema": "plaaaner",
+      "columns": {
+        "notification_id": {
+          "name": "notification_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dismissed_at": {
+          "name": "dismissed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_dismissed_organization_notifications_notification_id_organizations_notifications_id_fk": {
+          "name": "user_dismissed_organization_notifications_notification_id_organizations_notifications_id_fk",
+          "tableFrom": "user_dismissed_organization_notifications",
+          "tableTo": "organizations_notifications",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_dismissed_organization_notifications_user_id_users_id_fk": {
+          "name": "user_dismissed_organization_notifications_user_id_users_id_fk",
+          "tableFrom": "user_dismissed_organization_notifications",
+          "tableTo": "users",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_dismissed_organization_notifications_user_id_notification_id_pk": {
+          "name": "user_dismissed_organization_notifications_user_id_notification_id_pk",
+          "columns": [
+            "user_id",
+            "notification_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "user_dismissed_system_notifications": {
+      "name": "user_dismissed_system_notifications",
+      "schema": "plaaaner",
+      "columns": {
+        "notification_id": {
+          "name": "notification_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dismissed_at": {
+          "name": "dismissed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_dismissed_system_notifications_notification_id_system_notifications_id_fk": {
+          "name": "user_dismissed_system_notifications_notification_id_system_notifications_id_fk",
+          "tableFrom": "user_dismissed_system_notifications",
+          "tableTo": "system_notifications",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_dismissed_system_notifications_user_id_users_id_fk": {
+          "name": "user_dismissed_system_notifications_user_id_users_id_fk",
+          "tableFrom": "user_dismissed_system_notifications",
+          "tableTo": "users",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_dismissed_system_notifications_user_id_notification_id_pk": {
+          "name": "user_dismissed_system_notifications_user_id_notification_id_pk",
+          "columns": [
+            "user_id",
+            "notification_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "user_dismissed_workspace_notifications": {
+      "name": "user_dismissed_workspace_notifications",
+      "schema": "plaaaner",
+      "columns": {
+        "notification_id": {
+          "name": "notification_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dismissed_at": {
+          "name": "dismissed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_dismissed_workspace_notifications_notification_id_workspaces_notifications_id_fk": {
+          "name": "user_dismissed_workspace_notifications_notification_id_workspaces_notifications_id_fk",
+          "tableFrom": "user_dismissed_workspace_notifications",
+          "tableTo": "workspaces_notifications",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "notification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_dismissed_workspace_notifications_user_id_users_id_fk": {
+          "name": "user_dismissed_workspace_notifications_user_id_users_id_fk",
+          "tableFrom": "user_dismissed_workspace_notifications",
+          "tableTo": "users",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_dismissed_workspace_notifications_user_id_notification_id_pk": {
+          "name": "user_dismissed_workspace_notifications_user_id_notification_id_pk",
+          "columns": [
+            "user_id",
+            "notification_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "system_notifications": {
+      "name": "system_notifications",
+      "schema": "plaaaner",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "organizations_notifications": {
+      "name": "organizations_notifications",
+      "schema": "plaaaner",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "organizations_notifications_organization_id_organizations_id_fk": {
+          "name": "organizations_notifications_organization_id_organizations_id_fk",
+          "tableFrom": "organizations_notifications",
+          "tableTo": "organizations",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "workspaces_notifications": {
+      "name": "workspaces_notifications",
+      "schema": "plaaaner",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workspaces_notifications_workspace_id_workspaces_id_fk": {
+          "name": "workspaces_notifications_workspace_id_workspaces_id_fk",
+          "tableFrom": "workspaces_notifications",
+          "tableTo": "workspaces",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "plan_comment_mention_notifications": {
+      "name": "plan_comment_mention_notifications",
+      "schema": "plaaaner",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment_id": {
+          "name": "comment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "plan_comment_mention_notifications_user_id_users_id_fk": {
+          "name": "plan_comment_mention_notifications_user_id_users_id_fk",
+          "tableFrom": "plan_comment_mention_notifications",
+          "tableTo": "users",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "plan_comment_mention_notifications_comment_id_plan_comments_id_fk": {
+          "name": "plan_comment_mention_notifications_comment_id_plan_comments_id_fk",
+          "tableFrom": "plan_comment_mention_notifications",
+          "tableTo": "plan_comments",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "comment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "plan_comment_mention_notifications_plan_id_plans_id_fk": {
+          "name": "plan_comment_mention_notifications_plan_id_plans_id_fk",
+          "tableFrom": "plan_comment_mention_notifications",
+          "tableTo": "plans",
+          "schemaTo": "plaaaner",
+          "columnsFrom": [
+            "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "plan_comment_mention_notifications_user_id_plan_id_comment_id_pk": {
+          "name": "plan_comment_mention_notifications_user_id_plan_id_comment_id_pk",
+          "columns": [
+            "user_id",
+            "plan_id",
+            "comment_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
     }
   },
   "enums": {
@@ -1789,6 +1966,24 @@
       "values": {
         "request": "request",
         "invite": "invite"
+      }
+    },
+    "currency": {
+      "name": "currency",
+      "values": {
+        "USD": "USD",
+        "EUR": "EUR",
+        "CHF": "CHF",
+        "OTHER": "OTHER"
+      }
+    },
+    "ticket_shape": {
+      "name": "ticket_shape",
+      "values": {
+        "default": "default",
+        "default-1": "default-1",
+        "default-2": "default-2",
+        "custom": "custom"
       }
     },
     "ticketPaymentType": {

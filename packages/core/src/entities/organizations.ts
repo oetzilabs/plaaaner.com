@@ -220,7 +220,7 @@ export const requestJoin = z
 export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
   const usersOrgsResult = await db.query.users_organizations.findMany({
     where(fields, operators) {
-      return operators.and(operators.eq(fields.user_id, user_id), operators.isNull(fields.deletedAt));
+      return operators.eq(fields.user_id, user_id);
     },
   });
   const userOrgs = usersOrgsResult.map((uo) => uo.organization_id);

@@ -4,11 +4,11 @@ import type { TicketTypeSelect } from "@/core/drizzle/sql/schema";
 
 const TicketPrice = z.number({ required_error: "Price is required" }).min(0).step(0.01);
 const TicketCurrency = z.discriminatedUnion("currency_type", [
-  z.object({ currency_type: z.literal("free") }),
-  z.object({ currency_type: z.literal("usd") }),
-  z.object({ currency_type: z.literal("eur") }),
-  z.object({ currency_type: z.literal("chf") }),
-  z.object({ currency_type: z.literal("other"), value: z.string({ required_error: "Value is required" }) }),
+  z.object({ currency_type: z.literal("FREE") }),
+  z.object({ currency_type: z.literal("USD") }),
+  z.object({ currency_type: z.literal("EUR") }),
+  z.object({ currency_type: z.literal("CHF") }),
+  z.object({ currency_type: z.literal("OTHER"), value: z.string({ required_error: "Value is required" }) }),
 ]);
 
 export const TicketShape = z.union([
