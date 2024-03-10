@@ -13,11 +13,11 @@ import {
 export * as Tickets from "./tickets";
 
 export const create = z
-  .function(z.tuple([TicketCreateSchema, z.string().uuid()]))
+  .function(z.tuple([TicketCreateSchema.array(), z.string().uuid()]))
   .implement(async (userInput, userId) => {
-    const [x] = await db
+    const x = await db
       .insert(tickets)
-      .values({ ...userInput, owner_id: userId })
+      .values(userInput.map((t) => ({...t, owner_id: userId})))
       .returning();
 
     return x;

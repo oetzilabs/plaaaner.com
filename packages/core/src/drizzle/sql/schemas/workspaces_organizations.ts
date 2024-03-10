@@ -1,5 +1,4 @@
-import { uuid } from "drizzle-orm/pg-core";
-import { Entity } from "./entity";
+import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -7,11 +6,22 @@ import { relations } from "drizzle-orm";
 import { organizations } from "./organization";
 import { workspaces } from "./workspaces";
 
-export const workspaces_organizations = schema.table("workspaces_organizations", {
-  ...Entity.defaults,
-  organization_id: uuid("organization_id").references(() => organizations.id),
-  workspace_id: uuid("workspace_id").references(() => workspaces.id),
-});
+export const workspaces_organizations = schema.table(
+  "workspaces_organizations",
+  {
+    organization_id: uuid("organization_id").notNull().references(() => organizations.id),
+    workspace_id: uuid("workspace_id").notNull().references(() => workspaces.id),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.workspace_id, table.organization_id] }),
+  })
+);
 
 export const workspaces_organizations_relation = relations(workspaces_organizations, ({ many, one }) => ({
   organization: one(organizations, {

@@ -71,6 +71,24 @@ export function Api({ stack }: StackContext) {
           description: "This is the all ticket_types function",
         },
       },
+      "POST /seed/plan_types": {
+        function: {
+          handler: "packages/functions/src/plan_types/seed.main",
+          description: "This is the plan_types seeding function",
+        },
+      },
+      "POST /seed/plan_types/upsert": {
+        function: {
+          handler: "packages/functions/src/plan_types/seed.upsert",
+          description: "This is the plan_types upsert function",
+        },
+      },
+      "GET /plan_types/all": {
+        function: {
+          handler: "packages/functions/src/plan_types/index.all",
+          description: "This is the all plan_types function",
+        },
+      },
       "GET /users/all": {
         function: {
           handler: "packages/functions/src/user.all",

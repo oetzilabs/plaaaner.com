@@ -45,7 +45,7 @@ export const Tickets = () => {
     if (ticket.ticket_type.payment_type === "FREE") {
       return remainingTickets;
     }
-    const paidTickets = plan.newPlan().tickets.filter((t) => t.ticket_type.name.startsWith("paid"));
+    const paidTickets = plan.newPlan().tickets.filter((t) => t.ticket_type.name.toLowerCase().startsWith("paid"));
     const remainingPaidTickets = paidTickets.reduce((acc, t) => acc + t.quantity, 0);
     return remainingPaidTickets;
   };
@@ -214,19 +214,19 @@ export const Tickets = () => {
                                 <Switch>
                                   <Match
                                     when={
-                                      ticket.currency.currency_type === "other" &&
+                                      ticket.currency.currency_type === "OTHER" &&
                                       (ticket.currency as Exclude<
                                         z.infer<typeof BaseTicketSchema>["currency"],
                                         Exclude<
                                           z.infer<typeof BaseTicketSchema>["currency"],
-                                          { currency_type: "other" }
+                                          { currency_type: "OTHER" }
                                         >
                                       >)
                                     }
                                   >
                                     {(c) => c().value}
                                   </Match>
-                                  <Match when={ticket.currency.currency_type !== "other"}>
+                                  <Match when={ticket.currency.currency_type !== "OTHER"}>
                                     {ticket.currency.currency_type.toUpperCase()}
                                   </Match>
                                 </Switch>
@@ -345,7 +345,7 @@ export const Tickets = () => {
                             name: "",
                             price: 0,
                             currency: {
-                              currency_type: "free",
+                              currency_type: "FREE",
                             },
                             quantity: 0,
                           },

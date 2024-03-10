@@ -20,7 +20,7 @@ export default function ProfileSettingsPage() {
   const session = useSession();
   return (
     <Show
-      when={session?.() && session?.().id !== null}
+      when={session && session().id !== null && session()}
       fallback={
         <div class="py-10">
           <NotLoggedIn />
@@ -80,16 +80,16 @@ export default function ProfileSettingsPage() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent class="px-4 py-0 mt-0 flex flex-col w-full gap-8" value="account">
-                <Account />
+                <Account session={s()}/>
               </TabsContent>
               <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="sessions">
-                <SessionList />
+                <SessionList session={s()}/>
               </TabsContent>
               <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="organizations">
-                <Organizations />
+                <Organizations session={s()} />
               </TabsContent>
               <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="workspaces">
-                <Workspaces />
+                <Workspaces session={s()}/>
               </TabsContent>
               <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="billing">
                 <Billing />

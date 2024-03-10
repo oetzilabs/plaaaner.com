@@ -2,17 +2,26 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
-import { PlanCreateSchema, PlanUpdateSchema, plans } from "../drizzle/sql/schema";
+import {
+  PlanCreateSchema,
+  PlanTimesCreateSchema,
+  PlanUpdateSchema,
+  plan_times,
+  plans,
+  workspaces_plans,
+} from "../drizzle/sql/schema";
+import { Workspace } from "./workspaces";
 
 export * as Plans from "./plans";
 
 export const create = z
-  .function(z.tuple([PlanCreateSchema, z.string().uuid()]))
-  .implement(async (userInput, userId) => {
+  .function(z.tuple([PlanCreateSchema, z.string().uuid(), z.string().uuid()]))
+  .implement(async (userInput, userId, workspace_id) => {
     const [x] = await db
       .insert(plans)
       .values({ ...userInput, owner_id: userId })
       .returning();
+    const connectedToWorkspace = await db.insert(workspaces_plans).values({ plan_id: x.id, workspace_id }).returning();
 
     return x;
   });
@@ -64,7 +73,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ]),
+    ])
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
@@ -101,17 +110,18 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
 });
 
 export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
-  const organizationPlans = await db.query.organizations_plans.findMany({
-    where: (plans, operations) =>
-      and(operations.eq(plans.organization_id, organization_id), isNull(plans.deletedAt)),
-    orderBy(fields, operators) {
-      return operators.desc(fields.createdAt);
-    },
-    with: {
-      plan: true,
-    },
-  });
-  return organizationPlans.map((oe) => oe.plan);
+  const workspaces = await Workspace.findByOrganizationId(organization_id);
+  const ps = await Promise.all(
+    workspaces.map(async (ws) =>
+      db.query.workspaces_plans.findMany({
+        where: (fields, operators) => operators.eq(fields.workspace_id, ws.id),
+        with: {
+          plan: true,
+        },
+      })
+    )
+  );
+  return ps.flat().map((oe) => oe.plan);
 });
 
 export const recommendNewPlans = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
@@ -133,7 +143,7 @@ export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implem
 export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
   const usersOrgsResult = await db.query.users_organizations.findMany({
     where(fields, operators) {
-      return operators.and(operators.eq(fields.user_id, user_id), operators.isNull(fields.deletedAt));
+      return operators.eq(fields.user_id, user_id);
     },
   });
   const userOrgs = usersOrgsResult.map((uo) => uo.organization_id);
@@ -156,6 +166,16 @@ export const getTypeId = z.function(z.tuple([z.string()])).implement(async (t) =
   });
   return et;
 });
+
+export const createTimeSlots = z
+  .function(z.tuple([PlanTimesCreateSchema.array(), z.string().uuid()]))
+  .implement(async (timeslots, userId) => {
+    const createdTimeSlots = await db
+      .insert(plan_times)
+      .values(timeslots.map((ts) => ({ ...ts, owner_id: userId })))
+      .returning();
+    return createdTimeSlots;
+  });
 
 export const safeParseCreate = PlanCreateSchema.safeParse;
 export const safeParseUpdate = PlanUpdateSchema.safeParse;

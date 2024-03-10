@@ -20,6 +20,7 @@ import { toast } from "solid-sonner";
 export const Dangerzone = () => {
   const isDisablingUser = useSubmission(disableUser);
   const disableUserAction = useAction(disableUser);
+
   return (
     <div class="flex flex-col items-start gap-8 w-full">
       <div class="flex flex-col items-start gap-2 w-full">
