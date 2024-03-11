@@ -1,10 +1,14 @@
 import path from "node:path";
 import { defineConfig } from "@solidjs/start/config";
 // import devtools from "solid-devtools/vite";
-
+const IS_PROD = process.env.NODE_ENV === "production";
 export default defineConfig({
   server: {
-    preset: "node-server",
+    preset: IS_PROD ? "aws-lambda": "node-server",
+    output: {
+      dir: "dist",
+      publicDir: "dist/client",
+    },
     esbuild: {
       options: {
         target: "esnext",
