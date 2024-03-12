@@ -18,7 +18,7 @@ export default function NewWorkspace() {
 
   const [newWorkspace, setNewWorkspace] = createSignal<Parameters<typeof createWorkspace>[0]>({
     name: "",
-    connect: session?.()?.workspace_id === null,
+    connect: session?.()?.workspace?.id === null,
   });
 
   const handleSubmit = async (e: Event) => {

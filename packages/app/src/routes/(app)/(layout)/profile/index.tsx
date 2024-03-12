@@ -1,12 +1,12 @@
 import { createAsync } from "@solidjs/router";
-import { getAuthenticatedUser } from "../../lib/auth/util";
+import { getAuthenticatedUser } from "@/lib/auth/util";
 import { Match, Switch } from "solid-js";
 
 export default function ProfilePage() {
   const user = createAsync(() => getAuthenticatedUser());
 
   return (
-    <div class="flex flex-col items-start h-full w-full py-10 gap-8">
+    <div class="flex flex-col items-start grow w-full gap-8 p-4">
       <h1 class="text-3xl font-medium">Profile</h1>
       <Switch>
         <Match when={!user()}>

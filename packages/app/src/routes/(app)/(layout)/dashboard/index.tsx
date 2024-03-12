@@ -16,13 +16,15 @@ export default function DashboardPage() {
     <Show
       when={typeof session !== "undefined" && session().user !== null && session()}
       fallback={
-        <div class="py-10">
-          <NotLoggedIn />
+        <div class="flex p-4 w-full h-full items-center justify-center">
+          <div class="w-max h-max min-w-96">
+            <NotLoggedIn />
+          </div>
         </div>
       }
     >
       {(s) => (
-        <div class="flex flex-col gap-8 py-10">
+        <div class="flex flex-col gap-8 p-4 grow">
           <div class="flex flex-col gap-4">
             <Greeting session={s()} />
             <div class="flex flex-row w-full gap-4 items-start justify-between">

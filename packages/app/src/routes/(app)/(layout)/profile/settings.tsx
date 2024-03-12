@@ -6,7 +6,6 @@ import { SessionList } from "@/components/settings/SessionList";
 import { Workspaces } from "@/components/settings/Workspaces";
 import { Organizations } from "@/components/settings/Organizations";
 import { Dangerzone } from "@/components/settings/Dangerzone";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -22,27 +21,18 @@ export default function ProfileSettingsPage() {
     <Show
       when={session && session().id !== null && session()}
       fallback={
-        <div class="py-10">
-          <NotLoggedIn />
+        <div class="flex p-4 w-full h-full items-center justify-center">
+          <div class="w-max h-max min-w-96">
+            <NotLoggedIn />
+          </div>
         </div>
       }
     >
       {(s) => (
-        <div class="flex flex-col items-start h-full w-full py-10 gap-8">
-          <div class="flex flex-col gap-2 w-full">
-            <div class="flex flex-row gap-2 items-center justify-between w-full">
-              <Badge variant="secondary" class="w-max">
-                Profile
-              </Badge>
-              <Badge variant="outline" class="w-max">
-                Session: {s().id}
-              </Badge>
-            </div>
-            <h1 class="text-3xl font-medium">Settings</h1>
-          </div>
-          <div class="flex flex-col items-start gap-2 w-full">
-            <Tabs class="w-full py-0" orientation="vertical">
-              <TabsList class="w-max h-full">
+        <div class="flex flex-col items-start grow w-full gap-0">
+          <div class="flex flex-col items-start gap-2 w-full grow">
+            <Tabs class="w-full py-0 grow" orientation="vertical">
+              <TabsList class="w-[200px] grow flex flex-col py-2">
                 <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="account">
                   <User class="w-4 h-4" />
                   Account
@@ -79,30 +69,32 @@ export default function ProfileSettingsPage() {
                   Dangerzone
                 </TabsTrigger>
               </TabsList>
-              <TabsContent class="px-4 py-0 mt-0 flex flex-col w-full gap-8" value="account">
-                <Account session={s()}/>
-              </TabsContent>
-              <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="sessions">
-                <SessionList session={s()}/>
-              </TabsContent>
-              <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="organizations">
-                <Organizations session={s()} />
-              </TabsContent>
-              <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="workspaces">
-                <Workspaces session={s()}/>
-              </TabsContent>
-              <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="billing">
-                <Billing />
-              </TabsContent>
-              <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="notifications">
-                <Notifications />
-              </TabsContent>
-              <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="messages">
-                <Messages />
-              </TabsContent>
-              <TabsContent class="px-4 py-0 mt-0 w-full flex flex-col gap-8" value="dangerzone">
-                <Dangerzone />
-              </TabsContent>
+              <div class="p-4 flex flex-col w-full grow">
+                <TabsContent class="px-0 py-0 mt-0 flex flex-col w-full gap-8" value="account">
+                  <Account session={s()} />
+                </TabsContent>
+                <TabsContent class="px-0 py-0 mt-0 w-full flex flex-col gap-8" value="sessions">
+                  <SessionList session={s()} />
+                </TabsContent>
+                <TabsContent class="px-0 py-0 mt-0 w-full flex flex-col gap-8" value="organizations">
+                  <Organizations session={s()} />
+                </TabsContent>
+                <TabsContent class="px-0 py-0 mt-0 w-full flex flex-col gap-8" value="workspaces">
+                  <Workspaces session={s()} />
+                </TabsContent>
+                <TabsContent class="px-0 py-0 mt-0 w-full flex flex-col gap-8" value="billing">
+                  <Billing />
+                </TabsContent>
+                <TabsContent class="px-0 py-0 mt-0 w-full flex flex-col gap-8" value="notifications">
+                  <Notifications />
+                </TabsContent>
+                <TabsContent class="px-0 py-0 mt-0 w-full flex flex-col gap-8" value="messages">
+                  <Messages />
+                </TabsContent>
+                <TabsContent class="px-0 py-0 mt-0 w-full flex flex-col gap-8" value="dangerzone">
+                  <Dangerzone />
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
         </div>

@@ -23,9 +23,6 @@ type PingMessage = {
 
 export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
   const auth = useSession();
-  if (!auth) {
-    return null;
-  }
   const wsLink = import.meta.env.VITE_WS_LINK;
   if (!wsLink) throw new Error("No Websocket Link in Environtment");
 
@@ -39,7 +36,7 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
   const [recievedQueue, setRecievedQueue] = createSignal<Notify[]>([]);
 
   const createPingMessage = (): PingMessage => {
-    const userId = auth()!.user?.id;
+    const userId = auth?.()!.user?.id;
     if (!userId) throw new Error("No user id");
     const id = Math.random().toString(36).substring(2);
 
@@ -64,7 +61,7 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
       }
     },
     open: (e: any) => {
-      const userId = auth()!.user?.id;
+      const userId = auth?.()!.user?.id;
       if (!userId) return;
       try {
         const pm = createPingMessage();
@@ -112,7 +109,7 @@ export const WebsocketProvider = (props: { children: JSX.Element }) => {
   const [mounted, setMounted] = createSignal(false);
   onMount(() => setMounted(true));
   return (
-    <Show when={mounted()}>
+    <Show when={mounted()} fallback={props.children}>
       <Websocket>{props.children}</Websocket>
     </Show>
   );

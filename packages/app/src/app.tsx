@@ -1,5 +1,4 @@
 // @refresh reload
-import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ColorModeProvider, ColorModeScript, cookieStorageManagerSSR } from "@kobalte/core";
 import { MetaProvider, Title } from "@solidjs/meta";
@@ -68,19 +67,18 @@ export default function App() {
                         warning: <AlertCircleIcon class="w-6 h-6" />,
                       }}
                     />
-                    <Header />
                     <div
-                      class="w-full flex flex-col container px-4"
+                      class="w-full flex flex-col"
                       style={{
                         "flex-grow": "1",
                         "min-height": "100vh",
                       }}
                     >
+                      <Header />
                       <SessionProvider>
                         <WebsocketProvider>{props.children}</WebsocketProvider>
                       </SessionProvider>
                     </div>
-                    <Footer />
                   </ColorModeProvider>
                 </Suspense>
               </MetaProvider>

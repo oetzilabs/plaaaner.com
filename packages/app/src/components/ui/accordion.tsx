@@ -3,6 +3,7 @@ import { Accordion as AccordionPrimitive } from "@kobalte/core";
 import { ChevronDown } from "lucide-solid";
 import type { Component, ParentComponent } from "solid-js";
 import { splitProps } from "solid-js";
+import { Button } from "./button";
 
 export const Accordion = AccordionPrimitive.Root;
 
@@ -17,13 +18,15 @@ export const AccordionTrigger: ParentComponent<AccordionPrimitive.AccordionTrigg
     <AccordionPrimitive.Header class="flex" as="div">
       <AccordionPrimitive.Trigger
         class={cn(
-          "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-expanded]>svg]:rotate-180 text-sm",
-          local.class,
+          "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-expanded]>button>svg]:rotate-180 text-sm",
+          local.class
         )}
         {...rest}
       >
         {local.children}
-        <ChevronDown class="w-4 h-4" />
+        <Button size="icon" variant="ghost" class="size-8">
+          <ChevronDown class="w-4 h-4" />
+        </Button>
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   );
@@ -36,7 +39,7 @@ export const AccordionContent: ParentComponent<AccordionPrimitive.AccordionConte
       class={cn("overflow-hidden text-sm animate-accordion-up data-[expanded]:animate-accordion-down", local.class)}
       {...rest}
     >
-      <div class="pb-4 pt-0">{local.children}</div>
+      {local.children}
     </AccordionPrimitive.Content>
   );
 };
