@@ -31,13 +31,13 @@ export default function DashboardPage() {
                   <A href="/metrics" class="font-bold w-max hover:underline underline-offset-2">
                     Metrics
                   </A>
-                  <Metrics session={s()}/>
+                  <Metrics session={s()} />
                 </div>
                 <div class="flex flex-col gap-2 w-full">
                   <A href="/events" class="font-bold w-max hover:underline underline-offset-2">
                     Your Plans
                   </A>
-                  <UpcomingPlans session={s()}/>
+                  <UpcomingPlans session={s()} />
                 </div>
               </div>
               <div class="w-max flex-col gap-4 hidden lg:flex">
@@ -45,7 +45,7 @@ export default function DashboardPage() {
                   <A href="/notifications" class="font-bold w-max hover:underline underline-offset-2">
                     Notifications
                   </A>
-                  <Notifications session={s()}/>
+                  <Notifications session={s()} />
                 </div>
               </div>
             </div>
