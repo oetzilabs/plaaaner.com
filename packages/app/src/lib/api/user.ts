@@ -74,33 +74,33 @@ export const setDashboard = action(async (organization_id:string, workspace_id:s
   "use server";
   const event = getEvent()!;
   if (!event.context.user) {
-    return new Error("Unauthorized");
+    throw new Error("Unauthorized");
   }
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
-    return new Error("Unauthorized");
+    throw new Error("Unauthorized");
   }
   const { session: currentSession, user } = await lucia.validateSession(sessionId);
   if (!currentSession || !user) {
     throw new Error("Unauthorized");
   }
-  const validWorkspace = z.string().uuid().safeParse(organization_id);
+  const validWorkspace = z.string().uuid().safeParse(workspace_id);
   if (!validWorkspace.success) {
-    return new Error("Invalid data");
+    throw new Error("Invalid data");
   }
   const workspaceId = validWorkspace.data;
   const validOrganization = z.string().uuid().safeParse(organization_id);
   if (!validOrganization.success) {
-    return new Error("Invalid data");
+    throw new Error("Invalid data");
   }
   const organizationId = validOrganization.data;
   const o = await Organization.findById(organizationId);
   if (!o) {
-    return new Error("Organization not found");
+    throw new Error("Organization not found");
   }
   const w = await Workspace.findById(workspaceId);
   if (!w) {
-    return new Error("Workspace not found");
+    throw new Error("Workspace not found");
   }
 
   await lucia.invalidateSession(sessionId);

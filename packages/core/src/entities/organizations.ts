@@ -1,4 +1,4 @@
-import { and, eq, isNull, notExists, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
@@ -37,13 +37,14 @@ export const countAll = z.function(z.tuple([])).implement(async () => {
 });
 
 export const findById = z.function(z.tuple([z.string()])).implement(async (input) => {
-  return db.query.organizations.findFirst({
+  const org = await db.query.organizations.findFirst({
     where: (organizations, operations) => operations.eq(organizations.id, input),
     with: {
       workspaces: {
         with: {
           workspace: {
             with: {
+              owner: true,
               users: {
                 with: {
                   user: true,
@@ -61,10 +62,19 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
       owner: true,
     },
   });
+
+  if (!org) return null;
+  const workspaces = org.workspaces.filter((ws) => ws.workspace.deletedAt === null);
+  console.log({ workspaces });
+  const org2 = {
+    ...org,
+    workspaces,
+  };
+  return org2;
 });
 
 export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
-  const userOs = await db.query.users.findFirst({
+  const user = await db.query.users.findFirst({
     where: (user, operations) => operations.eq(user.id, input),
     with: {
       organizations: {
@@ -93,12 +103,25 @@ export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).impleme
       },
     },
   });
-  if (!userOs) return [];
+  if (!user) return [];
 
-  return userOs.organizations
-    .map((x) => x.organization)
-    .filter((o) => o?.deletedAt === null)
-    .filter((o) => typeof o !== undefined && o !== null);
+  return user.organizations
+    .map((organizations) => organizations.organization)
+    .map((organization) => {
+      const new_organization = {
+        id: organization.id,
+        name: organization.name,
+        owner: organization.owner,
+        ticket_types: organization.ticket_types,
+        users: organization.users,
+        deletedAt: organization.deletedAt,
+        workspaces: organization.workspaces
+          .map((workspace_organization) => workspace_organization.workspace)
+          .filter((workspace) => workspace.deletedAt === null),
+      };
+      return new_organization;
+    })
+    .filter((o) => o.deletedAt === null);
 });
 
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {
@@ -220,6 +243,21 @@ export const requestJoin = z
     );
 
     return organizationJoin;
+  });
+
+export const isUserInOrg = z
+  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .implement(async (organization_id, user_id) => {
+    const x = await db.query.users_organizations.findFirst({
+      where: (fields, operators) => {
+        return operators.and(
+          operators.eq(fields.organization_id, organization_id),
+          operators.eq(fields.user_id, user_id)
+        );
+      },
+    });
+
+    return !!x;
   });
 
 export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
