@@ -39,8 +39,7 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
   const [recievedQueue, setRecievedQueue] = createSignal<Notify[]>([]);
 
   const createPingMessage = (): PingMessage => {
-    const userId = auth()!.userId;
-    console.log(userId);
+    const userId = auth()!.user?.id;
     if (!userId) throw new Error("No user id");
     const id = Math.random().toString(36).substring(2);
 
@@ -65,14 +64,13 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
       }
     },
     open: (e: any) => {
-      const a = auth();
-      if(!a) return;
-      const userId = a.userId;
+      const userId = auth()!.user?.id;
       if (!userId) return;
       try {
         const pm = createPingMessage();
         setSentQueue([...sentQueue(), pm]);
         ws.send(JSON.stringify(pm));
+        console.log("Sent message:", pm);
         setStatus("connected");
       } catch (e) {
         console.error("no user session", e);
