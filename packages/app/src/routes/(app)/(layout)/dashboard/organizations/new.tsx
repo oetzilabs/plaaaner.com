@@ -19,7 +19,7 @@ export default function SetupProfilePage() {
   const isRequestingInvite = useSubmission(requestOrganizationJoin);
 
   return (
-    <div class="flex flex-col gap-2 w-full py-10">
+    <div class="flex flex-col gap-2 w-full p-4">
       <Tabs defaultValue="create">
         <TabsList>
           <TabsTrigger value="create">Create</TabsTrigger>

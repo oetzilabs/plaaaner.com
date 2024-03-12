@@ -1,4 +1,4 @@
-import { getAuthenticatedUser } from "@/lib/auth/util";
+import { getAuthenticatedUser, UserSession } from "@/lib/auth/util";
 import { As } from "@kobalte/core";
 import { A, createAsync } from "@solidjs/router";
 import { LayoutDashboard, LogIn, LogOut, Settings2, User } from "lucide-solid";
@@ -13,19 +13,20 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-export default function UserMenu() {
-  const user = createAsync(() => getAuthenticatedUser());
-
+export default function UserMenu(props: { user: UserSession["user"] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <As component={Button} size="icon" variant="ghost" class="rounded-full">
-          <User class="h-4 w-4" />
+        <As component={Button} size={props.user !== null ? "sm": "icon" }variant="ghost" class="rounded-md gap-2 items-center">
+          <User class="size-4" />
+          <Switch>
+            <Match when={props.user}>{(user) => <span class="text-muted-foreground">{user().name}</span>}</Match>
+          </Switch>
         </As>
       </DropdownMenuTrigger>
       <DropdownMenuContent class="min-w-[100px]">
         <Switch>
-          <Match when={user() === undefined}>
+          <Match when={props.user === null}>
             <DropdownMenuItem class="items-center gap-2" asChild>
               <As component={A} href="/auth/login">
                 Login
@@ -33,31 +34,11 @@ export default function UserMenu() {
               </As>
             </DropdownMenuItem>
           </Match>
-          <Match when={user() !== undefined && user() === null}>
-            <DropdownMenuItem class="items-center gap-2" asChild>
-              <As component={A} href="/auth/login">
-                Login
-                <LogIn class="h-4 w-4" />
-              </As>
-            </DropdownMenuItem>
-          </Match>
-          <Match when={user() !== undefined && user() !== null}>
-            <DropdownMenuItem class="items-center gap-2" asChild>
-              <As component={A} href="/dashboard">
-                <LayoutDashboard class="h-4 w-4" />
-                Dashboard
-              </As>
-            </DropdownMenuItem>
+          <Match when={props.user !== null}>
             <DropdownMenuItem class="items-center gap-2" asChild>
               <As component={A} href="/profile">
                 <User class="h-4 w-4" />
                 Profile
-              </As>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild class="items-center gap-2">
-              <As component={A} href="/profile/settings">
-                <Settings2 class="h-4 w-4" />
-                Settings
               </As>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

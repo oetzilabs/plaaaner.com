@@ -82,6 +82,11 @@ export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).impleme
                   ticket_type: true,
                 },
               },
+              workspaces: {
+                with: {
+                  workspace: true,
+                },
+              },
             },
           },
         },

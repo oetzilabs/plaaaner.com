@@ -2,12 +2,7 @@ import { Button } from "@/components/ui/button";
 import { TextField, TextFieldLabel, TextFieldInput } from "@/components/ui/textfield";
 import { createAsync, useSubmission } from "@solidjs/router";
 import { Show } from "solid-js";
-import {
-  createOrganization,
-  getOrganization,
-  requestOrganizationJoin,
-  getAllOrganizations,
-} from "@/lib/api/organizations";
+import { createOrganization, requestOrganizationJoin, getAllOrganizations } from "@/lib/api/organizations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Combobox,
@@ -38,14 +33,12 @@ export default function SetupProfilePage() {
             <TabsContent value="create">
               <form class="flex flex-col gap-2 w-full" method="post" action={createOrganization}>
                 <Show when={!s().organization}>
-                  {(p) => (
-                    <TextField name="name" disabled={isCreatingOrganization.pending}>
-                      <TextFieldLabel class="flex flex-col gap-2">
-                        Organization Name
-                        <TextFieldInput placeholder="Organization Name" />
-                      </TextFieldLabel>
-                    </TextField>
-                  )}
+                  <TextField name="name" disabled={isCreatingOrganization.pending}>
+                    <TextFieldLabel class="flex flex-col gap-2">
+                      Organization Name
+                      <TextFieldInput placeholder="Organization Name" />
+                    </TextFieldLabel>
+                  </TextField>
                 </Show>
                 <div class="flex flex-row items-center justify-between">
                   <div></div>

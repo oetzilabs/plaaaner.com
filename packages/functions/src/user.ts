@@ -27,17 +27,17 @@ export const session = ApiHandler(async (_event) => {
     organization_id = organization.id;
   }
 
-  if (!workspace) {
-    workspace = await Workspace.create({ name: "default" }, user.id);
+  // if (!workspace) {
+  //   workspace = await Workspace.create({ name: "default" }, user.id);
 
-    await Workspace.connectUser(workspace.id, user.id);
-    // console.log("workspace-inner", workspace);
+  //   await Workspace.connectUser(workspace.id, user.id);
+  //   // console.log("workspace-inner", workspace);
 
-    return json({ email: user.email, id: user.id, workspace_id: workspace.id, organization_id });
-  }
+  //   return json({ email: user.email, id: user.id, workspace_id: workspace.id, organization_id });
+  // }
   // console.log("workspace", workspace);
 
-  return json({ email: user.email, id: user.id, workspace_id: workspace.id, organization_id });
+  return json({ email: user.email, id: user.id, workspace_id: workspace?.id, organization_id });
 });
 
 export const all = ApiHandler(async (_event) => {
