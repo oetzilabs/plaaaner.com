@@ -1,7 +1,7 @@
-import { getAuthenticatedUser, UserSession } from "@/lib/auth/util";
+import { UserSession } from "@/lib/auth/util";
 import { As } from "@kobalte/core";
-import { A, createAsync } from "@solidjs/router";
-import { LayoutDashboard, LogIn, LogOut, Settings2, User } from "lucide-solid";
+import { A, } from "@solidjs/router";
+import { LogIn, LogOut, User } from "lucide-solid";
 import { Match, Switch } from "solid-js";
 import { logout } from "../utils/api/actions";
 import { Button } from "./ui/button";
@@ -15,9 +15,9 @@ import {
 
 export default function UserMenu(props: { user: UserSession["user"] }) {
   return (
-    <DropdownMenu>
+    <DropdownMenu sameWidth>
       <DropdownMenuTrigger asChild>
-        <As component={Button} size={props.user !== null ? "sm": "icon" }variant="ghost" class="rounded-md gap-2 items-center">
+        <As component={Button} size={props.user !== null ? "sm": "icon" } variant="outline" class="rounded-md gap-2 items-center">
           <User class="size-4" />
           <Switch>
             <Match when={props.user}>{(user) => <span class="text-muted-foreground">{user().name}</span>}</Match>

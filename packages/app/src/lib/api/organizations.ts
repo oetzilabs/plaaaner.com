@@ -1,6 +1,7 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { action, cache, redirect } from "@solidjs/router";
+import organization from "dist/server/chunks/build/organization.mjs";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
@@ -78,10 +79,35 @@ export const getUserOrganizations = cache(async () => {
     throw redirect("/auth/login");
   }
 
-  const o = await Organization.findManyByUserId(user.id);
+  const orgs = await Organization.findManyByUserId(user.id);
 
-  return o;
+  return orgs;
 }, "allOrganizations");
+
+export const getOrganizationById = cache(async (id: string) => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  const organization = await Organization.findById(id);
+  if (!organization) throw redirect("/404", 404);
+
+  const isUserInOrg = await Organization.isUserInOrg(organization.id, user.id);
+  if (!isUserInOrg) throw redirect("/403", 403);
+
+  return organization;
+}, "organization");
 
 export const getOrganization = cache(async () => {
   "use server";

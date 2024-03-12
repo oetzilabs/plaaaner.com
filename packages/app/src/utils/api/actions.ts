@@ -75,35 +75,75 @@ export const changeMessageSettings = action(async (type: string) => {
 export const disconnectFromOrganization = action(async (data: FormData) => {
   "use server";
   const event = getEvent()!;
-  if (!event.context.user) {
-    return new Error("Unauthorized");
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
   }
-  const { id } = event.context.user;
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session || !user) {
+    throw redirect("/auth/login");
+  }
   const valid = z.string().uuid().safeParse(data.get("organizationId"));
   if (!valid.success) {
-    return new Error("Invalid data");
+    throw new Error("Invalid data");
   }
   const organizationId = valid.data;
-  const o = await Organization.disconnectUser(organizationId, id);
-
+  const o = await Organization.disconnectUser(organizationId, user.id);
+  await lucia.invalidateSession(sessionId);
+  const new_session = await lucia.createSession(
+    user.id,
+    {
+      access_token: session.access_token,
+      organization_id: null,
+      workspace_id: null,
+    },
+    {
+      sessionId: sessionId,
+    }
+  );
+  appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
+  event.context.session = session;
   return o;
-}, "organizations");
+}, "session");
 
 export const deleteOrganization = action(async (id: string) => {
   "use server";
   const event = getEvent()!;
-  if (!event.context.user) {
-    return new Error("Unauthorized");
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session || !user) {
+    throw redirect("/auth/login");
   }
   const valid = z.string().uuid().safeParse(id);
   if (!valid.success) {
-    return new Error("Invalid data");
+    throw new Error("Invalid data");
   }
   const organizationId = valid.data;
   const o = await Organization.markAsDeleted({ id: organizationId });
+  await lucia.invalidateSession(sessionId);
+  const new_session = await lucia.createSession(
+    user.id,
+    {
+      access_token: session.access_token,
+      organization_id: null,
+      workspace_id: null,
+    },
+    {
+      sessionId: sessionId,
+    }
+  );
+  appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
+  event.context.session = session;
 
   return o;
-}, "organizations");
+}, "session");
 
 export const setOrganizationOwner = action(async (id: string) => {
   "use server";

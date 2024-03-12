@@ -48,7 +48,7 @@ export const connectToWorkspace = action(async (data: FormData) => {
     throw new Error("Invalid data: Missing workspace_id");
   }
   const isConnected = await Workspace.isConnectedToUser(valid.data, user.id);
-  if(!isConnected){
+  if (!isConnected) {
     console.log("not connected, connecting");
     await Workspace.connectUser(valid.data, user.id);
   }
@@ -107,54 +107,76 @@ export const disconnectFromWorkspace = action(async (data: FormData) => {
   return ws;
 }, "workspaces");
 
-export const createWorkspace = action(async (data: z.infer<typeof WorkspaceCreateSchemaWithConnect>) => {
-  "use server";
-  const event = getEvent()!;
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-  if (!sessionId) {
-    throw new Error("Unauthorized");
-  }
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!user || !session) {
-    throw redirect("/auth/login");
-  }
-  const workspace = await Workspace.create(data, user.id);
-  if (data.connect && data.connect) {
+export const createWorkspace = action(
+  async (data: z.infer<typeof WorkspaceCreateSchemaWithConnect>, organization_id: string) => {
+    "use server";
+    const event = getEvent()!;
+    const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+    if (!sessionId) {
+      throw redirect("/auth/login");
+    }
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!user || !session) {
+      throw redirect("/auth/login");
+    }
+    const workspace = await Workspace.create(data, user.id, organization_id);
     await Workspace.connectUser(workspace.id, user.id);
-
-    await lucia.invalidateSession(sessionId);
-    const new_session = await lucia.createSession(
-      user.id,
-      {
-        access_token: session.access_token,
-        workspace_id: workspace.id,
-        organization_id: session.organization_id,
-      },
-      {
-        sessionId: sessionId,
-      }
-    );
-    appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
-    event.context.session = new_session;
-  }
-  return workspace;
-}, "workspaces");
+    if (data.connect && data.connect) {
+      await lucia.invalidateSession(sessionId);
+      const new_session = await lucia.createSession(
+        user.id,
+        {
+          access_token: session.access_token,
+          workspace_id: workspace.id,
+          organization_id: session.organization_id,
+        },
+        {
+          sessionId: sessionId,
+        }
+      );
+      appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
+      event.context.session = new_session;
+    }
+    return workspace;
+  },
+  "workspaces"
+);
 
 export const deleteWorkspace = action(async (id: string) => {
   "use server";
   const event = getEvent()!;
   if (!event.context.user) {
-    return new Error("Unauthorized");
+    throw redirect("/auth/login");
+  }
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+  const { session, user } = await lucia.validateSession(sessionId);
+  if(!user) {
+    throw redirect("/auth/login");
   }
   const valid = z.string().uuid().safeParse(id);
   if (!valid.success) {
-    return new Error("Invalid data");
+    throw new Error("Invalid data");
   }
   const workspaceId = valid.data;
   const ws = await Workspace.markAsDeleted({ id: workspaceId });
-
+  await lucia.invalidateSession(sessionId);
+  const new_session = await lucia.createSession(
+    user.id,
+    {
+      access_token: session.access_token,
+      organization_id: session.organization_id,
+      workspace_id: null,
+    },
+    {
+      sessionId: sessionId,
+    }
+  );
+  appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   return ws;
-}, "workspaces");
+}, "session");
 
 export const setWorkspaceOwner = action(async (id: string) => {
   "use server";

@@ -1,4 +1,4 @@
-import { useAction, useSubmission } from "@solidjs/router";
+import { useAction, useParams, useSubmission } from "@solidjs/router";
 import { User, Layout, Receipt } from "lucide-solid";
 import { Show, createSignal } from "solid-js";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +12,9 @@ import { Checkbox, CheckboxControl, CheckboxLabel } from "@/components/ui/checkb
 
 export default function NewWorkspace() {
   const session = useSession();
+  const { organization_id } = useParams();
 
-  const cW = useAction(createWorkspace);
+  const workspaceCreator = useAction(createWorkspace);
   const isCreatingWorkspace = useSubmission(createWorkspace);
 
   const [newWorkspace, setNewWorkspace] = createSignal<Parameters<typeof createWorkspace>[0]>({
@@ -24,11 +25,11 @@ export default function NewWorkspace() {
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     const nW = newWorkspace();
-    await cW(nW);
+    await workspaceCreator(nW, organization_id);
   };
 
   return (
-    <div class="flex flex-col items-start h-full w-full py-10 gap-8">
+    <div class="flex flex-col items-start h-full w-full p-4 gap-8">
       <div class="flex flex-col gap-2">
         <Badge variant="secondary" class="w-max">
           Workspaces
