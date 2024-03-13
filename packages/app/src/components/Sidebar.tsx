@@ -4,118 +4,155 @@ import { cn } from "@/lib/utils";
 import { As } from "@kobalte/core";
 import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
 import { Building2, Plus, Settings2, Target } from "lucide-solid";
-import { For, Show } from "solid-js";
+import { For, JSXElement, Show } from "solid-js";
 import { toast } from "solid-sonner";
 import ModeToggle from "./ModeToogle";
 import { useSession } from "./SessionProvider";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
 import UserMenu from "./UserMenu";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Skeleton } from "./ui/skeleton";
+import { Separator } from "./ui/separator";
+import {
+  Command,
+  CommandHeading,
+  CommandInput,
+  CommandItem,
+  CommandItemLabel,
+  CommandList,
+  CommandShortcut,
+} from "@/components/ui/command";
+
+type OrgWorkspaceOption = {
+  icon: JSXElement;
+  label: string;
+  organizationId: string;
+  workspaceId: string;
+  disabled: boolean;
+};
+
+type List = {
+  label: string;
+  options: OrgWorkspaceOption[];
+};
 
 export const Sidebar = () => {
   const userSession = useSession();
   const userOrganizations = createAsync(() => getUserOrganizations());
   const setUserDashboard = useAction(setDashboard);
   const isChangingDashboard = useSubmission(setDashboard);
+  type OrgList = NonNullable<Awaited<ReturnType<typeof userOrganizations>>>;
+
+  const createList = (
+    uO: OrgList,
+    currentOrgId?: OrgList[number]["id"],
+    workspaceId?: OrgList[number]["workspaces"][number]["workspace"]["id"]
+  ): List[] => {
+    const x: List[] = [];
+    for (const org of uO) {
+      x.push({
+        label: org.name,
+        options: org.workspaces.map((ws) => ({
+          label: ws.workspace.name,
+          icon: <Target class="size-3" />,
+          disabled: org.id === currentOrgId && ws.workspace.id === workspaceId,
+          workspaceId: ws.workspace.id,
+          organizationId: org.id,
+        })),
+      });
+    }
+    return x;
+  };
 
   return (
     <div class="relative w-[300px] flex flex-col gap-0 border-r border-neutral-200 dark:border-neutral-800 grow">
       <Show
         when={typeof userSession !== "undefined" && userSession().user !== null && userSession()}
-        fallback={<div class="py-4 w-full"></div>}
+        fallback={
+          <div class="w-full p-4 flex flex-col gap-4">
+            <div class="w-full p-4 flex flex-col gap-2">
+              <Skeleton class="w-full h-6" />
+            </div>
+            <div class="w-full p-4 flex flex-col gap-2">
+              <div class="w-full items-center justify-between gap-2">
+                <Skeleton class="w-full h-6" />
+                <div class="w-max">
+                  <Skeleton class="size-6" />
+                </div>
+              </div>
+              <Skeleton class="w-full h-6" />
+              <Skeleton class="w-full h-6" />
+              <Skeleton class="w-full h-6" />
+            </div>
+            <Separator class="w-full" />
+            <div class="w-full p-4 flex flex-col gap-2">
+              <div class="w-full items-center justify-between gap-2">
+                <Skeleton class="w-full h-6" />
+                <div class="w-max">
+                  <Skeleton class="size-6" />
+                </div>
+              </div>
+              <Skeleton class="w-full h-6" />
+              <Skeleton class="w-full h-6" />
+            </div>
+            <div class="w-full p-4 flex flex-col gap-2">
+              <div class="w-full items-center justify-between gap-2">
+                <Skeleton class="w-full h-6" />
+                <div class="w-max">
+                  <Skeleton class="size-6" />
+                </div>
+              </div>
+              <Skeleton class="w-full h-6" />
+              <Skeleton class="w-full h-6" />
+            </div>
+          </div>
+        }
       >
         {(s) => (
           <div class="flex flex-col gap-0 w-full grow h-full">
-            <div class="w-full flex flex-col">
-              <Button size="lg" variant="ghost" asChild class="w-full items-center justify-start rounded-none p-4">
-                <As component={A} href="/dashboard">
-                  Dashboard
-                </As>
-              </Button>
-            </div>
-            <div class="w-full flex flex-col">
-              <div class="flex flex-row pt-4 px-4 items-center justify-between">
-                <span class="font-bold">Organizations</span>
-                <div class="w-max">
-                  <Button size="icon" variant="ghost" asChild class="size-8">
-                    <As component={A} href="/dashboard/organizations/new">
-                      <Plus class="size-4" />
-                    </As>
-                  </Button>
-                </div>
-              </div>
-              <Show when={userOrganizations() !== undefined && userOrganizations()}>
-                {(uO) => (
-                  <Show
-                    when={typeof userSession !== "undefined" && userSession()}
-                    fallback={<Badge variant="outline">No Organization</Badge>}
-                  >
-                    {(session) => (
-                      <div class="pb-4">
-                        <Accordion
-                          collapsible
-                          class="w-full"
-                          defaultValue={session().organization !== null ? [session().organization!.id] : []}
+            <div class="w-full flex flex-row gap-2">
+              <div class="flex flex-row gap-2">
+                <A href="/dashboard" class={cn(buttonVariants({ variant: "outline", size: "icon" }), "size-8")}>
+                  <Building2 class="size-3" />
+                </A>
+                <Show when={userOrganizations() !== undefined && userOrganizations()}>
+                  {(uO) => (
+                    <Show
+                      when={typeof userSession !== "undefined" && userSession()}
+                      fallback={<Badge variant="outline">No Organization</Badge>}
+                    >
+                      {(session) => (
+                        <Command<OrgWorkspaceOption, List>
+                          options={createList(uO(), session().organization?.id, session().workspace?.id)}
+                          optionValue={(v) => `${v.organizationId}_${v.workspaceId}`}
+                          optionTextValue="label"
+                          disabled={isChangingDashboard.pending}
+                          optionLabel="label"
+                          optionDisabled="disabled"
+                          optionGroupChildren="options"
+                          placeholder="Choose a workspace"
+                          itemComponent={(props) => (
+                            <CommandItem item={props.item}>
+                              {props.item.rawValue.icon}
+                              <CommandItemLabel>{props.item.rawValue.label}</CommandItemLabel>
+                            </CommandItem>
+                          )}
+                          sectionComponent={(props) => <CommandHeading>{props.section.rawValue.label}</CommandHeading>}
+                          class="rounded-lg border shadow-md"
+                          onChange={async (value: OrgWorkspaceOption) => {
+                            if (!value) return;
+                            await setUserDashboard(value.organizationId, value.workspaceId);
+                          }}
                         >
-                          <For each={uO() ?? []}>
-                            {(o) => (
-                              <AccordionItem value={o.id} class="w-full flex flex-col border-none">
-                                <AccordionTrigger class="px-4 hover:no-underline w-full">{o.name}</AccordionTrigger>
-                                <AccordionContent class="w-full flex flex-col items-start justify-start">
-                                  <For each={o.workspaces}>
-                                    {(workspaces) => (
-                                      <Button
-                                        class="flex flex-row items-center justify-start rounded-none w-full gap-2"
-                                        variant={
-                                          session().organization?.id === o.id &&
-                                          workspaces.workspace.id === session().workspace?.id
-                                            ? "secondary"
-                                            : "ghost"
-                                        }
-                                        onClick={async () => {
-                                          if (
-                                            session().organization?.id === o.id &&
-                                            workspaces.workspace.id === session().workspace?.id
-                                          )
-                                            return;
-                                          await setDashboard(o.id, workspaces.workspace.id);
-                                        }}
-                                      >
-                                        <Target class="size-4" />
-                                        <span
-                                          class={cn("font-medium", {
-                                            "font-bold": o.id === session().id,
-                                          })}
-                                        >
-                                          {o.name}
-                                        </span>
-                                      </Button>
-                                    )}
-                                  </For>
-                                  <div class="px-4 w-full flex">
-                                    <Button
-                                      asChild
-                                      class="flex flex-row items-center justify-center w-full gap-2"
-                                      size="sm"
-                                      variant="outline"
-                                    >
-                                      <As component={A} href={`/dashboard/organizations/${o.id}/workspaces/new`}>
-                                        <Plus class="size-4" />
-                                        <span>Workspace</span>
-                                      </As>
-                                    </Button>
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            )}
-                          </For>
-                        </Accordion>
-                      </div>
-                    )}
-                  </Show>
-                )}
-              </Show>
+                          <CommandInput />
+                          <CommandList />
+                        </Command>
+                      )}
+                    </Show>
+                  )}
+                </Show>
+              </div>
             </div>
             <div class="w-full grow"></div>
             <div class="flex flex-row gap-2 items-center justify-between w-full p-4 border-t border-neutral-200 dark:border-neutral-800">
