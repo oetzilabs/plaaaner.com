@@ -11,7 +11,6 @@ import { useSession } from "./SessionProvider";
 import { Badge } from "./ui/badge";
 import { Button, buttonVariants } from "./ui/button";
 import UserMenu from "./UserMenu";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "./ui/skeleton";
 import { Separator } from "./ui/separator";
 import {
@@ -47,17 +46,17 @@ export const Sidebar = () => {
   const createList = (
     uO: OrgList,
     currentOrgId?: OrgList[number]["id"],
-    workspaceId?: OrgList[number]["workspaces"][number]["workspace"]["id"]
+    workspaceId?: OrgList[number]["workspaces"][number]["id"]
   ): List[] => {
     const x: List[] = [];
     for (const org of uO) {
       x.push({
         label: org.name,
         options: org.workspaces.map((ws) => ({
-          label: ws.workspace.name,
+          label: ws.name,
           icon: <Target class="size-3" />,
-          disabled: org.id === currentOrgId && ws.workspace.id === workspaceId,
-          workspaceId: ws.workspace.id,
+          disabled: org.id === currentOrgId && ws.id === workspaceId,
+          workspaceId: ws.id,
           organizationId: org.id,
         })),
       });
