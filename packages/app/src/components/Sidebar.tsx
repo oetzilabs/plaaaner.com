@@ -22,6 +22,7 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/components/ui/command";
+import { OrganizationWorkspaceSelection } from "./OrganizationWorkspaceSelection";
 
 type OrgWorkspaceOption = {
   icon: JSXElement;
@@ -69,12 +70,13 @@ export const Sidebar = () => {
       <Show
         when={typeof userSession !== "undefined" && userSession().user !== null && userSession()}
         fallback={
-          <div class="w-full p-4 flex flex-col gap-4">
-            <div class="w-full p-4 flex flex-col gap-2">
-              <Skeleton class="w-full h-6" />
+          <div class="w-full p-4 flex flex-col gap-2">
+          <div class="w-full py-2 flex flex-col gap-2">
+              <Skeleton class="w-full h-8" />
+              <Skeleton class="w-full h-12" />
             </div>
-            <div class="w-full p-4 flex flex-col gap-2">
-              <div class="w-full items-center justify-between gap-2">
+            <div class="w-full py-2 flex flex-col gap-2">
+              <div class="flex flex-row w-full items-center justify-between gap-2">
                 <Skeleton class="w-full h-6" />
                 <div class="w-max">
                   <Skeleton class="size-6" />
@@ -85,8 +87,8 @@ export const Sidebar = () => {
               <Skeleton class="w-full h-6" />
             </div>
             <Separator class="w-full" />
-            <div class="w-full p-4 flex flex-col gap-2">
-              <div class="w-full items-center justify-between gap-2">
+            <div class="w-full py-2 flex flex-col gap-2">
+              <div class="flex flex-row w-full items-center justify-between gap-2">
                 <Skeleton class="w-full h-6" />
                 <div class="w-max">
                   <Skeleton class="size-6" />
@@ -95,8 +97,8 @@ export const Sidebar = () => {
               <Skeleton class="w-full h-6" />
               <Skeleton class="w-full h-6" />
             </div>
-            <div class="w-full p-4 flex flex-col gap-2">
-              <div class="w-full items-center justify-between gap-2">
+            <div class="w-full py-2 flex flex-col gap-2">
+              <div class="flex flex-row w-full items-center justify-between gap-2">
                 <Skeleton class="w-full h-6" />
                 <div class="w-max">
                   <Skeleton class="size-6" />
@@ -111,59 +113,22 @@ export const Sidebar = () => {
         {(s) => (
           <div class="flex flex-col gap-0 w-full grow h-full">
             <div class="w-full flex flex-row gap-2">
-              <div class="flex flex-row gap-2">
-                <A href="/dashboard" class={cn(buttonVariants({ variant: "outline", size: "icon" }), "size-8")}>
-                  <Building2 class="size-3" />
-                </A>
-                <Show when={userOrganizations() !== undefined && userOrganizations()}>
-                  {(uO) => (
-                    <Show
-                      when={typeof userSession !== "undefined" && userSession()}
-                      fallback={<Badge variant="outline">No Organization</Badge>}
-                    >
-                      {(session) => (
-                        <Command<OrgWorkspaceOption, List>
-                          options={createList(uO(), session().organization?.id, session().workspace?.id)}
-                          optionValue={(v) => `${v.organizationId}_${v.workspaceId}`}
-                          optionTextValue="label"
-                          disabled={isChangingDashboard.pending}
-                          optionLabel="label"
-                          optionDisabled="disabled"
-                          optionGroupChildren="options"
-                          placeholder="Choose a workspace"
-                          itemComponent={(props) => (
-                            <CommandItem item={props.item}>
-                              {props.item.rawValue.icon}
-                              <CommandItemLabel>{props.item.rawValue.label}</CommandItemLabel>
-                            </CommandItem>
-                          )}
-                          sectionComponent={(props) => <CommandHeading>{props.section.rawValue.label}</CommandHeading>}
-                          class="rounded-lg border shadow-md"
-                          onChange={async (value: OrgWorkspaceOption) => {
-                            if (!value) return;
-                            await setUserDashboard(value.organizationId, value.workspaceId);
-                          }}
-                        >
-                          <CommandInput />
-                          <CommandList />
-                        </Command>
-                      )}
-                    </Show>
-                  )}
-                </Show>
+              <div class="flex flex-col gap-2 p-4 w-full">
+                <OrganizationWorkspaceSelection />
               </div>
             </div>
             <div class="w-full grow"></div>
-            <div class="flex flex-row gap-2 items-center justify-between w-full p-4 border-t border-neutral-200 dark:border-neutral-800">
-              <UserMenu user={s().user} />
-              <div class="w-max flex gap-2 items-center flex-row">
-                <Button size="icon" variant="ghost" asChild class="size-8">
-                  <As component={A} href="/profile/settings">
+              <div class="w-full flex gap-2 items-center flex-col p-4">
+                <Button size="lg" variant="outline" asChild class="flex flex-row items-center justify-start gap-2 w-full px-4">
+                  <As component={A} href="/profile/settings" class="flex flex-row items-center justify-start gap-2 w-full">
                     <Settings2 class="h-4 w-4" />
+                    Settings
                   </As>
                 </Button>
                 <ModeToggle />
               </div>
+            <div class="flex flex-row gap-2 items-center justify-between w-full p-4 border-t border-neutral-200 dark:border-neutral-800">
+              <UserMenu user={s().user} />
             </div>
           </div>
         )}

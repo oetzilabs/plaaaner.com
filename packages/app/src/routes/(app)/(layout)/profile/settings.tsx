@@ -31,38 +31,38 @@ export default function ProfileSettingsPage() {
       {(s) => (
         <div class="flex flex-col items-start grow w-full gap-0">
           <div class="flex flex-col items-start gap-2 w-full grow">
-            <Tabs class="w-full py-0 grow" orientation="vertical">
-              <TabsList class="w-[200px] grow flex flex-col py-2">
-                <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="account">
+            <Tabs class="w-full py-0">
+              <TabsList class="grow flex flex-row">
+                <TabsTrigger class="border-b-2 items-center justify-start gap-2" value="account">
                   <User class="w-4 h-4" />
                   Account
                 </TabsTrigger>
-                <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="sessions">
+                <TabsTrigger class="border-b-2 items-center justify-start gap-2" value="sessions">
                   <KeyRound class="w-4 h-4" />
                   Sessions
                 </TabsTrigger>
-                <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="organizations">
+                <TabsTrigger class="border-b-2 items-center justify-start gap-2" value="organizations">
                   <Building class="w-4 h-4" />
                   Organizations
                 </TabsTrigger>
-                <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="workspaces">
+                <TabsTrigger class="border-b-2 items-center justify-start gap-2" value="workspaces">
                   <Layout class="w-4 h-4" />
                   Workspaces
                 </TabsTrigger>
-                <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="billing">
+                <TabsTrigger class="border-b-2 items-center justify-start gap-2" value="billing">
                   <HandCoins class="w-4 h-4" />
                   Billing
                 </TabsTrigger>
-                <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="notifications">
+                <TabsTrigger class="border-b-2 items-center justify-start gap-2" value="notifications">
                   <BellRing class="w-4 h-4" />
                   Notifications
                 </TabsTrigger>
-                <TabsTrigger class="border-b-0 border-r-2 items-center justify-start gap-2" value="messages">
+                <TabsTrigger class="border-b-2 items-center justify-start gap-2" value="messages">
                   <MessagesSquare class="w-4 h-4" />
                   Messages
                 </TabsTrigger>
                 <TabsTrigger
-                  class="border-b-0 border-r-2 items-center justify-start gap-2 text-red-500"
+                  class="border-b-2 items-center justify-start gap-2 text-red-500"
                   value="dangerzone"
                 >
                   <X class="w-4 h-4" />

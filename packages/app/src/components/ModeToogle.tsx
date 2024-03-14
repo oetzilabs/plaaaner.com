@@ -13,12 +13,14 @@ const ModeToggle = () => {
   // const setColorMode = (s: string) => {};
 
   return (
-    <DropdownMenu placement="bottom-end">
+    <DropdownMenu placement="bottom-end" sameWidth>
       <DropdownMenuTrigger asChild>
-        <As component={Button} variant="ghost" size="icon" class="size-8 px-0 rounded-md">
-          <Sun class="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span class="sr-only">Toggle theme</span>
+        <As component={Button} variant="outline" size="lg" class="px-4 w-full flex flex-row items-center justify-start gap-2">
+          <div class="w-max flex">
+            <Sun class="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </div>
+          <span class="">Toggle Theme</span>
         </As>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
