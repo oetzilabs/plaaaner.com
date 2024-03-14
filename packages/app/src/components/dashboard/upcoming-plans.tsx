@@ -31,41 +31,6 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
                 <span class="text-muted-foreground text-xs">{plan.progress}%</span>
               </div>
             </div>
-            <Separator />
-            <div class="flex w-full flex-col gap-2">
-              <span class="text-xs font-medium">
-                {plan.todos.length} Todo<Show when={plan.todos.length > 1}>s</Show>
-              </span>
-              <div class="flex flex-col gap-1 w-full">
-                <For each={plan.todos.slice(0, 2)}>
-                  {(todo) => (
-                    <div class="flex flex-col gap-1 w-full border border-neutral-200 dark:border-neutral-800 rounded-md p-3 bg-background">
-                      <div class="flex flex-row items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          class={cn("w-max", {
-                            "text-yellow-500": todo.status === "in-progress",
-                            "text-neutral-500": todo.status === "stale",
-                            "text-red-500": todo.status === "urgent",
-                          })}
-                        >
-                          {todo.status}
-                        </Badge>
-                        <span class="text-sm font-medium">{todo.title}</span>
-                      </div>
-                      <span class="text-muted-foreground w-full text-xs">
-                        {todo.content.length > 0 ? todo.content : "No description..."}
-                      </span>
-                    </div>
-                  )}
-                </For>
-                <Show when={plan.todos.length > 2}>
-                  <div class="w-full flex flex-row items-center justify-center text-xs text-muted-foreground pt-2">
-                    + more
-                  </div>
-                </Show>
-              </div>
-            </div>
           </A>
         )}
       </For>

@@ -71,7 +71,7 @@ export const Sidebar = () => {
         when={typeof userSession !== "undefined" && userSession().user !== null && userSession()}
         fallback={
           <div class="w-full p-4 flex flex-col gap-2">
-          <div class="w-full py-2 flex flex-col gap-2">
+            <div class="w-full py-2 flex flex-col gap-2">
               <Skeleton class="w-full h-8" />
               <Skeleton class="w-full h-12" />
             </div>
@@ -113,21 +113,30 @@ export const Sidebar = () => {
         {(s) => (
           <div class="flex flex-col gap-0 w-full grow h-full">
             <div class="w-full flex flex-row gap-2">
-              <div class="flex flex-col gap-2 p-4 w-full">
+              <div class="flex flex-col gap-2 w-full border-b border-neutral-200 dark:border-neutral-800">
                 <OrganizationWorkspaceSelection />
               </div>
             </div>
             <div class="w-full grow"></div>
-              <div class="w-full flex gap-2 items-center flex-col p-4">
-                <Button size="lg" variant="outline" asChild class="flex flex-row items-center justify-start gap-2 w-full px-4">
-                  <As component={A} href="/profile/settings" class="flex flex-row items-center justify-start gap-2 w-full">
-                    <Settings2 class="h-4 w-4" />
-                    Settings
-                  </As>
-                </Button>
-                <ModeToggle />
-              </div>
-            <div class="flex flex-row gap-2 items-center justify-between w-full p-4 border-t border-neutral-200 dark:border-neutral-800">
+            <div class="w-full flex items-center flex-col border-t border-neutral-200 dark:border-neutral-800">
+              <Button
+                size="lg"
+                variant="ghost"
+                asChild
+                class="flex flex-row items-center justify-start gap-2 w-full px-4 rounded-none"
+              >
+                <As
+                  component={A}
+                  href="/profile/settings"
+                  class="flex flex-row items-center justify-start gap-2 w-full"
+                >
+                  <Settings2 class="h-4 w-4" />
+                  Settings
+                </As>
+              </Button>
+              <ModeToggle />
+            </div>
+            <div class="flex flex-row items-center justify-between w-full border-t border-neutral-200 dark:border-neutral-800">
               <UserMenu user={s().user} />
             </div>
           </div>

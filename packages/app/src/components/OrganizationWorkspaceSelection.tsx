@@ -70,7 +70,7 @@ export const OrganizationWorkspaceSelection = () => {
             {(session) => (
               <>
                 <div
-                  class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-4 py-2 gap-4 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-full"
+                  class="flex flex-row items-center justify-between px-4 py-2 gap-4 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-full"
                   onClick={() => {
                     if (isChangingDashboard.pending) return;
                     setOpenSelector(true);

@@ -8,14 +8,14 @@ import { Button, buttonVariants } from "./ui/button";
 
 export default function UserMenu(props: { user: UserSession["user"] }) {
   return (
-    <div class="w-full items-center justify-between flex flex-row gap-2 text-base">
+    <div class="w-full items-center justify-between flex flex-row text-base">
       <Switch
         fallback={
           <A
-            href=""
+            href="/auth/login"
             class={cn(
               buttonVariants({ variant: "outline", size: "lg" }),
-              "gap-2 items-center justify-start flex flex-row w-full"
+              "flex flex-row gap-2 items-center justify-start w-full rounded-none"
             )}
           >
             <LogIn class="size-4" />
@@ -23,29 +23,31 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
           </A>
         }
       >
-        <Match when={props.user !== null}>
+        <Match when={props.user !== null && props.user}>
+        {(user) => (
+          <>
           <A
             href="/profile"
             class={cn(
               buttonVariants({
-                variant: "outline",
+                variant: "ghost",
                 size: "lg",
               }),
-              "gap-2 items-center w-full justify-start flex flex-row"
+              "flex flex-row gap-2 items-center w-full justify-start rounded-none px-4"
             )}
           >
             <User class="size-4" />
-            <Switch>
-              <Match when={props.user}>{(user) => <span class="text-muted-foreground">{user().name}</span>}</Match>
-            </Switch>
+            <span class="">{user().name}</span>
           </A>
           <div class="w-max">
             <form method="post" action={logout}>
-              <Button variant="outline" size="icon" class="size-10" type="submit">
+              <Button variant="ghost" size="icon" class="size-10 rounded-none" type="submit">
                 <LogOut class="size-4" />
               </Button>
             </form>
           </div>
+          </>
+        )}
         </Match>
       </Switch>
     </div>
