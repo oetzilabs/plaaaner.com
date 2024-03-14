@@ -11,7 +11,7 @@ export function Header() {
         <A href="/" class="flex flex-row gap-4 items-center justify-center">
           <Logo small />
         </A>
-        <div class="w-full items-center md:justify-center justify-end flex flex-row">
+        <div class="w-full items-center justify-end flex flex-row">
           <AppSearch />
         </div>
       </div>

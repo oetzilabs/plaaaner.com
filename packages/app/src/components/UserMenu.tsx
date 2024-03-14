@@ -1,61 +1,53 @@
 import { UserSession } from "@/lib/auth/util";
-import { As } from "@kobalte/core";
-import { A, } from "@solidjs/router";
+import { cn } from "@/lib/utils";
+import { A } from "@solidjs/router";
 import { LogIn, LogOut, User } from "lucide-solid";
 import { Match, Switch } from "solid-js";
 import { logout } from "../utils/api/actions";
-import { Button } from "./ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import { Button, buttonVariants } from "./ui/button";
 
 export default function UserMenu(props: { user: UserSession["user"] }) {
   return (
-    <DropdownMenu sameWidth>
-      <DropdownMenuTrigger asChild>
-        <As component={Button} size={props.user !== null ? "sm": "icon" } variant="outline" class="rounded-md gap-2 items-center">
-          <User class="size-4" />
-          <Switch>
-            <Match when={props.user}>{(user) => <span class="text-muted-foreground">{user().name}</span>}</Match>
-          </Switch>
-        </As>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent class="min-w-[100px]">
-        <Switch>
-          <Match when={props.user === null}>
-            <DropdownMenuItem class="items-center gap-2" asChild>
-              <As component={A} href="/auth/login">
-                Login
-                <LogIn class="h-4 w-4" />
-              </As>
-            </DropdownMenuItem>
-          </Match>
-          <Match when={props.user !== null}>
-            <DropdownMenuItem class="items-center gap-2" asChild>
-              <As component={A} href="/profile">
-                <User class="h-4 w-4" />
-                Profile
-              </As>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+    <div class="w-full items-center justify-between flex flex-row gap-2 text-base">
+      <Switch
+        fallback={
+          <A
+            href=""
+            class={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "gap-2 items-center justify-start flex flex-row w-full"
+            )}
+          >
+            <LogIn class="size-4" />
+            Login
+          </A>
+        }
+      >
+        <Match when={props.user !== null}>
+          <A
+            href="/profile"
+            class={cn(
+              buttonVariants({
+                variant: "outline",
+                size: "lg",
+              }),
+              "gap-2 items-center w-full justify-start flex flex-row"
+            )}
+          >
+            <User class="size-4" />
+            <Switch>
+              <Match when={props.user}>{(user) => <span class="text-muted-foreground">{user().name}</span>}</Match>
+            </Switch>
+          </A>
+          <div class="w-max">
             <form method="post" action={logout}>
-              <DropdownMenuItem
-                class="text-red-500 hover:bg-red-100 dark:hover:bg-red-900 dark:text-red-400 hover:text-white items-center gap-2"
-                asChild
-              >
-                <As component={"button"} class="w-full cursor-pointer">
-                  <LogOut class="h-4 w-4" />
-                  Logout
-                </As>
-              </DropdownMenuItem>
+              <Button variant="outline" size="icon" class="size-10" type="submit">
+                <LogOut class="size-4" />
+              </Button>
             </form>
-          </Match>
-        </Switch>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          </div>
+        </Match>
+      </Switch>
+    </div>
   );
 }
