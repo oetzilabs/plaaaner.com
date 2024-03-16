@@ -1,10 +1,11 @@
-import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
+import { and, count, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
 import {
   SystemNotificationCreateSchema,
   SystemNotificationUpdateSchema,
+  organizations_notifications,
   system_notifications,
   user_dismissed_system_notifications,
 } from "../drizzle/sql/schema";
@@ -64,6 +65,14 @@ export const findById = z.function(z.tuple([z.string().uuid()])).implement(async
   return db.query.system_notifications.findFirst({
     where: (notifications, operations) => operations.eq(notifications.id, input),
   });
+});
+
+export const countByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
+  const [org_notifications] = await db
+    .select({ count: count(organizations_notifications.id) })
+    .from(organizations_notifications)
+    .where(eq(organizations_notifications.organization_id, input));
+  return org_notifications.count;
 });
 
 export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {

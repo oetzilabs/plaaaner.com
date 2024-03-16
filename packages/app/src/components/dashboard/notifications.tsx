@@ -1,6 +1,6 @@
 import { createAsync, A } from "@solidjs/router";
 import { getNotifications } from "@/lib/api/notifications";
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import { buttonVariants } from "@/components/ui/button";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -8,28 +8,45 @@ import { cn } from "@/lib/utils";
 import type { UserSession } from "@/lib/auth/util";
 dayjs.extend(relativeTime);
 
-export const Notifications = (props: { session: UserSession }) => {
+export const Inbox = (props: { session: UserSession }) => {
   const notifications = createAsync(() => getNotifications());
 
   return (
-    <div class="grid gap-2 w-max max-w-[300px]">
-      <For each={notifications()}>
-        {(n) => (
-          <A
-            href={n.link}
-            class={cn(
-              buttonVariants({
-                size: "sm",
-                variant: "ghost",
-              }),
-              "w-full h-auto p-4 flex flex-col items-start gap-2 border border-neutral-200 dark:border-neutral-800",
-            )}
-          >
-            <span class="text-xs font-medium">{n.message}</span>
-            <div class="flex flex-row gap-1 font-normal text-muted-foreground">{n.contents}</div>
-          </A>
+    <div class="flex flex-col w-full">
+      <A
+        href={`/dashboard/organizations/${props.session.organization?.id}/notifications`}
+        class={cn(
+          buttonVariants({ variant: "ghost" }),
+          "w-full h-auto py-1 px-3 flex flex-row items-center justify-between gap-2"
         )}
-      </For>
+      >
+        <span class="text-sm font-bold group-hover:underline group-hover:underline-offset-2">Inbox</span>
+        <div class="size-3 bg-neutral-100 dark:bg-neutral-900 rounded-full p-3 items-center justify-center flex text-muted-foreground text-xs">
+          {notifications()?.length}
+        </div>
+      </A>
+      {/*
+        <Show when={typeof notifications !== "undefined" && notifications()}>
+        {(n) => (
+          <For each={n()}>
+            {(notification) => (
+              <A
+                href={notification.link}
+                class={cn(
+                  buttonVariants({
+                    size: "sm",
+                    variant: "ghost",
+                  }),
+                  "w-full h-auto px-4 py-1 flex flex-row items-center justify-between gap-2 truncate rounded-none"
+                )}
+              >
+                <span class="text-xs font-medium">{notification.message}</span>
+              </A>
+            )}
+          </For>
+        )}
+      </Show>
+      */}
     </div>
   );
 };
