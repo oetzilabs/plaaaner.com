@@ -15,7 +15,7 @@ const ModeToggle = () => {
   return (
     <DropdownMenu placement="bottom-end" sameWidth>
       <DropdownMenuTrigger asChild>
-        <As component={Button} variant="ghost" size="lg" class="px-4 w-full flex flex-row items-center justify-start gap-2 rounded-none">
+        <As component={Button} variant="ghost" class="px-4 w-full flex flex-row items-center justify-start gap-4">
           <div class="w-max flex">
             <Sun class="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />

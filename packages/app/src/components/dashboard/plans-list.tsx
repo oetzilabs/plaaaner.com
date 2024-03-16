@@ -14,21 +14,21 @@ export const PlansList = (props: { session: UserSession }) => {
 
   return (
     <div class="flex flex-col w-full">
-      <div class="flex flex-row items-center justify-between w-full py-2">
+      <div class="flex flex-row items-center justify-between w-full py-2 gap-2">
         <A
           href="/dashboard"
           class={cn(
             buttonVariants({ variant: "ghost" }),
-            "w-full h-auto py-1 px-3 flex flex-row items-center justify-between gap-2"
+            "w-full h-auto py-1 px-3 flex flex-row items-center justify-between gap-2 pr-0"
           )}
         >
           Plans
-          <A href="/plan/create" class={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-6")}>
-            <Plus class="size-3" />
-          </A>
+        </A>
+        <A href="/plan/create" class={cn(buttonVariants({ variant: "outline", size: "icon" }), "h-full w-8")}>
+          <Plus class="size-3" />
         </A>
       </div>
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-2">
         <For each={plans()}>
           {(plan) => (
             <A

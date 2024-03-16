@@ -65,7 +65,6 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
 
   if (!org) return null;
   const workspaces = org.workspaces.filter((ws) => ws.workspace.deletedAt === null);
-  console.log({ workspaces });
   const org2 = {
     ...org,
     workspaces,

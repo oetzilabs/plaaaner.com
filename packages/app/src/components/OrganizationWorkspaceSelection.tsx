@@ -7,7 +7,7 @@ import {
   CommandList,
   CommandHeading,
 } from "@/components/ui/command";
-import { Building2, ChevronsUpDown, Target } from "lucide-solid";
+import { Building, Building2, ChevronsUpDown, Target } from "lucide-solid";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "solid-sonner";
 import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
@@ -70,20 +70,20 @@ export const OrganizationWorkspaceSelection = () => {
             {(session) => (
               <>
                 <div
-                  class="flex flex-row items-center justify-between px-4 py-2 gap-4 cursor-pointer text-muted-foreground w-full group"
+                  class="flex flex-row items-center justify-between p-4 gap-4 cursor-pointer text-muted-foreground w-full group"
                   onClick={() => {
                     if (isChangingDashboard.pending) return;
                     setOpenSelector(true);
                   }}
                 >
                   <div class="w-full flex flex-row items-center justify-between gap-2">
-                    <div class="size-9 bg-indigo-500 flex items-center justify-center rounded-md text-white">
-                      <Building2 class="size-4" />
+                    <div class="size-10 bg-indigo-500 flex items-center justify-center rounded-md text-white">
+                      <Building class="size-4" />
                     </div>
-                    <div class="flex flex-row w-full items-center justify-between group-hover:bg-neutral-100 group-hover:dark:bg-neutral-900 px-4 py-1 rounded-md">
+                    <div class="flex flex-row w-full items-center justify-between group-hover:bg-neutral-100 group-hover:dark:bg-neutral-900 px-3 py-1.5 rounded-md gap-2">
                       <div class="w-full flex flex-col text-xs">
-                        <div class="w-max font-bold">{session().organization?.name}</div>
-                        <div class="w-max">{session().workspace?.name}</div>
+                        <div class="w-full font-bold">{session().organization?.name}</div>
+                        <div class="w-full">{session().workspace?.name}</div>
                       </div>
                       <ChevronsUpDown class="size-3" />
                     </div>
