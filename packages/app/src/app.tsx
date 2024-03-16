@@ -74,9 +74,11 @@ export default function App() {
                         "min-height": "100vh",
                       }}
                     >
-                      <Header />
                       <SessionProvider>
-                        <WebsocketProvider>{props.children}</WebsocketProvider>
+                        <WebsocketProvider>
+                          <Header />
+                          {props.children}
+                        </WebsocketProvider>
                       </SessionProvider>
                     </div>
                   </ColorModeProvider>

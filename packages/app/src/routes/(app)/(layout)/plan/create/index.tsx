@@ -30,7 +30,7 @@ export default function PlanCreateEventPage() {
   ];
 
   return (
-    <div class="flex flex-col py-10 gap-8">
+    <div class="flex flex-col py-10 gap-8 px-4">
       <h1 class="text-3xl font-medium">Create your plan</h1>
       <div class="p-4 pb-8 w-full border border-neutral-200 dark:border-neutral-800 rounded-md flex flex-col gap-8">
         <h2 class="text-2xl font-semibold">Choose a plan</h2>
