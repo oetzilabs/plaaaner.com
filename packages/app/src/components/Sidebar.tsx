@@ -1,11 +1,10 @@
-import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
 import { Settings2 } from "lucide-solid";
 import { Show } from "solid-js";
 import { toast } from "solid-sonner";
 import ModeToggle from "./ModeToogle";
 import { useSession } from "./SessionProvider";
-import { Button, buttonVariants } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import UserMenu from "./UserMenu";
 import { Skeleton } from "./ui/skeleton";
 import { Separator } from "./ui/separator";
@@ -28,19 +27,19 @@ export const Sidebar = () => {
               <Skeleton class="w-full h-12" />
             </div>
             <div class="w-full py-2 flex flex-col gap-2">
-              <Skeleton class="w-full h-6" />
-              <Skeleton class="w-full h-6" />
+              <Skeleton class="w-full h-9" />
+              <Skeleton class="w-full h-9" />
             </div>
             <Separator class="w-full" />
             <div class="w-full py-2 flex flex-col gap-2">
               <div class="flex flex-row w-full items-center justify-between gap-2">
-                <Skeleton class="w-full h-6" />
+                <Skeleton class="w-full h-9" />
                 <div class="w-max">
-                  <Skeleton class="size-6" />
+                  <Skeleton class="size-9" />
                 </div>
               </div>
-              <Skeleton class="w-full h-6" />
-              <Skeleton class="w-full h-6" />
+              <Skeleton class="w-full h-9" />
+              <Skeleton class="w-full h-9" />
             </div>
           </div>
         }

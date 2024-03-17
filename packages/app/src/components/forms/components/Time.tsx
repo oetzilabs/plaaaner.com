@@ -50,10 +50,6 @@ const TimeSlotChange = (props: {
   };
   onChange: (start: Date, end: Date) => void;
 }) => {
-  const plan = usePlanProvider();
-
-  if (!plan) return null;
-
   const [start, setStart] = createSignal(props.value.start);
   const [end, setEnd] = createSignal(props.value.end);
 
@@ -123,29 +119,8 @@ const TimeSlotChange = (props: {
 
 export const Time = () => {
   const plan = usePlanProvider();
-  if (!plan)
-    return (
-      <div class="flex flex-col gap-2 w-full">
-        <div class="flex flex-row gap-2 w-full justify-between">
-          <Skeleton class="w-full h-8" />
-          <Skeleton class="w-32 h-8" />
-        </div>
-        <div class="flex flex-col gap-2 w-full">
-          <For
-            each={[0, 1]}
-            fallback={
-              <div class="flex flex-col items-center justify-center text-muted-foreground border border-neutral-200 dark:border-neutral-800 rounded-md">
-                There are no time slots
-              </div>
-            }
-          >
-            {() => <Skeleton class="w-full h-20" />}
-          </For>
-        </div>
-      </div>
-    );
 
-  const time_slots = () => plan.newPlan().time_slots;
+  const time_slots = () => plan?.newPlan().time_slots ?? {};
 
   const time_slots_length = () =>
     Object.values(time_slots()).reduce((acc, day) => {
@@ -162,15 +137,15 @@ export const Time = () => {
         <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
           <div class="flex flex-row items-center justify-between w-full">
             <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              When is the {plan.newPlan().plan_type}?
+              When is the {plan?.newPlan().plan_type}?
             </TextFieldLabel>
             <Button
               size="sm"
-              variant={dayjs(plan.newPlan().days?.[0]).isSame(dayjs().startOf("day"), "day") ? "secondary" : "outline"}
+              variant={dayjs(plan?.newPlan().days?.[0]).isSame(dayjs().startOf("day"), "day") ? "secondary" : "outline"}
               class="w-max gap-2 items-center justify-center"
               type="button"
               onClick={() => {
-                plan.setNewPlan((ev) => {
+                plan?.setNewPlan((ev) => {
                   return {
                     ...ev,
                     day: dayjs().startOf("day").toDate(),
@@ -188,12 +163,12 @@ export const Time = () => {
           selectionMode="range"
           min={today(timezone())}
           timeZone={timezone()}
-          value={(plan.newPlan().days ?? []).map((d) => dayjs(d).format("YYYY-MM-DD"))}
+          value={(plan?.newPlan().days ?? []).map((d) => dayjs(d).format("YYYY-MM-DD"))}
           onValueChange={(date) => {
             const tz = timezone();
             const days = date.value.map((d) => dayjs(d.toDate(tz)).startOf("day").toDate());
             if (days.length > 1) {
-              plan.setNewPlan((ev) => {
+              plan?.setNewPlan((ev) => {
                 return {
                   ...ev,
                   days,
@@ -357,9 +332,9 @@ export const Time = () => {
           </div>
           <div class="flex flex-col gap-2 w-full">
             <For
-              each={Object.entries(plan.newPlan().time_slots)}
+              each={Object.entries(plan?.newPlan().time_slots ?? {})}
               fallback={
-                <div class="flex flex-col items-center justify-center text-muted-foreground border border-neutral-200 dark:border-neutral-800 rounded-md">
+                <div class="flex flex-col items-center justify-center text-muted-foreground border border-neutral-200 dark:border-neutral-800 rounded-md py-2">
                   There are no time slots
                 </div>
               }
@@ -391,6 +366,7 @@ export const Time = () => {
                               </AlertDialogHeader>
                               <TimeSlotChange
                                 onChange={(start, end) => {
+                                  if(!plan) return;
                                   const time_slots_copy = time_slots();
 
                                   time_slots_copy[string_date][string_time_slot].start = dayjs(time_slot.start)
@@ -417,6 +393,7 @@ export const Time = () => {
                               size="icon"
                               class="w-max h-max p-3"
                               onClick={() => {
+                                if(!plan) return;
                                 const time_slots_copy = time_slots();
                                 const ts = time_slots_copy[string_date];
                                 delete ts[string_time_slot];
@@ -437,6 +414,7 @@ export const Time = () => {
                       class="flex gap-2 items-center"
                       size="sm"
                       onClick={() => {
+                        if(!plan) return;
                         const time_slots_copy = time_slots();
                         const the_day = time_slots_copy[string_date];
                         const sortedTimeSlots = Object.values(the_day).sort(
@@ -456,7 +434,7 @@ export const Time = () => {
                             newTimeSlot
                           );
                           const nnp = new_newPlan();
-                          plan.setNewPlan(nnp);
+                          plan?.setNewPlan(nnp);
                           return;
                         }
                         const lastTimeSlot = sortedTimeSlots[0];

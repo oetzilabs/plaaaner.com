@@ -1,4 +1,4 @@
-import { createSignal, createEffect, onCleanup, JSX, JSXElement, ComponentProps, Show } from "solid-js";
+import { createSignal, JSXElement, Show } from "solid-js";
 import {
   CommandDialog,
   CommandItem,
@@ -7,11 +7,10 @@ import {
   CommandList,
   CommandHeading,
 } from "@/components/ui/command";
-import { Building, Building2, ChevronsUpDown, Target } from "lucide-solid";
+import { Building, ChevronsUpDown, Target } from "lucide-solid";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "solid-sonner";
 import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
-import { getAuthenticatedUser } from "@/lib/auth/util";
 import { getUserOrganizations } from "@/lib/api/organizations";
 import { setDashboard } from "@/lib/api/user";
 import { useSession } from "./SessionProvider";
@@ -80,10 +79,10 @@ export const OrganizationWorkspaceSelection = () => {
                     <div class="size-10 bg-indigo-500 flex items-center justify-center rounded-md text-white">
                       <Building class="size-4" />
                     </div>
-                    <div class="flex flex-row w-full items-center justify-between group-hover:bg-neutral-100 group-hover:dark:bg-neutral-900 px-3 py-1.5 rounded-md gap-2">
-                      <div class="w-full flex flex-col text-xs">
-                        <div class="w-full font-bold">{session().organization?.name}</div>
-                        <div class="w-full">{session().workspace?.name}</div>
+                    <div class="flex flex-row flex-1 items-center justify-between group-hover:bg-neutral-100 group-hover:dark:bg-neutral-900 px-3 py-1.5 rounded-md gap-2">
+                      <div class="w-full flex flex-col">
+                        <div class="w-full font-bold text-base">{session().organization?.name}</div>
+                        <div class="w-full text-xs">{session().workspace?.name}</div>
                       </div>
                       <ChevronsUpDown class="size-3" />
                     </div>

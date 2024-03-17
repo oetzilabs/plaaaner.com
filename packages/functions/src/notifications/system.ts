@@ -2,9 +2,9 @@ import { SNSEvent } from "aws-lambda";
 import { ApiHandler } from "sst/node/api";
 import { json } from "../utils";
 import { Topic } from "sst/node/topic";
-import { Notifications } from "@taxi-kassede/core/entities/notifications";
+import { Notifications } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
 import { WebSocketApiHandler } from "sst/node/websocket-api";
-import { WebsocketCore } from "@taxi-kassede/core/entities/websocket";
+import { WebsocketCore } from "@oetzilabs-plaaaner-com/core/src/entities/websocket";
 
 export async function main(event: SNSEvent) {
   // here the incoming notifications are sent to all connected clients
