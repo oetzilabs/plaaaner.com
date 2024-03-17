@@ -208,23 +208,18 @@ export const Form = (props: {
   setCurrentTab: Setter<TabValue>;
 }) => {
   const plan = usePlanProvider();
-  if (!plan)
-    return (
-      <div class="flex flex-col gap-6 w-full">
-        <Skeleton class="w-full h-8" />
-        <Skeleton class="w-full h-40" />
-      </div>
-    );
 
   const handleSubmit = async (e: Event) => {
+    const p = plan;
+    if(!p) return;
     e.preventDefault();
-    const nE = plan.newPlan();
-    await plan.createPlan(nE);
+    const nE = p.newPlan();
+    await p.createPlan(nE);
   };
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col gap-6 xl:w-1/2 lg:w-2/3 w-full self-start" ref={props.formRef!}>
-      <Show when={plan.plan_type_id()}>{(eti) => <input hidden value={eti()} name="plan_type_id" />}</Show>
+      <Show when={plan?.plan_type_id()}>{(eti) => <input hidden value={eti()} name="plan_type_id" />}</Show>
       <Tabs
         defaultValue="general"
         value={props.currentTab()}
@@ -243,7 +238,7 @@ export const Form = (props: {
             <MapPin class="w-3 h-3" />
             Location
           </TabsTrigger>
-          <TabsTrigger value="tickets" class="text-sm font-medium leading-none gap-2 pl-1.5 md:pl-3">
+          <TabsTrigger value="tickets" class="text-sm font-medium leading-none gap-2 pl-1.5 md:pl-3" disabled>
             <Ticket class="w-3 h-3" />
             <TicketsTabTrigger />
           </TabsTrigger>

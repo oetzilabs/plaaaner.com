@@ -29,7 +29,7 @@ export default function PlanCreateEventPage() {
   }
 
   return (
-    <div class="flex flex-col py-10">
+    <div class="container flex flex-col py-10">
       <div class="px-4 lg:px-0 w-full">
         <CreatePlan plan_type={v.data} />
       </div>

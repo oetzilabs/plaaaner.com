@@ -4,7 +4,7 @@ import { For } from "solid-js";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import type { UserSession } from "@/lib/auth/util";
-import { Button, buttonVariants } from "../ui/button";
+import { buttonVariants } from "../ui/button";
 import { Plus } from "lucide-solid";
 import { cn } from "@/lib/utils";
 dayjs.extend(relativeTime);
@@ -19,13 +19,13 @@ export const PlansList = (props: { session: UserSession }) => {
           href="/dashboard"
           class={cn(
             buttonVariants({ variant: "ghost" }),
-            "w-full h-auto py-1 px-3 flex flex-row items-center justify-between gap-2 pr-0"
+            "flex flex-row items-center justify-between gap-2 px-4 flex-1"
           )}
         >
           Plans
         </A>
-        <A href="/plan/create" class={cn(buttonVariants({ variant: "outline", size: "icon" }), "h-full w-8")}>
-          <Plus class="size-3" />
+        <A href="/plan/create" class={cn(buttonVariants({ variant: "outline", size: "icon" }), "size-9")}>
+          <Plus class="size-4" />
         </A>
       </div>
       <div class="flex flex-col gap-2">
@@ -35,7 +35,7 @@ export const PlansList = (props: { session: UserSession }) => {
               href={`/dashboard/organizations/${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans/${plan.id}`}
               class={cn(
                 buttonVariants({ variant: "ghost" }),
-                "w-full h-auto py-1 px-3 flex flex-row items-center justify-between gap-2"
+                "flex flex-row items-center justify-between gap-2 px-4 pr-2"
               )}
             >
               <div class="flex flex-row gap-2 w-full items-center justify-between">

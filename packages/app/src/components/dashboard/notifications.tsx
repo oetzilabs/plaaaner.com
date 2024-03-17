@@ -1,6 +1,5 @@
 import { createAsync, A } from "@solidjs/router";
 import { getNotifications } from "@/lib/api/notifications";
-import { For, Show } from "solid-js";
 import { buttonVariants } from "@/components/ui/button";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -17,7 +16,7 @@ export const Inbox = (props: { session: UserSession }) => {
         href={`/dashboard/organizations/${props.session.organization?.id}/notifications`}
         class={cn(
           buttonVariants({ variant: "ghost" }),
-          "w-full h-auto py-1 px-3 flex flex-row items-center justify-between gap-2"
+          "flex flex-row items-center justify-between gap-2 px-4 pr-2"
         )}
       >
         <span class="text-sm font-bold group-hover:underline group-hover:underline-offset-2">Inbox</span>
@@ -25,28 +24,6 @@ export const Inbox = (props: { session: UserSession }) => {
           {notifications()?.length}
         </div>
       </A>
-      {/*
-        <Show when={typeof notifications !== "undefined" && notifications()}>
-        {(n) => (
-          <For each={n()}>
-            {(notification) => (
-              <A
-                href={notification.link}
-                class={cn(
-                  buttonVariants({
-                    size: "sm",
-                    variant: "ghost",
-                  }),
-                  "w-full h-auto px-4 py-1 flex flex-row items-center justify-between gap-2 truncate rounded-none"
-                )}
-              >
-                <span class="text-xs font-medium">{notification.message}</span>
-              </A>
-            )}
-          </For>
-        )}
-      </Show>
-      */}
     </div>
   );
 };
