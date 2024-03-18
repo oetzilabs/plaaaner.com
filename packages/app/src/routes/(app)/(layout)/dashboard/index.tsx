@@ -5,7 +5,6 @@ import { Greeting } from "@/components/dashboard/greeting";
 import { A } from "@solidjs/router";
 import { useSession } from "@/components/SessionProvider";
 import { Match, Switch } from "solid-js";
-import { NotLoggedIn } from "@/components/NotLoggedIn";
 import { Loader2 } from "lucide-solid";
 dayjs.extend(relativeTime);
 
