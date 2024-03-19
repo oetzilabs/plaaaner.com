@@ -114,7 +114,7 @@ export const AppSearch = () => {
   return (
     <div class="flex flex-row items-center">
       <div
-        class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-2.5 py-1.5 gap-2.5 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-max"
+        class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-2.5 py-2 gap-2.5 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-max"
         onClick={() => setOpenSearch(true)}
       >
         <Search class="w-4 h-4" />

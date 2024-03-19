@@ -44,6 +44,46 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
   });
 });
 
+export const findBy = z
+  .function(
+    z.tuple([
+      z.object({
+        user_id: z.string().uuid().nullable(),
+        workspace_id: z.string().uuid().nullable(),
+        organization_id: z.string().uuid().nullable(),
+      }),
+    ])
+  )
+  .implement(async ({ user_id, organization_id, workspace_id }) => {
+    if (!user_id) {
+      throw new Error("User Id is missing");
+    }
+    if (!organization_id || !workspace_id) {
+      // get all plans
+      const plans = await findByUserId(user_id);
+      return plans;
+    }
+    const orgplans = await findByOrganizationId(organization_id);
+    if (!workspace_id) {
+      return orgplans;
+    }
+    const workspaces = await Workspace.findByOrganizationId(organization_id);
+    const ps = await Promise.all(
+      workspaces.map(async (ws) =>
+        db.query.workspaces_plans.findMany({
+          where: (fields, operators) => operators.eq(fields.workspace_id, ws.id),
+          with: {
+            plan: true,
+          },
+        })
+      )
+    );
+    return ps
+      .flat()
+      .filter((oe) => oe.workspace_id === workspace_id)
+      .map((oe) => oe.plan);
+  });
+
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {
   return db.query.plans.findFirst({
     where: (plans, operations) => operations.eq(plans.name, input),
@@ -100,7 +140,7 @@ export const setOwner = z
   });
 
 export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
-  const ws = await db.query.plans.findFirst({
+  const ws = await db.query.plans.findMany({
     where: (plans, operations) => and(operations.eq(plans.owner_id, user_id), isNull(plans.deletedAt)),
     orderBy(fields, operators) {
       return operators.desc(fields.createdAt);

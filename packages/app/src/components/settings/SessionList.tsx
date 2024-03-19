@@ -36,8 +36,8 @@ export const SessionList = (props: { session: UserSession }) => {
                           <Badge>Current</Badge>
                         </Show>
                       </div>
-                      <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-1 text-sm">
-                        <div class="flex flex-row gap-1 w-full min-w-0 justify-between items-center">
+                      <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-2 text-sm">
+                        <div class="flex flex-row gap-2 w-full min-w-0 justify-between items-center">
                           <div class="w-24">
                             <span class="w-full">Access Token:</span>
                           </div>
@@ -89,9 +89,9 @@ export const SessionList = (props: { session: UserSession }) => {
           <form class="flex flex-col gap-2 items-start w-full py-0" action={revokeAllSessions} method="post">
             <div class="bg-red-100 dark:bg-red-900/50 w-full p-4 rounded-md border border-red-300 dark:border-red-700">
               <span class="text-red-500 dark:text-white text-sm">
-                You can revoke all sessions to log out of all devices. This will also log you out of{" "}
+                You can revoke all sessions to log out of all devices. This will also log you out of your{" "}
                 <i>
-                  <b>this</b>
+                  <b>current</b>
                 </i>{" "}
                 device.
               </span>

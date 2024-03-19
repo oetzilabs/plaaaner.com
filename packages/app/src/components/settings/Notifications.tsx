@@ -54,17 +54,17 @@ export const Notifications = () => {
               <button
                 type="button"
                 class={cn(
-                  "flex flex-row items-center justify-start gap-6 w-full transition-all hover:bg-accent hover:text-accent-foreground py-2 px-6 rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+                  "flex flex-row items-center justify-start gap-6 w-full transition-all hover:bg-accent hover:text-accent-foreground py-2 px-4 rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
                   {
                     "bg-accent text-accent-foreground border border-neutral-300 dark:border-neutral-700 shadow-sm":
                       notifcationSettings()?.type === n.type,
-                  },
+                  }
                 )}
                 disabled={isChangingNotificationSettings.pending}
                 onClick={() => handleNotificationChange(n.type)}
               >
                 <div class="flex flex-row items-center gap-2">{n.icon}</div>
-                <div class="flex flex-col gap-1 items-start justify-start w-full">
+                <div class="flex flex-col gap-3 items-start justify-start w-full">
                   <span class="text-sm font-semibold capitalize">{n.type}</span>
                   <span class="text-xs text-muted-foreground">{n.description}</span>
                 </div>

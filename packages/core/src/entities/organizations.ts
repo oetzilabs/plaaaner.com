@@ -109,6 +109,8 @@ export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).impleme
     .map((organization) => {
       const new_organization = {
         id: organization.id,
+        createdAt: organization.createdAt,
+        updatedAt: organization.updatedAt,
         name: organization.name,
         owner: organization.owner,
         ticket_types: organization.ticket_types,

@@ -34,8 +34,27 @@ export const Workspaces = (props: { session: UserSession }) => {
     <Show when={props.session} fallback={<NotLoggedIn />}>
       {(s) => (
         <div class="flex flex-col items-start gap-8 w-full">
-          <div class="flex flex-col items-start gap-2 w-full">
-            <span class="text-lg font-semibold">Workspaces</span>
+          <div class="flex flex-col items-start gap-4 w-full">
+            <div class="flex flex-row items-center justify-between w-full gap-2">
+              <div class="w-full">
+                <span class="text-lg font-semibold">Workspaces</span>
+              </div>
+              <div class="w-max">
+                <A
+                  href="/organizations/new"
+                  class={cn(
+                    buttonVariants({
+                      variant: "default",
+                      size: "sm",
+                    }),
+                    "w-max gap-2 items-center"
+                  )}
+                >
+                  <Plus class="size-4" />
+                  Create Workspaces
+                </A>
+              </div>
+            </div>
             <span class="text-sm text-muted-foreground">Manage your workspaces</span>
           </div>
           <div class="gap-4 w-full flex flex-col">
@@ -58,8 +77,8 @@ export const Workspaces = (props: { session: UserSession }) => {
                   return (
                     <div class="rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col w-full gap-4">
                       <div class="flex flex-row items-center gap-2 w-full">
-                        <div class="w-full flex flex-row gap-2">
-                          <span>{workspace.name}</span>
+                        <div class="w-full flex flex-row gap-2 items-center">
+                          <span class="font-bold">{workspace.name}</span>
                           <Show when={workspace.owner && workspace.owner_id === user()?.id}>
                             <Badge variant="default">Owner: {workspace.owner?.name}</Badge>
                           </Show>
@@ -78,7 +97,7 @@ export const Workspaces = (props: { session: UserSession }) => {
                           <Trash class="w-4 h-4" />
                         </Button>
                       </div>
-                      <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-1 text-sm">
+                      <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-4 text-sm">
                         <span>Created {dayjs(workspace.createdAt).fromNow()}</span>
                         <div class="flex flex-row items-start justify-start gap-1 text-xs">
                           <For

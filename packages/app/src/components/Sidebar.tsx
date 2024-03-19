@@ -18,7 +18,7 @@ export const Sidebar = () => {
   const userSession = useSession();
 
   return (
-    <div class="relative w-[300px] flex flex-col gap-0 border-r border-neutral-200 dark:border-neutral-800 grow">
+    <div class="relative w-[300px] flex flex-col gap-0 border-r border-neutral-200 dark:border-neutral-800 grow min-h-0 max-h-screen">
       <Show
         when={typeof userSession !== "undefined" && userSession().user !== null && userSession()}
         fallback={
@@ -32,12 +32,7 @@ export const Sidebar = () => {
             </div>
             <Separator class="w-full" />
             <div class="w-full py-2 flex flex-col gap-2">
-              <div class="flex flex-row w-full items-center justify-between gap-2">
-                <Skeleton class="w-full h-9" />
-                <div class="w-max">
-                  <Skeleton class="size-9" />
-                </div>
-              </div>
+              <Skeleton class="w-full h-7" />
               <Skeleton class="w-full h-9" />
               <Skeleton class="w-full h-9" />
             </div>

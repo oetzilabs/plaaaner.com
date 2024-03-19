@@ -28,12 +28,12 @@ export const Dangerzone = () => {
         <span class="text-sm text-muted-foreground">Please be causious what you click on!</span>
       </div>
       <div class="gap-4 w-full flex flex-col">
-        <div class="flex flex-col gap-2 w-full">
+        <div class="flex flex-col gap-4 w-full">
           <span class="text-lg font-semibold">Disable Account</span>
           <div class="bg-red-100 dark:bg-red-900/50 w-full p-4 rounded-md border border-red-300 dark:border-red-700 flex flex-col gap-4">
-            <div class="flex flex-row gap-2">
+            <div class="flex flex-row gap-4">
               <AlertTriangleIcon class="size-4" />
-              <div class="flex flex-col gap-0.5">
+              <div class="flex flex-col gap-4 py-1">
                 <span class="text-red-500 dark:text-white text-sm">We understand. </span>
                 <span class="text-red-500 dark:text-white text-sm">
                   You can disable your account and come back later if you change your mind. We appreciate you giving

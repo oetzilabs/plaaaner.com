@@ -34,9 +34,12 @@ export const Organizations = (props: { session: UserSession }) => {
   const organizations = createAsync(() => getUserOrganizations());
   const defaultTicketTypeCount = createAsync(() => getDefaultTicketTypeCount(), { deferStream: true });
 
+  const disconnectOrganization = useAction(disconnectFromOrganization);
   const isDisconnectingFromOrganization = useSubmission(disconnectFromOrganization);
+  const setCurrentOrg = useAction(setCurrentOrganization);
   const isSettingCurrentOrganization = useSubmission(setCurrentOrganization);
   const isDeletingOrganization = useSubmission(deleteOrganization);
+
   const removeOrganization = useAction(deleteOrganization);
   const fillInDefaultTicketTypes = useAction(fillDefaultTicketTypes);
   const isFillingDefaultTicketTypes = useSubmission(fillDefaultTicketTypes);
@@ -45,7 +48,7 @@ export const Organizations = (props: { session: UserSession }) => {
     <Show when={props.session} fallback={<NotLoggedIn />}>
       {(s) => (
         <div class="flex flex-col items-start gap-8 w-full">
-          <div class="flex flex-col items-start gap-2 w-full">
+          <div class="flex flex-col items-start gap-4 w-full">
             <div class="flex flex-row items-center justify-between w-full gap-2">
               <div class="w-full">
                 <span class="text-lg font-semibold">Organizations</span>
@@ -88,9 +91,9 @@ export const Organizations = (props: { session: UserSession }) => {
                   return (
                     <div class="rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col w-full gap-4">
                       <div class="flex flex-row items-center gap-2 w-full">
-                        <div class="w-full flex flex-row gap-2">
-                          <span>{organization.name}</span>
-                          <Show when={organization.owner && organization.owner_id === user()?.id}>
+                        <div class="w-full flex flex-row gap-2 items-center">
+                          <span class="font-bold">{organization.name}</span>
+                          <Show when={organization.owner && organization.owner.id === user()?.id}>
                             <Badge variant="default">Owner: {organization.owner?.name}</Badge>
                           </Show>
                           <Show when={organization.id === s().organization?.id}>
@@ -136,7 +139,7 @@ export const Organizations = (props: { session: UserSession }) => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
-                      <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-1 text-sm">
+                      <div class="w-full rounded-md border border-neutral-200 dark:border-neutral-800 p-4 flex flex-col gap-4 text-sm">
                         <span>Created {dayjs(organization.createdAt).fromNow()}</span>
                         <span>{organization.users.length} Users</span>
                         <span>
@@ -200,12 +203,7 @@ export const Organizations = (props: { session: UserSession }) => {
                               <span>Manage</span>
                             </As>
                           </Button>
-                          <form
-                            class="flex flex-col gap-2 items-end w-full py-0"
-                            action={setCurrentOrganization}
-                            method="post"
-                          >
-                            <input type="hidden" name="organization_id" value={organization.id} />
+                          <div class="flex flex-col gap-2 items-end w-full py-0">
                             <Button
                               variant="secondary"
                               size="sm"
@@ -215,15 +213,14 @@ export const Organizations = (props: { session: UserSession }) => {
                               disabled={
                                 isSettingCurrentOrganization.pending || organization.id === s().organization?.id
                               }
+                              onClick={async () => {
+                                await setCurrentOrg(organization.id);
+                              }}
                             >
                               <span>Connect</span>
                             </Button>
-                          </form>
-                          <form
-                            class="flex flex-col gap-2 items-end w-full py-0"
-                            action={disconnectFromOrganization}
-                            method="post"
-                          >
+                          </div>
+                          <div class="flex flex-col gap-2 items-end w-full py-0">
                             <input type="hidden" name="organizationId" value={organization.id} />
                             <Button
                               variant="secondary"
@@ -232,10 +229,13 @@ export const Organizations = (props: { session: UserSession }) => {
                               class="w-max"
                               aria-label="Disconnect from organization"
                               disabled={isDisconnectingFromOrganization.pending || organizations()!.length === 1}
+                              onClick={async () => {
+                                await disconnectOrganization(organization.id);
+                              }}
                             >
                               <span>Disconnect</span>
                             </Button>
-                          </form>
+                          </div>
                         </div>
                       </div>
                     </div>

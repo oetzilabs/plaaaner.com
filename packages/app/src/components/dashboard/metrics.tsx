@@ -20,7 +20,7 @@ export const Metrics = (props: { session: UserSession }) => {
     <div class="w-full grid md:grid-cols-3 grid-cols-1 gap-2">
       <For each={metrics()}>
         {(stat) => (
-          <div class="flex flex-col gap-0.5 p-4 rounded-md border border-neutral-200 dark:border-neutral-800">
+          <div class="flex flex-col gap-4 p-5 rounded-md border border-neutral-200 dark:border-neutral-800">
             <div class="flex flex-row items-start justify-between gap-1">
               <div class="flex flex-row gap-2 items-center">
                 <span class="text-base lg:text-lg xl:text-xl font-bold capitalize">

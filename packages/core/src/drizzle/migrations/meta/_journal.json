@@ -15,6 +15,13 @@
       "when": 1710074210813,
       "tag": "0001_zippy_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1710844491285,
+      "tag": "0002_neat_micromax",
+      "breakpoints": true
     }
   ]
 }
