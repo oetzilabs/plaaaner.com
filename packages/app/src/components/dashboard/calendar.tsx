@@ -1,5 +1,5 @@
 import { createAsync } from "@solidjs/router";
-import { createSignal, For, onMount } from "solid-js";
+import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 import type { UserSession } from "@/lib/auth/util";
 import { getPlans } from "@/lib/api/plans";
 import { getLocale } from "@/lib/api/locale";
@@ -14,6 +14,8 @@ dayjs.extend(advancedFormat);
 dayjs.extend(updateLocale);
 dayjs.extend(LocalizedFormat);
 dayjs.extend(isoWeek);
+
+type TimeSlot = { type: "empty" } | { type: "plan"; value: Awaited<ReturnType<typeof getPlans>>[number] };
 
 export const Calendar = (props: { session: UserSession }) => {
   const locale = createAsync(() => getLocale(), { deferStream: true });
@@ -43,6 +45,25 @@ export const Calendar = (props: { session: UserSession }) => {
     });
   };
 
+  const hoursWithPlan = (theplans: NonNullable<Awaited<ReturnType<typeof plans>>>, day: dayjs.Dayjs) => {
+    const amountOfSplits = 48;
+    const eventsForDay = theplans.filter(
+      (tp) => dayjs(tp.starts_at).isSame(day, "day") || dayjs(tp.ends_at).isSame(day, "day")
+    );
+    const slots: TimeSlot[] = Array(48).fill({ type: "empty" });
+
+    eventsForDay.forEach((event) => {
+      const startTimeSlot = Math.floor(event.starts_at.getHours() * 2 + event.starts_at.getMinutes() / 30);
+      const endTimeSlot = Math.floor(event.ends_at.getHours() * 2 + event.ends_at.getMinutes() / 30);
+
+      for (let i = startTimeSlot; i < endTimeSlot; i++) {
+        slots[i] = { type: "plan", value: event };
+      }
+    });
+
+    return slots;
+  };
+
   const changeWeek = (direction: -1 | 1) => {
     setCurrentDate((c) => c.add(direction, "week"));
   };
@@ -51,8 +72,7 @@ export const Calendar = (props: { session: UserSession }) => {
     <div class="w-full flex flex-col h-full relative">
       <div class="sticky top-0 flex flex-col">
         <div class="flex flex-row items-center justify-between gap-2 border-b border-neutral-200 dark:border-neutral-800 p-2">
-          <div class="w-full">
-          </div>
+          <div class="w-full"></div>
           <div class="flex-1 flex items-center justify-center">
             <div class="flex flex-row gap-2 items-center justify-center">
               <Button variant="outline" size="icon" class="size-6" onClick={() => changeWeek(-1)}>
@@ -96,7 +116,7 @@ export const Calendar = (props: { session: UserSession }) => {
           <div class="w-3 h-full"></div>
         </div>
         <div class="w-full flex flex-row h-full overflow-y-auto">
-          <div class="w-20 flex flex-col h-full">
+          <div class="w-20 grid grid-cols-1 grid-rows-[48] h-full">
             <For each={hours()}>
               {(d) => (
                 <div class="text-xs h-10 flex items-center justify-center border-b border-r border-neutral-200 dark:border-neutral-800 py-3 w-full">
@@ -105,11 +125,34 @@ export const Calendar = (props: { session: UserSession }) => {
               )}
             </For>
           </div>
-          <div class="flex-1 flex flex-col relative h-full grow">
-            <div class="flex flex-row h-full w-full">
-              <For each={createCalendar()}>{(day) => <div class="w-full h-full relative"></div>}</For>
-            </div>
-          </div>
+          <Show when={typeof plans !== "undefined" && plans()}>
+            {(theplans) => (
+              <div class="flex-1 flex flex-col relative h-full grow">
+                <div class="flex flex-row h-full w-full">
+                  <For each={createCalendar()}>
+                    {(day) => (
+                      <div class="w-full grid grid-cols-1 grid-row-[48] relative">
+                        <For each={hoursWithPlan(theplans(), day)}>
+                          {(d) => (
+                            <div class="text-xs h-10 flex items-center justify-center border-b border-neutral-100 dark:border-neutral-900 py-3 w-full">
+                              <Switch>
+                                <Match when={d.type !== "plan"}>
+                                  <div class=""></div>
+                                </Match>
+                                <Match when={d.type === "plan" && d.value}>
+                                  {(p) => <div class="bg-indigo-500">{dayjs(p().starts_at).format("LT")}</div>}
+                                </Match>
+                              </Switch>
+                            </div>
+                          )}
+                        </For>
+                      </div>
+                    )}
+                  </For>
+                </div>
+              </div>
+            )}
+          </Show>
         </div>
       </div>
     </div>

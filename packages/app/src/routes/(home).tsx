@@ -29,7 +29,7 @@ export default function IndexPage() {
                 </div>
               </div>
               <div class="z-20 flex flex-col gap-4 md:gap-8 items-center text-xs md:text-lg bg-[#4F46E4] text-white dark:bg-[#4F46E4] shadow-none shadow-indigo-500 md:shadow-2xl rounded-none md:rounded-md absolute w-full md:w-max left-0 md:left-[50%] translate-x-0 md:translate-x-[-50%] bottom-0 md:-bottom-8 py-6 px-10 md:border border-indigo-200 dark:border-[#4F46E4]">
-                <div class="w-max flex flex-col items-center justify-center gap-2">
+                <div class="w-max flex flex-col items-center justify-center gap-4">
                   <p class="text-center">From concerts and conferences to tournaments and workshops,</p>
                   <p class="text-center">manage everything in one centralized hub.</p>
                 </div>

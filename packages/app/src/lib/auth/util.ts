@@ -38,11 +38,13 @@ export const getAuthenticatedSession = cache(async () => {
   const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
   if (!sessionId) {
+    // throw redirect("/auth/login");
     return userSession;
   }
   // console.log({ sessionId });
   const { session } = await lucia.validateSession(sessionId);
   if (!session) {
+    // throw redirect("/auth/login");
     return userSession;
   }
 

@@ -7,6 +7,7 @@ import { A } from "@solidjs/router";
 import { useSession } from "@/components/SessionProvider";
 import { Match, Switch } from "solid-js";
 import { Loader2 } from "lucide-solid";
+import { NotLoggedIn } from "@/components/NotLoggedIn";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
@@ -19,6 +20,13 @@ export default function DashboardPage() {
         </div>
       }
     >
+      <Match when={typeof session !== "undefined" && session().user === null}>
+        <div class="flex p-4 w-full h-full items-center justify-center">
+          <div class="w-max h-max min-w-96">
+            <NotLoggedIn />
+          </div>
+        </div>
+      </Match>
       <Match when={!session}>
         <div class="flex p-4 w-full h-full items-center justify-center">
           <div class="w-max h-max min-w-96">
@@ -30,12 +38,8 @@ export default function DashboardPage() {
         {(s) => (
           <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
             <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-53px)]">
-              <Greeting session={s()} />
               <div class="flex flex-col w-full">
-                <div class="flex flex-col gap-4 w-full p-4">
-                  <A href="/metrics" class="font-bold w-max hover:underline underline-offset-2">
-                    Metrics
-                  </A>
+                <div class="flex flex-col gap-4 w-full">
                   <Metrics session={s()} />
                 </div>
               </div>

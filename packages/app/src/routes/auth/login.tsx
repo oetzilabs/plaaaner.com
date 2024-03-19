@@ -59,7 +59,7 @@ export default function LoginPage() {
     e.preventDefault();
     const _email = email();
     toast.info("Login via Email is not implemented yet");
-    const result = await loginWithEmail(_email);
+    // const result = await loginWithEmail(_email);
   };
 
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
           </div>
           <div class="p-8 w-full">
             <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-              <div class="flex flex-col space-y-2 text-center">
+              <div class="flex flex-col space-y-4 text-center">
                 <h1 class="text-2xl font-semibold tracking-tight">Create an account</h1>
                 <p class="text-sm text-muted-foreground">Enter your email below to create your account</p>
               </div>
@@ -95,6 +95,7 @@ export default function LoginPage() {
                     setEmail(v);
                   }}
                   value={email()}
+                  disabled
                 >
                   <TextFieldLabel class="sr-only">Email</TextFieldLabel>
                   <TextFieldInput
@@ -117,10 +118,11 @@ export default function LoginPage() {
                   })}
                   aria-busy={isLogginInViaEmail.pending}
                   aria-label="Continue with Email"
-                  disabled={isLogginInViaEmail.pending}
+                  disabled={isLogginInViaEmail.pending || true}
                 >
                   <span>Continue with Email</span>
                 </Button>
+                <span class="text-muted-foreground text-xs">Email login is currently disabled</span>
               </form>
               <div class="relative">
                 <div class="absolute inset-0 flex items-center">
