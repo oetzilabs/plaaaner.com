@@ -79,7 +79,7 @@ export const CommandItem: ParentComponent<ComboboxPrimitive.ComboboxItemProps> =
       item={local.item}
       cmdk-item=""
       class={cn(
-        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:opacity-50",
+        "relative flex cursor-pointer select-none items-center rounded-sm p-3 text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:opacity-50",
         local.class,
       )}
       onSelect={local.onSelect}
@@ -100,7 +100,7 @@ export const CommandHeading: ParentComponent<ComboboxPrimitive.ComboboxSectionPr
   return (
     <ComboboxPrimitive.Section
       cmdk-heading=""
-      class={cn("px-2 py-1.5 text-xs font-medium text-muted-foreground [&:not(&:first-of-type)]:mt-2", local.class)}
+      class={cn("px-3 py-2 text-xs font-medium text-muted-foreground [&:not(&:first-of-type)]:mt-2", local.class)}
       {...rest}
     />
   );

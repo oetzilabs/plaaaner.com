@@ -72,7 +72,7 @@ export const changeMessageSettings = action(async (type: string) => {
   return { type };
 }, "messageSetting");
 
-export const disconnectFromOrganization = action(async (data: FormData) => {
+export const disconnectFromOrganization = action(async (data: string) => {
   "use server";
   const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
@@ -85,7 +85,7 @@ export const disconnectFromOrganization = action(async (data: FormData) => {
   if (!session || !user) {
     throw redirect("/auth/login");
   }
-  const valid = z.string().uuid().safeParse(data.get("organizationId"));
+  const valid = z.string().uuid().safeParse(data);
   if (!valid.success) {
     throw new Error("Invalid data");
   }

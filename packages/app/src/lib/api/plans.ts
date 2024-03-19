@@ -9,7 +9,11 @@ import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import dayjs from "dayjs";
 import { getEvent } from "vinxi/http";
-import { PlanCreateSchema, PlanTimesCreateSchema, TicketCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
+import {
+  PlanCreateSchema,
+  PlanTimesCreateSchema,
+  TicketCreateSchema,
+} from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 
 export const getPreviousPlans = cache(async () => {
   "use server";
@@ -36,30 +40,20 @@ export const getPreviousPlans = cache(async () => {
 export const getPlans = cache(async () => {
   "use server";
   const event = getEvent()!;
-  if (!event.context.user) {
+
+  const user = event.context.user;
+  if (!user) {
     throw redirect("/auth/login");
   }
-  const user = event.context.user;
-  return [
-    {
-      id: "1",
-      name: "test event",
-      type: "event",
-      createdAt: dayjs().add(2, "days").toDate(),
-      link: "/plans/event/1",
-      progress: 60,
-    },
-    {
-      id: "2",
-      name: "test event 2",
-      type: "event",
-      createdAt: dayjs().add(8, "days").toDate(),
-      link: "/plans/event/2",
-      progress: 22,
-    },
-  ];
-  // const n = await Notifications.findManyByUserId(user.id);
-  // return n;
+
+  const session = event.context.session;
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  const plans = Plans.findBy({ user_id: user.id, workspace_id: session.workspace_id, organization_id: session.organization_id });
+
+  return plans;
 }, "plans");
 
 export const getRecommendedPlans = cache(async () => {
@@ -109,14 +103,14 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
   }
   const workspace = await Workspace.findById(workspaceId);
 
-  if(!workspace) {
+  if (!workspace) {
     throw redirect("/workspaces/new");
   }
 
   const plan_name = data.name;
   const plan_description = data.description;
   const plan_type = await Plans.getTypeId(data.plan_type);
-  if(!plan_type){
+  if (!plan_type) {
     throw new Error("This plan type does not exist, please try again");
   }
 
@@ -142,33 +136,39 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
 
   const createdPlan = await Plans.create(validation.data, user.id, workspace.id);
 
-  const ticketCreationData = tickets.map((t) => ({
-    name: t.name,
-    price: t.price.toFixed(2),
-    currency: t.currency.currency_type,
-    shape: t.shape,
-    plan_id: createdPlan.id,
-    quantity: t.quantity,
-    ticket_type_id: t.ticket_type.id,
-  }) as z.infer<typeof TicketCreateSchema>);
-
-
+  const ticketCreationData = tickets.map(
+    (t) =>
+      ({
+        name: t.name,
+        price: t.price.toFixed(2),
+        currency: t.currency.currency_type,
+        shape: t.shape,
+        plan_id: createdPlan.id,
+        quantity: t.quantity,
+        ticket_type_id: t.ticket_type.id,
+      }) as z.infer<typeof TicketCreateSchema>
+  );
 
   const ticketsValidation = TicketCreateSchema.array().safeParse(ticketCreationData);
 
-  if(!ticketsValidation.success){
-    throw ticketsValidation.error
+  if (!ticketsValidation.success) {
+    throw ticketsValidation.error;
   }
 
   const ticketsForPlan = await Tickets.create(ticketsValidation.data, user.id);
   const timeSlotsObject = Object.values(time_slots);
   type TS = z.infer<typeof PlanTimesCreateSchema>;
 
-  const tss = timeSlotsObject.map((tso) => Object.values(tso).map((ts) => ({
-    ends_at: ts.end,
-    starts_at: ts.start,
-    plan_id: createdPlan.id,
-  }) as TS));
+  const tss = timeSlotsObject.map((tso) =>
+    Object.values(tso).map(
+      (ts) =>
+        ({
+          ends_at: ts.end,
+          starts_at: ts.start,
+          plan_id: createdPlan.id,
+        }) as TS
+    )
+  );
 
   const timeSlots = tss.flat();
 

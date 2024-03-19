@@ -96,6 +96,7 @@
 @layer base {
   * {
     @apply border-border;
+    line-height: 0.5 !important;
   }
   body {
     @apply bg-background text-foreground flex flex-col flex-grow min-h-screen antialiased;
@@ -105,6 +106,18 @@
   }
   #app {
     @apply flex flex-col flex-grow min-h-screen;
+  }
+
+  ::-webkit-scrollbar {
+    @apply bg-background w-3;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-300 dark:bg-neutral-500;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-500 dark:bg-neutral-700 cursor-pointer;
   }
 }
 

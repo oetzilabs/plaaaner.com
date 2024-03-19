@@ -13,19 +13,16 @@ export const PlansList = (props: { session: UserSession }) => {
   const plans = createAsync(() => getPlans());
 
   return (
-    <div class="flex flex-col w-full">
-      <div class="flex flex-row items-center justify-between w-full py-2 gap-2">
+    <div class="flex flex-col w-full gap-2">
+      <div class="flex flex-row items-center justify-between w-full gap-2">
         <A
           href="/dashboard"
           class={cn(
-            buttonVariants({ variant: "ghost" }),
-            "flex flex-row items-center justify-between gap-2 px-4 flex-1"
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "flex flex-row items-center justify-between gap-2 px-4 flex-1 text-sm"
           )}
         >
           Plans
-        </A>
-        <A href="/plan/create" class={cn(buttonVariants({ variant: "outline", size: "icon" }), "size-9")}>
-          <Plus class="size-4" />
         </A>
       </div>
       <div class="flex flex-col gap-2">
@@ -40,12 +37,21 @@ export const PlansList = (props: { session: UserSession }) => {
             >
               <div class="flex flex-row gap-2 w-full items-center justify-between">
                 <span class="text-sm font-medium">{plan.name}</span>
-                <span class="text-muted-foreground text-xs">{plan.progress}%</span>
               </div>
             </A>
           )}
         </For>
       </div>
+      <A
+        href="/plan/create"
+        class={cn(
+          buttonVariants({ variant: "outline", size: "icon" }),
+          "w-full flex items-center justify-center gap-2"
+        )}
+      >
+        <Plus class="size-4" />
+        <span class="">Create New Plan</span>
+      </A>
     </div>
   );
 };

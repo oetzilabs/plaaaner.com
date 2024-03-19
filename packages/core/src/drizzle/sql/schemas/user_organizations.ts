@@ -1,4 +1,4 @@
-import { primaryKey, uuid } from "drizzle-orm/pg-core";
+import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
@@ -16,6 +16,7 @@ export const users_organizations = schema.table(
     user_id: uuid("user_id")
       .references(() => users.id)
       .notNull(),
+    joinedAt: timestamp("joined_at", { mode: "date", withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.user_id, table.organization_id] }),
