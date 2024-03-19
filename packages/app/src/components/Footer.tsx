@@ -76,7 +76,7 @@ export function Footer() {
               {([title, links]) => (
                 <div class="flex flex-col gap-4">
                   <h4 class="text-base font-semibold text-[#4F46E4]">{title}</h4>
-                  <div class="flex flex-col gap-1">
+                  <div class="flex flex-col gap-3">
                     <For each={links}>
                       {(link) => (
                         <A href={link.href} rel="external" class="text-sm hover:underline">
