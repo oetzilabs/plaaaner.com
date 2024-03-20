@@ -15,15 +15,15 @@ import { Workspace } from "./workspaces";
 export * as Plans from "./plans";
 
 export const create = z
-  .function(z.tuple([PlanCreateSchema, z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([z.array(PlanCreateSchema).or(PlanCreateSchema), z.string().uuid(), z.string().uuid()]))
   .implement(async (userInput, userId, workspace_id) => {
-    const [x] = await db
-      .insert(plans)
-      .values({ ...userInput, owner_id: userId })
-      .returning();
+    const plansToCreate = Array.isArray(userInput)
+      ? userInput.map((p) => ({ ...p, owner_id: userId }))
+      : [{ ...userInput, owner_id: userId }];
+    const plansCreated = await db.insert(plans).values(plansToCreate).returning();
     const connectedToWorkspace = await db.insert(workspaces_plans).values({ plan_id: x.id, workspace_id }).returning();
 
-    return x;
+    return plansCreated;
   });
 
 export const countAll = z.function(z.tuple([])).implement(async () => {
@@ -63,8 +63,8 @@ export const findBy = z
       const plans = await findByUserId(user_id);
       return plans;
     }
-    const orgplans = await findByOrganizationId(organization_id);
     if (!workspace_id) {
+      const orgplans = await findByOrganizationId(organization_id);
       return orgplans;
     }
     const workspaces = await Workspace.findByOrganizationId(organization_id);
