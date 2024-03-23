@@ -59,7 +59,7 @@ export const findByOrganizationId = z.function(z.tuple([z.string()])).implement(
   return ws.map((w) => w.workspace);
 });
 
-export const isConnectedToUser = z
+export const hasUser = z
   .function(z.tuple([z.string().uuid(), z.string().uuid()]))
   .implement(async (workspace_id, user_id) => {
     const isConnected = await db.query.users_workspaces.findFirst({

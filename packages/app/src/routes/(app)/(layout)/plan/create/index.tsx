@@ -32,7 +32,7 @@ export default function PlanCreateEventPage() {
   return (
     <div class="container flex flex-col py-10 gap-8 px-4">
       <h1 class="text-3xl font-medium">Create your plan</h1>
-      <div class="p-4 pb-8 w-full border border-neutral-200 dark:border-neutral-800 rounded-md flex flex-col gap-8">
+      <div class="p-4 w-full border border-neutral-200 dark:border-neutral-800 rounded-md flex flex-col gap-8">
         <h2 class="text-2xl font-semibold">Choose a plan</h2>
         <p class="text-neutral-500 dark:text-neutral-400">
           Choose the type of plan you want to create and get started.
@@ -40,9 +40,9 @@ export default function PlanCreateEventPage() {
         <div class="w-full grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ">
           <For each={typesOfPlans}>
             {(plan) => (
-              <div class="flex flex-col shadow-none hover:shadow-lg transition-shadow border border-neutral-200 dark:border-neutral-800 px-4 py-3 rounded-md gap-2">
+              <div class="flex flex-col shadow-none hover:shadow-lg transition-shadow border border-neutral-200 dark:border-neutral-800 p-4 rounded-md gap-4">
                 <span class="text-lg font-medium">{plan.title}</span>
-                <CardDescription class="flex flex-grow">{plan.description}</CardDescription>
+                <CardDescription class="flex flex-grow !leading-4">{plan.description}</CardDescription>
                 <div class="flex flex-row items-center justify-between gap-2 w-full">
                   <Button size="sm" variant="secondary" asChild>
                     <As component={A} href={plan.learnMore}>

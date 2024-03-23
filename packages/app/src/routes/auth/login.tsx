@@ -151,7 +151,7 @@ export default function LoginPage() {
                   }}
                 </For>
               </div>
-              <div class="px-8 text-center text-sm text-muted-foreground">
+              <div class="px-8 text-center text-sm text-muted-foreground gap-4 flex flex-col">
                 <span>By continuing, you agree to our</span>
                 <div class="">
                   <A href="/terms-of-service" class="underline underline-offset-4 hover:text-primary">

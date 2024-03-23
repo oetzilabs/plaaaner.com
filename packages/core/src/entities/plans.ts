@@ -11,6 +11,8 @@ import {
   workspaces_plans,
 } from "../drizzle/sql/schema";
 import { Workspace } from "./workspaces";
+import { Organization } from "./organizations";
+import { log } from "console";
 
 export * as Plans from "./plans";
 
@@ -21,7 +23,10 @@ export const create = z
       ? userInput.map((p) => ({ ...p, owner_id: userId }))
       : [{ ...userInput, owner_id: userId }];
     const plansCreated = await db.insert(plans).values(plansToCreate).returning();
-    const connectedToWorkspace = await db.insert(workspaces_plans).values({ plan_id: x.id, workspace_id }).returning();
+
+    await Promise.all(
+      plansCreated.map((pl) => db.insert(workspaces_plans).values({ plan_id: pl.id, workspace_id }).returning())
+    );
 
     return plansCreated;
   });
@@ -48,40 +53,48 @@ export const findBy = z
   .function(
     z.tuple([
       z.object({
-        user_id: z.string().uuid().nullable(),
+        user_id: z.string().uuid(),
         workspace_id: z.string().uuid().nullable(),
         organization_id: z.string().uuid().nullable(),
       }),
     ])
   )
   .implement(async ({ user_id, organization_id, workspace_id }) => {
-    if (!user_id) {
-      throw new Error("User Id is missing");
-    }
-    if (!organization_id || !workspace_id) {
+    if (!organization_id) {
       // get all plans
       const plans = await findByUserId(user_id);
       return plans;
     }
+
+    const isUserInOrganization = await Organization.hasUser(organization_id, user_id);
+    if (!isUserInOrganization) {
+      throw new Error("User is not in Organization");
+    }
+
     if (!workspace_id) {
       const orgplans = await findByOrganizationId(organization_id);
       return orgplans;
     }
-    const workspaces = await Workspace.findByOrganizationId(organization_id);
-    const ps = await Promise.all(
-      workspaces.map(async (ws) =>
-        db.query.workspaces_plans.findMany({
-          where: (fields, operators) => operators.eq(fields.workspace_id, ws.id),
-          with: {
-            plan: true,
-          },
-        })
-      )
-    );
-    return ps
-      .flat()
-      .filter((oe) => oe.workspace_id === workspace_id)
-      .map((oe) => oe.plan);
+
+    const workspace = await Workspace.findById(workspace_id);
+    if (!workspace) {
+      throw new Error("This workspace does not exist");
+    }
+
+    const isUserInWorkspace = await Workspace.hasUser(workspace.id, user_id);
+
+    if (!isUserInWorkspace) {
+      throw new Error("User is not in Workspace");
+    }
+
+    const ps = await db.query.workspaces_plans.findMany({
+      where: (fields, operators) => operators.eq(fields.workspace_id, workspace.id),
+      with: {
+        plan: true,
+      },
+    });
+
+    return ps.map((oe) => oe.plan).filter((p) => p.deletedAt === null);
   });
 
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {

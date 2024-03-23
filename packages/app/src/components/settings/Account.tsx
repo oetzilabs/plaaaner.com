@@ -1,21 +1,36 @@
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { getLocale, changeLocaleCookie } from "@/lib/api/locale";
 import { saveUser } from "@/lib/api/user";
 import type { UserSession } from "@/lib/auth/util";
-import { useSubmission } from "@solidjs/router";
+import { createAsync, useAction, useSubmission } from "@solidjs/router";
 import { CheckCheck, Loader2 } from "lucide-solid";
-import { Match, Show, Switch } from "solid-js";
+import { Match, Show, Suspense, Switch } from "solid-js";
 import { NotLoggedIn } from "../NotLoggedIn";
+import { Combobox, ComboboxItem, ComboboxTrigger, ComboboxContent, ComboboxInput } from "@/components/ui/combobox";
+import { createFilter } from "@kobalte/core";
+import { createSignal } from "solid-js";
 
 export const Account = (props: { session: UserSession }) => {
   const isSavingUser = useSubmission(saveUser);
+
+  const locale = createAsync(() => getLocale());
+  const setLocale = useAction(changeLocaleCookie);
+  const isSettingLocale = useSubmission(changeLocaleCookie);
+  const locales = ["en-US", "de-DE"];
+
+  const filter = createFilter({ sensitivity: "base" });
+  const [options, setOptions] = createSignal(locales);
+  const onInputChange = (value: string) => {
+    setOptions(locales.filter((option) => filter.contains(option, value)));
+  };
 
   return (
     <Show when={props.session} fallback={<NotLoggedIn />}>
       {(s) => (
         <div class="flex flex-col items-start gap-8 w-full">
-          <div class="flex flex-col items-start gap-2 w-full">
+          <div class="flex flex-col items-start gap-4 w-full">
             <span class="text-lg font-semibold">Account</span>
             <span class="text-muted-foreground text-xs">Make changes to your account here.</span>
           </div>
@@ -84,6 +99,39 @@ export const Account = (props: { session: UserSession }) => {
               </Alert>
             </Show>
           </form>
+          <Suspense fallback={"Loading..."}>
+            <Show when={locale()}>
+              {(l) => (
+                <div class="flex flex-col gap-4 w-full">
+                  <div class="flex flex-row gap-4 items-center p-2">
+                    <span class="font-bold text-lg">Language (Region)</span>
+                    <Show when={isSettingLocale.pending}>
+                      <span class="text-sm text-muted-foreground">Saving</span>
+                      <Loader2 class="animate-spin size-4" />
+                    </Show>
+                  </div>
+                  <Combobox
+                    defaultValue={l().language}
+                    options={options()}
+                    placeholder="Choose a Language"
+                    disabled={isSettingLocale.pending}
+                    onChange={async (v) => {
+                      if (!v) return;
+                      await setLocale(v);
+                    }}
+                    itemComponent={(props) => <ComboboxItem item={props.item}>{props.item.rawValue}</ComboboxItem>}
+                    class="w-max"
+                    disallowEmptySelection
+                  >
+                    <ComboboxTrigger>
+                      <ComboboxInput />
+                    </ComboboxTrigger>
+                    <ComboboxContent />
+                  </Combobox>
+                </div>
+              )}
+            </Show>
+          </Suspense>
         </div>
       )}
     </Show>
