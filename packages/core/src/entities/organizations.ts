@@ -246,7 +246,7 @@ export const requestJoin = z
     return organizationJoin;
   });
 
-export const isUserInOrg = z
+export const hasUser = z
   .function(z.tuple([z.string().uuid(), z.string().uuid()]))
   .implement(async (organization_id, user_id) => {
     const x = await db.query.users_organizations.findFirst({

@@ -5,23 +5,31 @@ import { getPlans } from "@/lib/api/plans";
 import { getLocale } from "@/lib/api/locale";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
+import localeData from "dayjs/plugin/localeData";
 import updateLocale from "dayjs/plugin/updateLocale";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-solid";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-solid";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { As } from "@kobalte/core";
+import { CreatePlanPopover } from "./create-plan-popover";
 dayjs.extend(advancedFormat);
+dayjs.extend(localeData);
 dayjs.extend(updateLocale);
 dayjs.extend(LocalizedFormat);
 dayjs.extend(isoWeek);
 
-type TimeSlot = { type: "empty" } | { type: "plan"; value: Awaited<ReturnType<typeof getPlans>>[number] };
+type TimeSlot =
+  | { type: "empty"; timeslot: dayjs.Dayjs }
+  | { type: "plan"; value: Awaited<ReturnType<typeof getPlans>>[number] };
 
 export const Calendar = (props: { session: UserSession }) => {
   const locale = createAsync(() => getLocale(), { deferStream: true });
   onMount(() => {
     const l = locale();
     if (!l) return;
+    console.log("updated locale to:", l);
     dayjs.updateLocale(l.language, { weekStart: l.startOfWeek });
   });
   const plans = createAsync(() => getPlans(), { deferStream: true });
@@ -50,7 +58,9 @@ export const Calendar = (props: { session: UserSession }) => {
     const eventsForDay = theplans.filter(
       (tp) => dayjs(tp.starts_at).isSame(day, "day") || dayjs(tp.ends_at).isSame(day, "day")
     );
-    const slots: TimeSlot[] = Array(48).fill({ type: "empty" });
+    const slots: TimeSlot[] = Array(48)
+      .fill({})
+      .map((_, i) => ({ type: "empty", timeslot: day.startOf("day").add(i * 30, "minutes") }));
 
     eventsForDay.forEach((event) => {
       const startTimeSlot = Math.floor(event.starts_at.getHours() * 2 + event.starts_at.getMinutes() / 30);
@@ -101,7 +111,7 @@ export const Calendar = (props: { session: UserSession }) => {
           </div>
         </div>
       </div>
-      <div class="w-full flex flex-col h-full relative">
+      <div class="w-full flex flex-col h-[calc(100%-72px)] relative">
         <div class="w-full flex flex-row h-full absolute top-0 bottom-0 left-0 right-0 -z-10">
           <div class="w-20 h-full"></div>
           <div class="flex-1 flex flex-col relative h-full grow">
@@ -115,8 +125,8 @@ export const Calendar = (props: { session: UserSession }) => {
           </div>
           <div class="w-3 h-full"></div>
         </div>
-        <div class="w-full flex flex-row h-full overflow-y-auto">
-          <div class="w-20 grid grid-cols-1 grid-rows-[48] h-full">
+        <div class="w-full flex flex-row overflow-y-auto">
+          <div class="w-20 grid grid-cols-1 grid-rows-[48]">
             <For each={hours()}>
               {(d) => (
                 <div class="text-xs h-10 flex items-center justify-center border-b border-r border-neutral-200 dark:border-neutral-800 py-3 w-full">
@@ -127,20 +137,59 @@ export const Calendar = (props: { session: UserSession }) => {
           </div>
           <Show when={typeof plans !== "undefined" && plans()}>
             {(theplans) => (
-              <div class="flex-1 flex flex-col relative h-full grow">
-                <div class="flex flex-row h-full w-full">
+              <div class="flex-1 flex flex-col relative grow">
+                <div class="flex flex-row w-full">
                   <For each={createCalendar()}>
                     {(day) => (
                       <div class="w-full grid grid-cols-1 grid-row-[48] relative">
                         <For each={hoursWithPlan(theplans(), day)}>
                           {(d) => (
-                            <div class="text-xs h-10 flex items-center justify-center border-b border-neutral-100 dark:border-neutral-900 py-3 w-full">
+                            <div class="text-xs h-10 flex items-center justify-center border-b border-neutral-100 dark:border-neutral-900 w-full">
                               <Switch>
-                                <Match when={d.type !== "plan"}>
-                                  <div class=""></div>
+                                <Match when={d.type !== "plan" && d}>
+                                  {(dd) => (
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <As
+                                          component={Button}
+                                          variant="ghost"
+                                          class="w-full h-full flex flex-col items-center justify-center group rounded-none"
+                                        >
+                                          <div class="text-muted-foreground group-hover:visible invisible flex flex-row items-center justify-center gap-2">
+                                            <Plus class="size-4" />
+                                            <span>Create</span>
+                                          </div>
+                                        </As>
+                                      </PopoverTrigger>
+                                      <PopoverContent>
+                                        <CreatePlanPopover timeslot={dd().timeslot} />
+                                      </PopoverContent>
+                                    </Popover>
+                                  )}
                                 </Match>
                                 <Match when={d.type === "plan" && d.value}>
-                                  {(p) => <div class="bg-indigo-500">{dayjs(p().starts_at).format("LT")}</div>}
+                                  {(p) => (
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <As
+                                          component="div"
+                                          class="w-full h-full flex flex-col items-center justify-center group"
+                                        >
+                                          <div class="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 w-full h-full p-2 flex flex-row gap-2">
+                                            <div class="flex-1 truncate text-white text-sm font-bold py-1">
+                                              {p().name}
+                                            </div>
+                                            <div class="w-max truncate text-white text-xs py-1">
+                                              {dayjs(p().startsAt).format("LT")}
+                                            </div>
+                                          </div>
+                                        </As>
+                                      </PopoverTrigger>
+                                      <PopoverContent>
+                                        <div class="py-1">{p().name}</div>
+                                      </PopoverContent>
+                                    </Popover>
+                                  )}
                                 </Match>
                               </Switch>
                             </div>

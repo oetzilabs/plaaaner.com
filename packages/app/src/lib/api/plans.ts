@@ -7,7 +7,6 @@ import { getCookie } from "vinxi/http";
 import { lucia } from "../auth";
 import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
-import dayjs from "dayjs";
 import { getEvent } from "vinxi/http";
 import {
   PlanCreateSchema,
@@ -35,7 +34,7 @@ export const getPreviousPlans = cache(async () => {
   }
   const plans = await Plans.findByOrganizationId(session.organization_id);
   return plans;
-}, "plans");
+}, "previousPlans");
 
 export const getPlans = cache(async () => {
   "use server";
@@ -50,9 +49,13 @@ export const getPlans = cache(async () => {
   if (!session) {
     throw redirect("/auth/login");
   }
+  const parameters = {
+    user_id: user.id,
+    workspace_id: session.workspace_id,
+    organization_id: session.organization_id,
+  };
 
-  const plans = Plans.findBy({ user_id: user.id, workspace_id: session.workspace_id, organization_id: session.organization_id });
-
+  const plans = await Plans.findBy(parameters);
   return plans;
 }, "plans");
 
@@ -76,11 +79,12 @@ export const getRecommendedPlans = cache(async () => {
   }
   const plans = await Plans.recommendNewPlans(session.organization_id);
   return plans;
-}, "plans");
+}, "recommendNewPlans");
 
 export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
   "use server";
   const event = getEvent()!;
+  console.log(data);
 
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
@@ -111,6 +115,7 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
   const plan_description = data.description;
   const plan_type = await Plans.getTypeId(data.plan_type);
   if (!plan_type) {
+    console.log("error: This plan type does not exist, please try again");
     throw new Error("This plan type does not exist, please try again");
   }
 
@@ -131,10 +136,10 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
 
   const validation = PlanCreateSchema.safeParse(planCreationData);
   if (!validation.success) {
-    throw validation.error;
+    throw new Error("Validation failed", { cause: validation.error.flatten() });
   }
 
-  const createdPlan = await Plans.create(validation.data, user.id, workspace.id);
+  const [createdPlan] = await Plans.create(validation.data, user.id, workspace.id);
 
   const ticketCreationData = tickets.map(
     (t) =>
@@ -154,28 +159,29 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
   if (!ticketsValidation.success) {
     throw ticketsValidation.error;
   }
+  if (ticketsValidation.data.length > 0) {
+    const ticketsForPlan = await Tickets.create(ticketsValidation.data, user.id);
+    const timeSlotsObject = Object.values(time_slots);
+    type TS = z.infer<typeof PlanTimesCreateSchema>;
 
-  const ticketsForPlan = await Tickets.create(ticketsValidation.data, user.id);
-  const timeSlotsObject = Object.values(time_slots);
-  type TS = z.infer<typeof PlanTimesCreateSchema>;
+    const tss = timeSlotsObject.map((tso) =>
+      Object.values(tso).map(
+        (ts) =>
+          ({
+            ends_at: ts.end,
+            starts_at: ts.start,
+            plan_id: createdPlan.id,
+          }) as TS
+      )
+    );
 
-  const tss = timeSlotsObject.map((tso) =>
-    Object.values(tso).map(
-      (ts) =>
-        ({
-          ends_at: ts.end,
-          starts_at: ts.start,
-          plan_id: createdPlan.id,
-        }) as TS
-    )
-  );
+    const timeSlots = tss.flat();
 
-  const timeSlots = tss.flat();
+    const planTimesCreated = await Plans.createTimeSlots(timeSlots, user.id);
+    console.log({ planTimesCreated, createdPlan, ticketsForPlan });
 
-  const planTimesCreated = await Plans.createTimeSlots(timeSlots, user.id);
-  console.log({ planTimesCreated, createdPlan, ticketsForPlan });
-
-  // const e = { id: "test" };
+    // const e = { id: "test" };
+  }
 
   return createdPlan;
 }, "plans");
