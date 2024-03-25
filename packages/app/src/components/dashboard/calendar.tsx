@@ -3,7 +3,7 @@ import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 import type { UserSession } from "@/lib/auth/util";
 import { getPlans } from "@/lib/api/plans";
 import { getLocale } from "@/lib/api/locale";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import localeData from "dayjs/plugin/localeData";
 import updateLocale from "dayjs/plugin/updateLocale";
@@ -14,6 +14,10 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-solid";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { As } from "@kobalte/core";
 import { CreatePlanPopover } from "./create-plan-popover";
+import { createStore, produce } from "solid-js/store";
+import { toast } from "solid-sonner";
+import { relative } from "path";
+import { cn } from "@/lib/utils";
 dayjs.extend(advancedFormat);
 dayjs.extend(localeData);
 dayjs.extend(updateLocale);
@@ -21,8 +25,8 @@ dayjs.extend(LocalizedFormat);
 dayjs.extend(isoWeek);
 
 type TimeSlot =
-  | { type: "empty"; timeslot: dayjs.Dayjs }
-  | { type: "plan"; value: Awaited<ReturnType<typeof getPlans>>[number] };
+  | { type: "empty"; timeslot: Dayjs }
+  | { type: "plan"; value: Awaited<ReturnType<typeof getPlans>>[number]; timeslot: Dayjs };
 
 export const Calendar = (props: { session: UserSession }) => {
   const locale = createAsync(() => getLocale(), { deferStream: true });
@@ -32,7 +36,7 @@ export const Calendar = (props: { session: UserSession }) => {
     console.log("updated locale to:", l);
     dayjs.updateLocale(l.language, { weekStart: l.startOfWeek });
   });
-  const plans = createAsync(() => getPlans(), { deferStream: true });
+  const plans = createAsync(() => getPlans());
   const [currentDate, setCurrentDate] = createSignal(dayjs());
 
   const createCalendar = () => {
@@ -67,7 +71,7 @@ export const Calendar = (props: { session: UserSession }) => {
       const endTimeSlot = Math.floor(event.ends_at.getHours() * 2 + event.ends_at.getMinutes() / 30);
 
       for (let i = startTimeSlot; i < endTimeSlot; i++) {
-        slots[i] = { type: "plan", value: event };
+        slots[i] = { type: "plan", value: event, timeslot: slots.at(i)!.timeslot };
       }
     });
 
@@ -76,6 +80,33 @@ export const Calendar = (props: { session: UserSession }) => {
 
   const changeWeek = (direction: -1 | 1) => {
     setCurrentDate((c) => c.add(direction, "week"));
+  };
+
+  const [newPlanArea, setNewPlanArea] = createStore<{
+    startsAt: Dayjs | null;
+    endsAt: Dayjs | null;
+    startSlot: number | null;
+    endSlot: number | null;
+    isMoving: boolean;
+  }>({
+    startsAt: null,
+    endsAt: null,
+    startSlot: null,
+    endSlot: null,
+    isMoving: false,
+  });
+
+  const onDragStart = (event: MouseEvent, start: Dayjs, slot: number) => {
+    setNewPlanArea(produce((s) => ({ startsAt: start, endsAt: null, startSlot: slot })));
+  };
+
+  const onDragMove = (event: MouseEvent, end: Dayjs, slot: number) => {
+    if (!newPlanArea.startsAt) return;
+    setNewPlanArea(produce((s) => ({ ...s, endsAt: end, endSlot: slot, isMoving: true })));
+  };
+
+  const onDragEnd = (event: MouseEvent, end: Dayjs, slot: number) => {
+    setNewPlanArea(produce((s) => ({ ...s, endsAt: end, endSlot: slot, isMoving: false })));
   };
 
   return (
@@ -142,9 +173,36 @@ export const Calendar = (props: { session: UserSession }) => {
                   <For each={createCalendar()}>
                     {(day) => (
                       <div class="w-full grid grid-cols-1 grid-row-[48] relative">
+                        {/*
+                        <Show when={newPlanArea.startsAt !== null}>
+                          <div class="w-full grid grid-cols-1 grid-row-[48] absolute z-10">
+                            <div
+                              class={cn({
+                                "grid-row": `span ${newPlanArea.startSlot} / span ${newPlanArea.startSlot}`,
+                              })}
+                            />
+                            <div
+                              class={cn("bg-indigo-50 dark:bg-indigo-950 w-full h-full", {
+                                "grid-row": `span ${newPlanArea.endSlot} / span ${newPlanArea.endSlot}`,
+                              })}
+                            />
+                          </div>
+                        </Show>
+                        */}
                         <For each={hoursWithPlan(theplans(), day)}>
-                          {(d) => (
-                            <div class="text-xs h-10 flex items-center justify-center border-b border-neutral-100 dark:border-neutral-900 w-full">
+                          {(d, di) => (
+                            <div
+                              class="text-xs h-10 flex items-center justify-center border-b border-neutral-100 dark:border-neutral-900 w-full"
+                              onMouseDown={(e) => {
+                                onDragStart(e, d.timeslot, di());
+                              }}
+                              onMouseMove={(e) => {
+                                onDragMove(e, d.timeslot, di());
+                              }}
+                              onMouseUp={(e) => {
+                                onDragEnd(e, d.timeslot, di());
+                              }}
+                            >
                               <Switch>
                                 <Match when={d.type !== "plan" && d}>
                                   {(dd) => (
@@ -186,7 +244,7 @@ export const Calendar = (props: { session: UserSession }) => {
                                         </As>
                                       </PopoverTrigger>
                                       <PopoverContent>
-                                        <div class="py-1">{p().name}</div>
+                                        <div class="w-full font-bold">{p().name}</div>
                                       </PopoverContent>
                                     </Popover>
                                   )}

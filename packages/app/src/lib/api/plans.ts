@@ -13,6 +13,10 @@ import {
   PlanTimesCreateSchema,
   TicketCreateSchema,
 } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
+import { getLocaleSettings } from "./locale";
+dayjs.extend(isoWeek);
 
 export const getPreviousPlans = cache(async () => {
   "use server";
@@ -32,13 +36,15 @@ export const getPreviousPlans = cache(async () => {
   if (!session.organization_id) {
     throw redirect("/setup/organization");
   }
-  const plans = await Plans.findByOrganizationId(session.organization_id);
+  const plans = await Plans.findByOrganizationId(session.organization_id, { fromDate: null });
   return plans;
 }, "previousPlans");
 
 export const getPlans = cache(async () => {
   "use server";
   const event = getEvent()!;
+  const locale = getLocaleSettings(event);
+  dayjs.updateLocale(locale.language, {});
 
   const user = event.context.user;
   if (!user) {
@@ -53,6 +59,7 @@ export const getPlans = cache(async () => {
     user_id: user.id,
     workspace_id: session.workspace_id,
     organization_id: session.organization_id,
+    fromDate: dayjs(new Date()).startOf("week").toDate(),
   };
 
   const plans = await Plans.findBy(parameters);

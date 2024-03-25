@@ -1,15 +1,13 @@
 import { cache, action } from "@solidjs/router";
-import { getCookie, getEvent, getHeaders, setCookie } from "vinxi/http";
+import { H3Event, getCookie, getEvent, getHeaders, setCookie } from "vinxi/http";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import localeData from "dayjs/plugin/localeData";
 dayjs.extend(localeData);
 dayjs.extend(isoWeek);
 
-export const getLocale = cache(async () => {
+export const getLocaleSettings = (event: H3Event) => {
   "use server";
-  const event = getEvent()!;
-
   const headers = getHeaders(event);
 
   let language = headers["Accept-Language"] || headers["accept-language"];
@@ -37,6 +35,15 @@ export const getLocale = cache(async () => {
   const startOfWeek = ld.firstDayOfWeek();
 
   return { language, startOfWeek };
+}
+
+export const getLocale = cache(async () => {
+  "use server";
+  const event = getEvent()!;
+
+  const l = getLocaleSettings(event);
+
+  return l;
 }, "locale");
 
 export const changeLocaleCookie = action(async(l:string) => {
