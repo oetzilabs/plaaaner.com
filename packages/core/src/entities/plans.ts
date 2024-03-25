@@ -56,13 +56,14 @@ export const findBy = z
         user_id: z.string().uuid(),
         workspace_id: z.string().uuid().nullable(),
         organization_id: z.string().uuid().nullable(),
+        fromDate: z.date().nullable(),
       }),
     ])
   )
-  .implement(async ({ user_id, organization_id, workspace_id }) => {
+  .implement(async ({ user_id, organization_id, workspace_id, fromDate }) => {
     if (!organization_id) {
       // get all plans
-      const plans = await findByUserId(user_id);
+      const plans = await findByUserId(user_id, { fromDate });
       return plans;
     }
 
@@ -72,7 +73,7 @@ export const findBy = z
     }
 
     if (!workspace_id) {
-      const orgplans = await findByOrganizationId(organization_id);
+      const orgplans = await findByOrganizationId(organization_id, { fromDate });
       return orgplans;
     }
 
@@ -88,7 +89,10 @@ export const findBy = z
     }
 
     const ps = await db.query.workspaces_plans.findMany({
-      where: (fields, operators) => operators.eq(fields.workspace_id, workspace.id),
+      where: (fields, operators) =>
+        fromDate
+          ? operators.and(operators.eq(fields.workspace_id, workspace.id), operators.gte(fields.createdAt, fromDate))
+          : operators.eq(fields.workspace_id, workspace.id),
       with: {
         plan: true,
       },
@@ -152,30 +156,65 @@ export const setOwner = z
     return updated;
   });
 
-export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
-  const ws = await db.query.plans.findMany({
-    where: (plans, operations) => and(operations.eq(plans.owner_id, user_id), isNull(plans.deletedAt)),
-    orderBy(fields, operators) {
-      return operators.desc(fields.createdAt);
-    },
+export const findByUserId = z
+  .function(
+    z.tuple([
+      z.string().uuid(),
+      z
+        .object({
+          fromDate: z.date().nullable(),
+        })
+        .optional(),
+    ])
+  )
+  .implement(async (user_id, options) => {
+    const ws = await db.query.plans.findMany({
+      where: (plans, operations) =>
+        options?.fromDate
+          ? operations.and(
+              operations.eq(plans.owner_id, user_id),
+              isNull(plans.deletedAt),
+              operations.gte(plans.createdAt, options?.fromDate)
+            )
+          : operations.and(operations.eq(plans.owner_id, user_id), isNull(plans.deletedAt)),
+      orderBy(fields, operators) {
+        return operators.desc(fields.createdAt);
+      },
+    });
+    return ws;
   });
-  return ws;
-});
 
-export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
-  const workspaces = await Workspace.findByOrganizationId(organization_id);
-  const ps = await Promise.all(
-    workspaces.map(async (ws) =>
-      db.query.workspaces_plans.findMany({
-        where: (fields, operators) => operators.eq(fields.workspace_id, ws.id),
-        with: {
-          plan: true,
-        },
-      })
-    )
-  );
-  return ps.flat().map((oe) => oe.plan);
-});
+export const findByOrganizationId = z
+  .function(
+    z.tuple([
+      z.string().uuid(),
+      z
+        .object({
+          fromDate: z.date().nullable(),
+        })
+        .optional(),
+    ])
+  )
+  .implement(async (organization_id, options) => {
+    const workspaces = await Workspace.findByOrganizationId(organization_id);
+    const ps = await Promise.all(
+      workspaces.map(async (ws) =>
+        db.query.workspaces_plans.findMany({
+          where: (fields, operators) =>
+            options?.fromDate
+              ? operators.and(
+                  operators.eq(fields.workspace_id, ws.id),
+                  operators.gte(fields.createdAt, options.fromDate)
+                )
+              : operators.eq(fields.workspace_id, ws.id),
+          with: {
+            plan: true,
+          },
+        })
+      )
+    );
+    return ps.flat().map((oe) => oe.plan);
+  });
 
 export const recommendNewPlans = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
   // const previousPlans = await findByOrganizationId(organization_id);

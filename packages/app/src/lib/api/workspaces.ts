@@ -47,7 +47,7 @@ export const connectToWorkspace = action(async (data: FormData) => {
     console.error("missing workspace_id");
     throw new Error("Invalid data: Missing workspace_id");
   }
-  const isConnected = await Workspace.isConnectedToUser(valid.data, user.id);
+  const isConnected = await Workspace.hasUser(valid.data, user.id);
   if (!isConnected) {
     console.log("not connected, connecting");
     await Workspace.connectUser(valid.data, user.id);
@@ -153,7 +153,7 @@ export const deleteWorkspace = action(async (id: string) => {
     throw redirect("/auth/login");
   }
   const { session, user } = await lucia.validateSession(sessionId);
-  if(!user) {
+  if (!user) {
     throw redirect("/auth/login");
   }
   const valid = z.string().uuid().safeParse(id);

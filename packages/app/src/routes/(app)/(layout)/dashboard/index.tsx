@@ -44,7 +44,7 @@ export default function DashboardPage() {
         <Match when={typeof session !== "undefined" && session().user !== null && session()}>
           {(s) => (
             <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
-              <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-53px)]">
+              <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-55px)]">
                 <div class="flex flex-col w-full">
                   <div class="flex flex-col gap-4 w-full">
                     <Metrics session={s()} />

@@ -79,9 +79,9 @@ export const OrganizationWorkspaceSelection = () => {
                     <div class="size-10 bg-indigo-500 flex items-center justify-center rounded-md text-white">
                       <Building class="size-4" />
                     </div>
-                    <div class="flex flex-row flex-1 items-center justify-between group-hover:bg-neutral-100 group-hover:dark:bg-neutral-900 px-3 py-2 rounded-md gap-2">
-                      <div class="w-full flex flex-col gap-2">
-                        <div class="w-full font-bold text-base">{session().organization?.name}</div>
+                    <div class="flex flex-row flex-1 items-center justify-between group-hover:bg-neutral-100 group-hover:dark:bg-neutral-900 px-2 py-0.5 rounded-md gap-2">
+                      <div class="w-full flex flex-col gap-1">
+                        <div class="w-full font-bold text-sm">{session().organization?.name}</div>
                         <div class="w-full text-xs">{session().workspace?.name}</div>
                       </div>
                       <ChevronsUpDown class="size-3" />

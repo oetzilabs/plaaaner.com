@@ -2,7 +2,13 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
-import { WorkspaceCreateSchema, WorkspaceUpdateSchema, users_workspaces, workspaces, workspaces_organizations } from "../drizzle/sql/schema";
+import {
+  WorkspaceCreateSchema,
+  WorkspaceUpdateSchema,
+  users_workspaces,
+  workspaces,
+  workspaces_organizations,
+} from "../drizzle/sql/schema";
 import { Organization } from "./organizations";
 
 export * as Workspace from "./workspaces";
@@ -11,12 +17,12 @@ export const create = z
   .function(z.tuple([WorkspaceCreateSchema, z.string().uuid(), z.string().uuid()]))
   .implement(async (userInput, owner_id, organization_id) => {
     const [workspace] = await db
-    .insert(workspaces)
-    .values({
-      ...userInput,
-      owner_id,
-    })
-    .returning();
+      .insert(workspaces)
+      .values({
+        ...userInput,
+        owner_id,
+      })
+      .returning();
 
     await db.insert(workspaces_organizations).values({
       workspace_id: workspace.id,

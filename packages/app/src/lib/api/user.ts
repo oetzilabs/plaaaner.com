@@ -70,7 +70,7 @@ export const disableUser = action(async () => {
   throw redirect("/");
 }, "user");
 
-export const setDashboard = action(async (organization_id:string, workspace_id:string) => {
+export const setDashboard = action(async (organization_id: string, workspace_id: string) => {
   "use server";
   const event = getEvent()!;
   if (!event.context.user) {
@@ -121,7 +121,7 @@ export const setDashboard = action(async (organization_id:string, workspace_id:s
   return o;
 }, "session");
 
-export const setCurrentOrganization = action(async (id:string) => {
+export const setCurrentOrganization = action(async (id: string) => {
   "use server";
   const event = getEvent()!;
   if (!event.context.user) {
