@@ -17,18 +17,10 @@ export function Header() {
           <A href="/" class="flex flex-row gap-4 items-center justify-center">
             <Logo small />
           </A>
-          <Show when={typeof userSession !== "undefined" && userSession().user !== null && userSession()}>
-            {(session) => (
-              <>
-                <A href="/dashboard" class={cn(buttonVariants({ variant: "link" }))}>
-                  Dashboard
-                </A>
-              </>
-            )}
-          </Show>
         </div>
-        <div class="w-full items-center justify-end flex flex-row">
+        <div class="w-full items-center justify-end flex flex-row gap-2">
           <AppSearch />
+          <UserMenu user={userSession?.().user} />
         </div>
       </div>
     </header>

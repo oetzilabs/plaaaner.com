@@ -1,22 +1,55 @@
 import { UserSession } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
-import { A } from "@solidjs/router";
-import { LogIn, LogOut, User } from "lucide-solid";
-import { Match, Switch } from "solid-js";
+import { A, useAction, useSubmission } from "@solidjs/router";
+import {
+  Cloud,
+  CreditCard,
+  Github,
+  Group,
+  Keyboard,
+  LifeBuoy,
+  Loader2,
+  LogIn,
+  LogOut,
+  Monitor,
+  Moon,
+  Plus,
+  Settings,
+  Settings2,
+  Sun,
+  User,
+  UserPlus,
+} from "lucide-solid";
+import { Match, Show, Switch } from "solid-js";
 import { logout } from "../utils/api/actions";
-import { Button, buttonVariants } from "./ui/button";
+import { As, useColorMode } from "@kobalte/core";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuGroupLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function UserMenu(props: { user: UserSession["user"] }) {
+  const isLoggingOut = useSubmission(logout);
+  const logoutAction = useAction(logout);
+
+  const { setColorMode, colorMode } = useColorMode();
   return (
-    <div class="w-full flex text-base">
+    <div class="w-max flex text-base">
       <Switch
         fallback={
           <A
             href="/auth/login"
-            class={cn(
-              buttonVariants({ variant: "outline", size: "lg" }),
-              "flex flex-row gap-2 items-center justify-start w-full rounded-none"
-            )}
+            class={cn(buttonVariants({ variant: "outline" }), "flex flex-row gap-2 items-center justify-start w-full")}
           >
             <LogIn class="size-4" />
             Login
@@ -25,28 +58,139 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
       >
         <Match when={props.user !== null && props.user}>
           {(user) => (
-            <div class="rounded-md border border-transparent hover:border-neutral-300 dark:border-neutral-800 flex flex-row items-center justify-between w-full gap-0 overflow-clip">
-              <A
-                href="/profile"
-                class={cn(
-                  buttonVariants({
-                    variant: "ghost",
-                    size: "lg",
-                  }),
-                  "flex flex-row gap-4 items-center w-full !justify-start rounded-none px-4"
-                )}
-              >
-                <User class="size-5" />
-                <span class="w-full">{user().name}</span>
-              </A>
-              <div class="w-max flex ">
-                <form method="post" action={logout}>
-                  <Button variant="ghost" size="icon" class="size-10 rounded-none" type="submit">
-                    <LogOut class="size-4" />
-                  </Button>
-                </form>
-              </div>
-            </div>
+            <DropdownMenu placement="bottom" gutter={8}>
+              <DropdownMenuTrigger asChild>
+                <As
+                  component={Button}
+                  variant="default"
+                  class="flex flex-row items-center justify-center size-8 p-0 rounded-full"
+                >
+                  <User class="size-4" />
+                </As>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent class="w-56">
+                <DropdownMenuGroup>
+                  <DropdownMenuGroupLabel>My Account</DropdownMenuGroupLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild class="cursor-pointer">
+                    <As component={A} href="/profile">
+                      <User class="size-4" />
+                      <span>Profile</span>
+                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                    </As>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild class="cursor-pointer">
+                    <As component={A} href="/profile/settings#billing">
+                      <CreditCard class="size-4" />
+                      <span>Billing</span>
+                      <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                    </As>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild class="cursor-pointer">
+                    <As component={A} href="/profile/settings">
+                      <Settings class="size-4" />
+                      <span>Settings</span>
+                      <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                    </As>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Keyboard class="size-4" />
+                    <span>Keyboard shortcuts</span>
+                    <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    <Group class="size-4" />
+                    <span>Team</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger class="gap-2">
+                      <UserPlus class="size-4" />
+                      <span>Invite users</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem>
+                        <i class="i-lucide:mail mr-2" />
+                        <span>Email</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <i class="i-lucide:message-square mr-2" />
+                        <span>Message</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <i class="ilucide:plus-circle mr-2" />
+                        <span>More...</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuItem>
+                    <Plus class="size-4" />
+                    <span>New Team</span>
+                    <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <i class="i-lucide:user-plus mr-2" />
+                    <span>Theme</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setColorMode("light");
+                      }}
+                    >
+                      <Sun class="size-4" />
+                      <span>Light</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setColorMode("dark");
+                      }}
+                    >
+                      <Moon class="size-4" />
+                      <span>Dark</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setColorMode("system");
+                      }}
+                    >
+                      <Monitor class="size-4" />
+                      <span>System</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem>
+                  <Github class="size-4" />
+                  <span>GitHub</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <LifeBuoy class="size-4" />
+                  <span>Support</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  <Cloud class="size-4" />
+                  <span>API</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={isLoggingOut.pending}
+                  onSelect={async () => {
+                    await logoutAction();
+                  }}
+                >
+                  <i class="i-lucide:log-out mr-2" />
+                  <span>Log out</span>
+                  <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </Match>
       </Switch>
