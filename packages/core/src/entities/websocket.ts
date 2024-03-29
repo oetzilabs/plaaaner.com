@@ -51,16 +51,20 @@ export const sendMessageToConnection = async (message: any, connectionId: string
   });
   try {
     // Send the message to the given client
-    await apiG.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) });
+    const websocketSentMessage = await apiG.postToConnection({
+      ConnectionId: connectionId,
+      Data: JSON.stringify(message),
+    });
+    console.log({ websocketSentMessage });
   } catch (e: unknown) {
     const eTyped = e as { statusCode: number };
     console.log("error sending message", e);
     if (eTyped.statusCode === 410) {
       // Remove stale connections
-      await db.delete(websockets).where(eq(websockets.connectionId, connectionId)).execute();
+      await db.delete(websockets).where(eq(websockets.connectionId, connectionId)).returning();
     } else if (eTyped instanceof GoneException) {
       console.log(`GoneException: ${eTyped.message}`);
-      await db.delete(websockets).where(eq(websockets.connectionId, connectionId)).execute();
+      await db.delete(websockets).where(eq(websockets.connectionId, connectionId)).returning();
     } else {
       console.error(e);
     }
@@ -72,8 +76,7 @@ export const broadcast = z.function(z.tuple([z.any()])).implement(async (message
   const connectionIds = await db
     .select({ connectionId: websockets.connectionId })
     .from(websockets)
-    .where(gte(websockets.updatedAt, dayjs().subtract(5, "minute").toDate()))
-    .execute();
+    .where(gte(websockets.updatedAt, dayjs().subtract(5, "minute").toDate()));
   const sentResult = [];
   // send message to all connections
   for (let i = 0; i < connectionIds.length; i++) {
@@ -85,4 +88,8 @@ export const broadcast = z.function(z.tuple([z.any()])).implement(async (message
     });
   }
   return sentResult;
+});
+
+export const revokeAll = z.function(z.tuple([])).implement(async () => {
+  return db.delete(websockets).returning();
 });

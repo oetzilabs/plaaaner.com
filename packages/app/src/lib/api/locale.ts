@@ -3,8 +3,10 @@ import { H3Event, getCookie, getEvent, getHeaders, setCookie } from "vinxi/http"
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import localeData from "dayjs/plugin/localeData";
+import updateLocale from "dayjs/plugin/updateLocale";
 dayjs.extend(localeData);
 dayjs.extend(isoWeek);
+dayjs.extend(updateLocale);
 
 export const getLocaleSettings = (event: H3Event) => {
   "use server";
@@ -35,7 +37,7 @@ export const getLocaleSettings = (event: H3Event) => {
   const startOfWeek = ld.firstDayOfWeek();
 
   return { language, startOfWeek };
-}
+};
 
 export const getLocale = cache(async () => {
   "use server";
@@ -46,9 +48,9 @@ export const getLocale = cache(async () => {
   return l;
 }, "locale");
 
-export const changeLocaleCookie = action(async(l:string) => {
+export const changeLocaleCookie = action(async (l: string) => {
   "use server";
   const event = getEvent()!;
   setCookie(event, "language", l);
   return l;
-}, "locale")
+}, "locale");

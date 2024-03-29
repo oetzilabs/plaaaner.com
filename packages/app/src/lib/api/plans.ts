@@ -15,8 +15,10 @@ import {
 } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
+import updateLocale from "dayjs/plugin/updateLocale";
 import { getLocaleSettings } from "./locale";
 dayjs.extend(isoWeek);
+dayjs.extend(updateLocale);
 
 export const getPreviousPlans = cache(async () => {
   "use server";
@@ -158,7 +160,7 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
         plan_id: createdPlan.id,
         quantity: t.quantity,
         ticket_type_id: t.ticket_type.id,
-      }) as z.infer<typeof TicketCreateSchema>
+      } as z.infer<typeof TicketCreateSchema>)
   );
 
   const ticketsValidation = TicketCreateSchema.array().safeParse(ticketCreationData);
@@ -178,7 +180,7 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
             ends_at: ts.end,
             starts_at: ts.start,
             plan_id: createdPlan.id,
-          }) as TS
+          } as TS)
       )
     );
 

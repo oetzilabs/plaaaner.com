@@ -134,8 +134,10 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <i class="i-lucide:user-plus mr-2" />
+                  <DropdownMenuSubTrigger class="gap-2 items-center">
+                    <Show when={colorMode() === "light"} fallback={<Sun class="size-4" />}>
+                      <Moon class="size-4" />
+                    </Show>
                     <span>Theme</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
@@ -180,12 +182,13 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
+                  class="cursor-pointer"
                   disabled={isLoggingOut.pending}
                   onSelect={async () => {
                     await logoutAction();
                   }}
                 >
-                  <i class="i-lucide:log-out mr-2" />
+                  <LogOut class="size-4" />
                   <span>Log out</span>
                   <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                 </DropdownMenuItem>
