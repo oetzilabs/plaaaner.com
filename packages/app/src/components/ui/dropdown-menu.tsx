@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { DropdownMenu as DropdownMenuPrimitive } from "@kobalte/core";
-import { Check, ChevronRight, Circle } from "lucide-solid";
-import type { ComponentProps, VoidComponent } from "solid-js";
+import { ChevronRight, Check, Circle } from "lucide-solid";
+import type { ComponentProps, ParentProps, VoidComponent } from "solid-js";
 import { mergeProps, splitProps, type ParentComponent } from "solid-js";
 
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -10,7 +10,7 @@ export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 export const DropdownMenu: ParentComponent<DropdownMenuPrimitive.DropdownMenuRootProps> = (props) => {
-  const merge = mergeProps({ gutter: 4 } as DropdownMenuPrimitive.DropdownMenuRootProps, props);
+  const merge = mergeProps<ParentProps<DropdownMenuPrimitive.DropdownMenuRootProps[]>>({ gutter: 4 }, props);
   return <DropdownMenuPrimitive.Root {...merge} />;
 };
 
@@ -20,8 +20,8 @@ export const DropdownMenuContent: ParentComponent<DropdownMenuPrimitive.Dropdown
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         class={cn(
-          "z-50 min-w-8rem overflow-clip rounded-md border bg-popover text-popover-foreground shadow-md data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95",
-          local.class,
+          "min-w-8rem z-50 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95",
+          local.class
         )}
         {...rest}
       />
@@ -38,9 +38,9 @@ export const DropdownMenuItem: ParentComponent<
   return (
     <DropdownMenuPrimitive.Item
       class={cn(
-        "relative flex cursor-default select-none items-center px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 gap-2",
         local.inset && "pl-8",
-        local.class,
+        local.class
       )}
       {...rest}
     />
@@ -63,7 +63,7 @@ export const DropdownMenuItemLabel: ParentComponent<DropdownMenuPrimitive.Dropdo
 
 export const DropdownMenuSeparator: VoidComponent<DropdownMenuPrimitive.DropdownMenuSeparatorProps> = (props) => {
   const [local, rest] = splitProps(props, ["class"]);
-  return <DropdownMenuPrimitive.Separator class={cn("h-px bg-muted", local.class)} {...rest} />;
+  return <DropdownMenuPrimitive.Separator class={cn("-mx-1 my-1 h-px bg-muted", local.class)} {...rest} />;
 };
 
 export const DropdownMenuShortcut: ParentComponent<ComponentProps<"span">> = (props) => {
@@ -77,7 +77,7 @@ export const DropdownMenuSubTrigger: ParentComponent<DropdownMenuPrimitive.Dropd
     <DropdownMenuPrimitive.SubTrigger
       class={cn(
         "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[expanded]:bg-accent",
-        local.class,
+        local.class
       )}
       {...rest}
     >
@@ -93,8 +93,8 @@ export const DropdownMenuSubContent: ParentComponent<DropdownMenuPrimitive.Dropd
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.SubContent
         class={cn(
-          "z-50 min-w-8rem overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95",
-          local.class,
+          "min-w-8rem z-50 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95",
+          local.class
         )}
         {...rest}
       />
@@ -103,14 +103,14 @@ export const DropdownMenuSubContent: ParentComponent<DropdownMenuPrimitive.Dropd
 };
 
 export const DropdownMenuCheckboxItem: ParentComponent<DropdownMenuPrimitive.DropdownMenuCheckboxItemProps> = (
-  props,
+  props
 ) => {
   const [local, rest] = splitProps(props, ["class", "children", "classList"]);
   return (
     <DropdownMenuPrimitive.CheckboxItem
       class={cn(
         "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        local.class,
+        local.class
       )}
       {...rest}
     >
@@ -128,7 +128,7 @@ export const DropdownMenuRadioItem: ParentComponent<DropdownMenuPrimitive.Dropdo
     <DropdownMenuPrimitive.RadioItem
       class={cn(
         "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        local.class,
+        local.class
       )}
       {...rest}
     >

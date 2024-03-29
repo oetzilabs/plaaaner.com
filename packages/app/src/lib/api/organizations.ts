@@ -103,7 +103,7 @@ export const getOrganizationById = cache(async (id: string) => {
   const organization = await Organization.findById(id);
   if (!organization) throw redirect("/404", 404);
 
-  const isUserInOrg = await Organization.isUserInOrg(organization.id, user.id);
+  const isUserInOrg = await Organization.hasUser(organization.id, user.id);
   if (!isUserInOrg) throw redirect("/403", 403);
 
   return organization;

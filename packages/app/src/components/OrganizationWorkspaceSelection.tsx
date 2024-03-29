@@ -1,19 +1,20 @@
-import { createSignal, JSXElement, Show } from "solid-js";
+import { Badge } from "@/components/ui/badge";
 import {
   CommandDialog,
+  CommandHeading,
+  CommandInput,
   CommandItem,
   CommandItemLabel,
-  CommandInput,
   CommandList,
-  CommandHeading,
 } from "@/components/ui/command";
-import { Building, ChevronsUpDown, Target } from "lucide-solid";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "solid-sonner";
-import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import { getUserOrganizations } from "@/lib/api/organizations";
 import { setDashboard } from "@/lib/api/user";
+import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
+import { Building, Target } from "lucide-solid";
+import { createSignal, JSXElement, Show } from "solid-js";
 import { useSession } from "./SessionProvider";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type OrgWorkspaceOption = {
   icon: JSXElement;
@@ -69,23 +70,30 @@ export const OrganizationWorkspaceSelection = () => {
             {(session) => (
               <>
                 <div
-                  class="flex flex-row items-center justify-between p-4 gap-4 cursor-pointer text-muted-foreground w-full group"
+                  class="flex flex-row items-center justify-between p-4 pb-0 gap-4 cursor-pointer text-muted-foreground w-full group"
                   onClick={() => {
                     if (isChangingDashboard.pending) return;
                     setOpenSelector(true);
                   }}
                 >
                   <div class="w-full flex flex-row items-center justify-between gap-2">
-                    <div class="size-10 bg-indigo-500 flex items-center justify-center rounded-md text-white">
-                      <Building class="size-4" />
-                    </div>
-                    <div class="flex flex-row flex-1 items-center justify-between group-hover:bg-neutral-100 group-hover:dark:bg-neutral-900 px-2 py-0.5 rounded-md gap-2">
-                      <div class="w-full flex flex-col gap-1">
-                        <div class="w-full font-bold text-sm">{session().organization?.name}</div>
-                        <div class="w-full text-xs">{session().workspace?.name}</div>
-                      </div>
-                      <ChevronsUpDown class="size-3" />
-                    </div>
+                    <Tooltip placement="right" gutter={8}>
+                      <TooltipTrigger>
+                        <div class="size-10 bg-indigo-500 flex items-center justify-center text-white rounded-full">
+                          <Building class="size-4" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div class="w-full flex flex-col gap-1">
+                          <div class="w-full font-bold text-xs">
+                            {session().organization?.name}{" "}
+                            <Show when={session().workspace?.name !== "default" && session().workspace?.name}>
+                              {(name) => <>({name()})</>}
+                            </Show>
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
                 <CommandDialog<OrgWorkspaceOption, List>
