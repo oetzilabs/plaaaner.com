@@ -5,14 +5,25 @@ import { Greeting } from "@/components/dashboard/greeting";
 import { Calendar } from "@/components/dashboard/calendar";
 import { A } from "@solidjs/router";
 import { useSession } from "@/components/SessionProvider";
-import { Match, Suspense, Switch } from "solid-js";
-import { Loader2 } from "lucide-solid";
+import { Match, Suspense, Switch, createSignal } from "solid-js";
+import { Loader2, Plus } from "lucide-solid";
 import { NotLoggedIn } from "@/components/NotLoggedIn";
-import { PlansList } from "../../../../components/dashboard/plans-list";
+import { PlansList } from "@/components/dashboard/plans-list";
+import { buttonVariants, Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { TextField, TextFieldInput } from "@/components/ui/textfield";
+import { TextFieldTextArea } from "@/components/ui/textarea";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
   const session = useSession();
+  const [title, setTitle] = createSignal("");
+  const [description, setDescription] = createSignal("");
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+  };
   return (
     <Suspense
       fallback={
@@ -69,9 +80,66 @@ export default function DashboardPage() {
                     </div>
                     <div class="w-full h-auto flex flex-row py-2 gap-4">
                       <div class="w-9/12">
+                        <div class="flex flex-col w-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg p-2 gap-4">
+                          <div class="flex flex-col w-full px-2">
+                            <TextField onChange={(v) => setTitle(v)} value={title()}>
+                              <TextFieldInput
+                                placeholder="Plan Name"
+                                class="border-none shadow-none bg-transparent !ring-0 !outline-none text-xl rounded-md font-semibold px-0"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Escape") {
+                                    resetForm();
+                                  }
+                                }}
+                              />
+                            </TextField>
+                            <TextField onChange={(v) => setDescription(v)} value={description()}>
+                              <TextFieldTextArea
+                                placeholder="Describe your new plan..."
+                                class="border-none shadow-none !ring-0 !outline-none rounded-md px-0 resize-none"
+                                autoResize
+                                onKeyDown={(e) => {
+                                  if (e.key === "Escape") {
+                                    resetForm();
+                                  }
+                                }}
+                              />
+                            </TextField>
+                          </div>
+                          <div class="flex flex-row items-center justify-between">
+                            <div class="w-full">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  resetForm();
+                                }}
+                              >
+                                Reset
+                              </Button>
+                            </div>
+                            <div class="w-max flex flex-row gap-2 items-center">
+                              <Button variant="outline" size="sm">
+                                Drafts
+                              </Button>
+                              <A
+                                href={`/plan/create?title=${encodeURI(title())}&description=${encodeURI(
+                                  description()
+                                )}`}
+                                class={cn(
+                                  buttonVariants({ variant: "default", size: "sm" }),
+                                  "w-max flex items-center justify-center gap-2"
+                                )}
+                              >
+                                <Plus class="size-4" />
+                                <span class="">Create Plan</span>
+                              </A>
+                            </div>
+                          </div>
+                        </div>
                         <Suspense
                           fallback={
-                            <div class="p-4 w-full flex flex-col items-center justify-center">
+                            <div class="p-4 py-10 w-full flex flex-col items-center justify-center">
                               <Loader2 class="size-4 animate-spin" />
                             </div>
                           }

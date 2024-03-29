@@ -62,7 +62,10 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
     },
     open: (e: any) => {
       const userId = auth?.()!.user?.id;
-      if (!userId) return;
+      if (!userId) {
+        // console.log("hey, no user");
+        return;
+      }
       try {
         const pm = createPingMessage();
         setSentQueue([...sentQueue(), pm]);

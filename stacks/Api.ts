@@ -95,6 +95,12 @@ export function Api({ stack }: StackContext) {
           description: "This is the all users function",
         },
       },
+      "POST /websockets/revoke/all": {
+        function: {
+          handler: "packages/functions/src/ws.revokeWebsocketConnections",
+          description: "This is the revokeWebsocketConnections function",
+        },
+      },
     },
     cors: {
       allowOrigins: ["*", "http://localhost:3000", "http://localhost:3001"],

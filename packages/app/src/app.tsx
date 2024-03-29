@@ -13,6 +13,7 @@ import { SessionProvider } from "@/components/SessionProvider";
 import { WebsocketProvider } from "@/components/providers/Websocket";
 import { Button } from "@/components/ui/button";
 import "./app.css";
+import { logout } from "./utils/api/actions";
 
 // const getServerCookies = () => {
 //   "use server";
@@ -41,6 +42,9 @@ export default function App() {
             <span class="text-red-500 font-bold">Some Error occured...</span>
             <pre>{JSON.stringify(error, null, 2)}</pre>
             <Button onClick={() => reset()}>RESET</Button>
+            <form action={logout} method="post">
+              <Button type="submit">LOGOUT</Button>
+            </form>
           </div>
         </div>
       )}

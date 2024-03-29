@@ -3,6 +3,7 @@ import { error, json } from "./utils";
 
 import { WebsocketCore } from "@oetzilabs-plaaaner-com/core/src/entities/websocket";
 import { WebSocketApiHandler } from "sst/node/websocket-api";
+import { ApiHandler } from "sst/node/api";
 
 export const connect = WebSocketApiHandler(async (event) => {
   const connectionId = event.requestContext.connectionId;
@@ -69,4 +70,13 @@ export const sendnotification = WebSocketApiHandler(async (event) => {
   });
 
   return json(x);
+});
+
+export const revokeWebsocketConnections = ApiHandler(async (event, context) => {
+  const revoked = await WebsocketCore.revokeAll();
+  const revokedConnections = [];
+  for (const connection of revoked) {
+    revokedConnections.push({ id: connection.id, userId: connection.userId });
+  }
+  return json({ revoked: revokedConnections });
 });
