@@ -102,7 +102,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-neutral-500 dark:bg-neutral-700 cursor-pointer;
+    @apply bg-neutral-500 dark:bg-neutral-700;
   }
 }
 

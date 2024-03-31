@@ -44,6 +44,7 @@ export async function GET(e: APIEvent) {
     access_token,
     workspace_id,
     organization_id,
+    createdAt: new Date(),
   });
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());

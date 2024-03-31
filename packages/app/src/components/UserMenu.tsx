@@ -49,7 +49,10 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
         fallback={
           <A
             href="/auth/login"
-            class={cn(buttonVariants({ variant: "outline" }), "flex flex-row gap-2 items-center justify-start w-full")}
+            class={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "flex flex-row gap-2 items-center justify-start w-full"
+            )}
           >
             <LogIn class="size-4" />
             Login

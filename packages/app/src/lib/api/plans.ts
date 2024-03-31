@@ -42,7 +42,7 @@ export const getPreviousPlans = cache(async () => {
   return plans;
 }, "previousPlans");
 
-export const getPlans = cache(async () => {
+export const getPlans = cache(async (data: { fromDate: Date | null }) => {
   "use server";
   const event = getEvent()!;
   const locale = getLocaleSettings(event);
@@ -57,14 +57,13 @@ export const getPlans = cache(async () => {
   if (!session) {
     throw redirect("/auth/login");
   }
-  const parameters = {
+
+  const plans = await Plans.findBy({
     user_id: user.id,
     workspace_id: session.workspace_id,
     organization_id: session.organization_id,
-    fromDate: dayjs(new Date()).startOf("week").toDate(),
-  };
-
-  const plans = await Plans.findBy(parameters);
+    fromDate: data.fromDate,
+  });
   return plans;
 }, "plans");
 

@@ -23,6 +23,7 @@ export type UserSession = {
   user: Awaited<ReturnType<typeof User.findById>> | null;
   organization: Awaited<ReturnType<typeof Organization.findById>> | null;
   workspace: Awaited<ReturnType<typeof Workspace.findById>> | null;
+  createdAt: Date | null;
 };
 
 export const getAuthenticatedSession = cache(async () => {
@@ -34,6 +35,7 @@ export const getAuthenticatedSession = cache(async () => {
     user: null,
     organization: null,
     workspace: null,
+    createdAt: null,
   } as UserSession;
   const event = getEvent()!;
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
@@ -51,6 +53,7 @@ export const getAuthenticatedSession = cache(async () => {
   if (session.organization_id) userSession.organization = await Organization.findById(session.organization_id);
   if (session.workspace_id) userSession.workspace = await Workspace.findById(session.workspace_id);
   if (session.userId) userSession.user = await User.findById(session.userId);
+  if (session.createdAt) userSession.createdAt = session.createdAt;
 
   return userSession;
 }, "session");

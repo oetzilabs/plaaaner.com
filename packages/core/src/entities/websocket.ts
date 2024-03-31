@@ -55,7 +55,7 @@ export const sendMessageToConnection = async (message: any, connectionId: string
       ConnectionId: connectionId,
       Data: JSON.stringify(message),
     });
-    console.log({ websocketSentMessage });
+    // console.log({ websocketSentMessage });
   } catch (e: unknown) {
     const eTyped = e as { statusCode: number };
     console.log("error sending message", e);

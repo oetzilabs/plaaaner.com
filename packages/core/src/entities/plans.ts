@@ -10,9 +10,8 @@ import {
   plans,
   workspaces_plans,
 } from "../drizzle/sql/schema";
-import { Workspace } from "./workspaces";
 import { Organization } from "./organizations";
-import { log } from "console";
+import { Workspace } from "./workspaces";
 
 export * as Plans from "./plans";
 
@@ -94,7 +93,11 @@ export const findBy = z
           ? operators.and(operators.eq(fields.workspace_id, workspace.id), operators.gte(fields.createdAt, fromDate))
           : operators.eq(fields.workspace_id, workspace.id),
       with: {
-        plan: true,
+        plan: {
+          with: {
+            owner: true,
+          },
+        },
       },
     });
 
@@ -104,13 +107,17 @@ export const findBy = z
 export const findByName = z.function(z.tuple([z.string()])).implement(async (input) => {
   return db.query.plans.findFirst({
     where: (plans, operations) => operations.eq(plans.name, input),
-    with: {},
+    with: {
+      owner: true,
+    },
   });
 });
 
 export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
   return db.query.plans.findMany({
-    with: {},
+    with: {
+      owner: true,
+    },
     where(fields, operations) {
       return operations.isNull(fields.deletedAt);
     },
@@ -119,7 +126,9 @@ export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
 
 export const all = z.function(z.tuple([])).implement(async () => {
   return db.query.plans.findMany({
-    with: {},
+    with: {
+      owner: true,
+    },
   });
 });
 
@@ -180,6 +189,9 @@ export const findByUserId = z
       orderBy(fields, operators) {
         return operators.desc(fields.createdAt);
       },
+      with: {
+        owner: true,
+      },
     });
     return ws;
   });
@@ -208,7 +220,11 @@ export const findByOrganizationId = z
                 )
               : operators.eq(fields.workspace_id, ws.id),
           with: {
-            plan: true,
+            plan: {
+              with: {
+                owner: true,
+              },
+            },
           },
         })
       )
@@ -227,6 +243,9 @@ export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implem
     where: (fields, operators) => and(operators.eq(fields.owner_id, user_id), operators.isNull(fields.deletedAt)),
     orderBy(fields, operators) {
       return operators.desc(fields.createdAt);
+    },
+    with: {
+      owner: true,
     },
   });
   return ws;

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { As } from "@kobalte/core";
 import { A, useLocation, useResolvedPath } from "@solidjs/router";
-import { Bell, Box, Circle, HelpCircle, LayoutDashboard, MessageCircle, Settings2 } from "lucide-solid";
+import { Activity, Bell, Box, Circle, HelpCircle, LayoutDashboard, MessageCircle, Settings2 } from "lucide-solid";
 import { JSXElement, Show } from "solid-js";
 import ModeToggle from "./ModeToogle";
 import { OrganizationWorkspaceSelection } from "./OrganizationWorkspaceSelection";
@@ -83,7 +83,9 @@ export const Sidebar = () => {
                 <SidebarLink href="/dashboard/notifications" icon={<Bell class="size-4" />}>
                   Inbox
                 </SidebarLink>
-                <SidebarLink href="/dashboard/activity">Activities</SidebarLink>
+                <SidebarLink href="/dashboard/activity" icon={<Activity class="size-4" />}>
+                  Activities
+                </SidebarLink>
               </div>
             </div>
             <div class="w-full grow flex flex-col gap-6"></div>

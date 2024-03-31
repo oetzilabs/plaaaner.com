@@ -22,6 +22,7 @@ export const lucia = new Lucia(luciaAdapter, {
       access_token: databaseSessionAttributes.access_token,
       workspace_id: databaseSessionAttributes.workspace_id,
       organization_id: databaseSessionAttributes.organization_id,
+      createdAt: databaseSessionAttributes.createdAt,
     };
   },
 });
@@ -35,7 +36,4 @@ declare module "lucia" {
 }
 
 type DatabaseUserAttributes = Omit<UserSelect, "id">;
-type DatabaseSessionAttributes = Omit<
-  SessionSelect,
-  "id" | "userID" | "expiresAt" | "userId" | "createdAt" | "updatedAt"
->;
+type DatabaseSessionAttributes = Omit<SessionSelect, "id" | "userID" | "expiresAt" | "userId" | "updatedAt">;
