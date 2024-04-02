@@ -3,7 +3,7 @@ import { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
-import { getCookie } from "vinxi/http";
+import { getCookie, getRequestHeaders } from "vinxi/http";
 import { lucia } from "../auth";
 import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import updateLocale from "dayjs/plugin/updateLocale";
 import { getLocaleSettings } from "./locale";
+import { getRequestIP } from "vinxi/http";
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
 
@@ -88,6 +89,64 @@ export const getRecommendedPlans = cache(async () => {
   const plans = await Plans.recommendNewPlans(session.organization_id);
   return plans;
 }, "recommendNewPlans");
+
+export const getNearbyPlans = cache(async () => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  // @ts-ignore
+  const ip = event.node.req.client._peername.address;
+
+  if (!ip) {
+    return [];
+  }
+
+  if (["127.0.0.1", "::1"].includes(ip)) {
+    return [
+      {
+        id: "test",
+        url: "/plans/test",
+        name: "test",
+        description: "test event for localhost",
+        type: "event",
+      },
+      {
+        id: "test-2",
+        url: "/plans/test-2",
+        name: "test-2",
+        description: "test event 2 for localhost",
+        type: "custom",
+      },
+    ];
+  }
+
+  const location = await fetch(`http://ip-api.com/json/${ip}`)
+    .then((res) => res.json())
+    .then((data) =>
+      z
+        .object({
+          lat: z.number(),
+          lng: z.number(),
+        })
+        .parse(data)
+    );
+
+  console.log({ location });
+
+  const plans = await Plans.nearbyPlans(location);
+  return plans;
+}, "nearbyPlans");
 
 export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
   "use server";

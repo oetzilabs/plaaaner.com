@@ -11,6 +11,8 @@ import {
   Loader2,
   LogIn,
   LogOut,
+  Mail,
+  MessageSquare,
   Monitor,
   Moon,
   Plus,
@@ -106,7 +108,7 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
                     <Group class="size-4" />
-                    <span>Team</span>
+                    <span>Workspace</span>
                   </DropdownMenuItem>
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger class="gap-2">
@@ -115,23 +117,23 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem>
-                        <i class="i-lucide:mail mr-2" />
+                        <Mail class="size-4" />
                         <span>Email</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <i class="i-lucide:message-square mr-2" />
+                        <MessageSquare class="size-4" />
                         <span>Message</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
-                        <i class="ilucide:plus-circle mr-2" />
+                        <Plus class="size-4" />
                         <span>More...</span>
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
                   <DropdownMenuItem>
                     <Plus class="size-4" />
-                    <span>New Team</span>
+                    <span>New Workpace</span>
                     <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -185,7 +187,7 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  class="cursor-pointer"
+                  class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
                   disabled={isLoggingOut.pending}
                   onSelect={async () => {
                     await logoutAction();

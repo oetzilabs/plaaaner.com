@@ -288,6 +288,34 @@ export const createTimeSlots = z
     return createdTimeSlots;
   });
 
+export const nearbyPlans = z
+  .function(
+    z.tuple([
+      z.object({
+        lat: z.number(),
+        lng: z.number(),
+      }),
+    ])
+  )
+  .implement(async (location) => {
+    return Promise.resolve([
+      {
+        id: "123",
+        name: "test",
+        url: "/plans/123",
+        description: "this is a test plan",
+        type: "custom",
+      },
+      {
+        id: "456",
+        name: "test-2",
+        url: "/plans/456",
+        description: "this is a test plan 2",
+        type: "event",
+      },
+    ]);
+  });
+
 export const safeParseCreate = PlanCreateSchema.safeParse;
 export const safeParseUpdate = PlanUpdateSchema.safeParse;
 

@@ -78,7 +78,7 @@ export const OrganizationWorkspaceSelection = () => {
                 >
                   <div class="w-full flex flex-row items-center justify-between gap-2">
                     <Tooltip placement="right" gutter={8}>
-                      <TooltipTrigger>
+                      <TooltipTrigger class="rounded-full">
                         <div class="size-10 bg-indigo-500 flex items-center justify-center text-white rounded-full">
                           <Building class="size-4" />
                         </div>

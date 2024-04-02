@@ -19,7 +19,7 @@ export const Command = <Option, OptGroup>(
     | "removeOnBackspace"
     | "readOnly"
     | "allowsEmptyCollection"
-  >,
+  >
 ) => {
   const [local, rest] = splitProps(props, ["class"]);
 
@@ -32,7 +32,7 @@ export const Command = <Option, OptGroup>(
       allowsEmptyCollection
       class={cn(
         "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
-        local.class,
+        local.class
       )}
       {...rest}
     />
@@ -40,7 +40,7 @@ export const Command = <Option, OptGroup>(
 };
 
 export const CommandList = <Option, OptGroup>(
-  props: VoidProps<ComboboxPrimitive.ComboboxListboxProps<Option, OptGroup>>,
+  props: VoidProps<ComboboxPrimitive.ComboboxListboxProps<Option, OptGroup>>
 ) => {
   const [local, rest] = splitProps(props, ["class"]);
 
@@ -63,7 +63,7 @@ export const CommandInput: VoidComponent<ComboboxPrimitive.ComboboxInputProps> =
         cmdk-input=""
         class={cn(
           "flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
-          local.class,
+          local.class
         )}
         {...rest}
       />
@@ -79,8 +79,8 @@ export const CommandItem: ParentComponent<ComboboxPrimitive.ComboboxItemProps> =
       item={local.item}
       cmdk-item=""
       class={cn(
-        "relative flex cursor-pointer select-none items-center rounded-sm p-3 text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:opacity-50",
-        local.class,
+        "relative flex cursor-pointer select-none items-center rounded-sm p-2 text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:opacity-50",
+        local.class
       )}
       onSelect={local.onSelect}
       {...rest}
@@ -118,7 +118,7 @@ export const CommandDialog = <Option, OptGroup>(
       | "removeOnBackspace"
       | "readOnly"
       | "allowsEmptyCollection"
-    >,
+    >
 ) => {
   const [local, rest] = splitProps(props, ["children"]);
 

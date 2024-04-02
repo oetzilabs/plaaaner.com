@@ -23,15 +23,15 @@ export const PlansList = (props: { session: UserSession }) => {
             {(plan, index) => (
               <div class="w-full h-auto relative">
                 <Show when={lastPlan(index(), plans()!)}>
-                  <div class="absolute left-4 -bottom-10 w-[2px] h-10 bg-neutral-200 dark:bg-neutral-800"></div>
+                  <div class="absolute left-4 -bottom-10 w-px h-10 bg-neutral-200 dark:bg-neutral-800"></div>
                 </Show>
                 <A
                   href={`/dashboard/organizations/${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans/${plan.id}`}
-                  class="rounded-md"
+                  class="rounded-md bg-background"
                 >
                   <li
                     class={cn(
-                      "border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow",
+                      "border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow bg-background",
                       {
                         "mb-10": lastPlan(index(), plans()!),
                       }

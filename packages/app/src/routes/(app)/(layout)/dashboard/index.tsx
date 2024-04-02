@@ -1,12 +1,14 @@
 import { NotLoggedIn } from "@/components/NotLoggedIn";
 import { useSession } from "@/components/SessionProvider";
 import { EntryBox } from "@/components/dashboard/entrybox";
+import { NearbyPlansList } from "@/components/dashboard/nearby-plans";
+import { NotificationList } from "@/components/dashboard/notifications";
 import { PlansList } from "@/components/dashboard/plans-list";
 import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
-import { Match, Show, Suspense, Switch, createSignal, onMount } from "solid-js";
+import { Match, Show, Suspense, Switch } from "solid-js";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
@@ -46,10 +48,10 @@ export default function DashboardPage() {
         <Match when={typeof session !== "undefined" && session().user !== null && session()}>
           {(s) => (
             <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
-              <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)]">
+              <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)] bg-neutral-100 dark:bg-neutral-900">
                 <div class="flex flex-col w-full flex-grow min-h-0 max-h-screen overflow-y-auto">
                   <div class="container flex flex-col gap-4 max-w-full md:max-w-6xl h-screen">
-                    <div class="w-full h-auto flex flex-col pb-2 gap-4">
+                    <div class="w-full h-auto flex flex-col pb-2 gap-2">
                       <div class="flex w-full flex-col gap-2 py-4">
                         <span class="font-medium text-3xl">
                           Welcome
@@ -97,7 +99,7 @@ export default function DashboardPage() {
                           </Suspense>
                         </div>
                         <div class="hidden md:w-4/12 md:flex flex-col">
-                          <div class="flex flex-col w-full gap-4 sticky top-0">
+                          <div class="flex flex-col w-full gap-4 sticky top-0 pt-4">
                             <Suspense
                               fallback={
                                 <div class="p-4 w-full flex flex-col items-center justify-center">
@@ -105,21 +107,8 @@ export default function DashboardPage() {
                                 </div>
                               }
                             >
-                              <div class="flex flex-col w-full gap-2">
-                                <div class="flex flex-row w-full items-center justify-between">
-                                  <div class="flex flex-col w-full font-medium">Notifications</div>
-                                  <div class="flex flex-col w-full"></div>
-                                </div>
-                                <div class="flex flex-col w-full p-2 border relative border-neutral-200 dark:border-neutral-800 rounded-md min-h-10"></div>
-                                <div class="flex flex-col w-full p-2 border relative border-neutral-200 dark:border-neutral-800 rounded-md min-h-10"></div>
-                              </div>
-                              <div class="flex flex-col w-full gap-2">
-                                <div class="flex flex-row w-full items-center justify-between">
-                                  <div class="flex flex-col w-full font-medium">Nearby Events</div>
-                                  <div class="flex flex-col w-full min-h-10"></div>
-                                </div>
-                                <div class="flex flex-col w-full p-2 border relative border-neutral-200 dark:border-neutral-800 rounded-md min-h-10"></div>
-                              </div>
+                              <NotificationList session={s()} />
+                              <NearbyPlansList session={s()} />
                             </Suspense>
                           </div>
                         </div>

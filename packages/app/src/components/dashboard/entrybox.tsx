@@ -20,8 +20,8 @@ export const EntryBox = () => {
 
   return (
     <div class="flex w-full flex-col sticky top-0 z-10">
-      <div class="flex w-full flex-col gap-8 bg-background pt-2">
-        <div class="flex flex-col w-full border border-neutral-200 dark:border-neutral-800 rounded-lg p-2 gap-4">
+      <div class="flex w-full flex-col gap-8 bg-neutral-100 dark:bg-neutral-900 pt-4">
+        <div class="flex flex-col w-full border border-neutral-200 dark:border-neutral-800 rounded-lg p-2 gap-4 bg-background">
           <div class="flex flex-col w-full px-2">
             <TextField onChange={(v) => setTitle(v)} value={title()}>
               <TextFieldInput
@@ -50,7 +50,7 @@ export const EntryBox = () => {
           <div class="flex flex-row items-center justify-between">
             <div class="w-full">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => {
                   resetForm();
@@ -79,7 +79,7 @@ export const EntryBox = () => {
           </div>
         </div>
       </div>
-      <div class="w-full bg-gradient-to-b from-background to-transparent h-4" />
+      <div class="w-full bg-gradient-to-b from-neutral-100 dark:from-neutral-900 to-transparent h-4" />
     </div>
   );
 };

@@ -28,26 +28,24 @@ export const getNotifications = cache(async () => {
 
   const session = event.context.session;
 
-  if(!session.organization_id) {
-    throw redirect("/setup/organization")
+  if (!session.organization_id) {
+    throw redirect("/setup/organization");
   }
 
   if (!event.context.user) {
     throw redirect("/auth/login");
   }
 
-
   const user = event.context.user;
 
   const orgNotifications = await Notifications.findByOrganizationId(session.organization_id);
 
-
-  return orgNotifications
+  return orgNotifications;
   // const n = await Notifications.findManyByUserId(user.id);
   // return n;
 }, "notifications");
 
-export const getNotificationsCount = cache(async() => {
+export const getNotificationsCount = cache(async () => {
   "use server";
   const event = getEvent()!;
 
@@ -57,20 +55,17 @@ export const getNotificationsCount = cache(async() => {
 
   const session = event.context.session;
 
-  if(!session.organization_id) {
-    throw redirect("/setup/organization")
+  if (!session.organization_id) {
+    throw redirect("/setup/organization");
   }
 
   if (!event.context.user) {
     throw redirect("/auth/login");
   }
 
-
   const user = event.context.user;
 
   const orgNotificationsCount = await Notifications.countByOrganizationId(session.organization_id);
 
-
   return orgNotificationsCount;
-
 }, "notificationsCount");

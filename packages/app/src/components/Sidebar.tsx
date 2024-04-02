@@ -26,7 +26,7 @@ export const SidebarLink = (props: {
   const isActive = () => pathname()?.startsWith(props.href) ?? false;
 
   return (
-    <A href={props.href}>
+    <A href={props.href} class="rounded-full">
       <Tooltip placement="right">
         <TooltipTrigger asChild>
           <As
