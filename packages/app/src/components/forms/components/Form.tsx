@@ -4,9 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { CreatePlanFormSchema } from "@/utils/schemas/plan";
 import { createMediaQuery } from "@solid-primitives/media";
-import { useNavigate } from "@solidjs/router";
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import { ArrowLeft, CheckCheck, Clock, Eraser, Library, Loader2, MapPin, Plus, Redo, Ticket, Undo } from "lucide-solid";
-import { Accessor, Match, Setter, Show, Switch } from "solid-js";
+import { Accessor, Match, Setter, Show, Switch, onMount } from "solid-js";
 import { DEFAULT_PLAN, isFormEmpty, TabMovement, TabValue, usePlanProvider } from "../CreatePlanProvider";
 import { General } from "./General";
 import { LocationTab } from "./Location";
@@ -208,10 +208,27 @@ export const Form = (props: {
   setCurrentTab: Setter<TabValue>;
 }) => {
   const plan = usePlanProvider();
+  const [searchParams, setSearchParams] = useSearchParams();
+  onMount(() => {
+    const initialDataViaUrl = z
+      .object({
+        title: z.string(),
+        description: z.string(),
+      })
+      .safeParse(searchParams);
+    if (!initialDataViaUrl.success) {
+      return;
+    }
+    plan?.setNewPlan((p) => ({
+      ...p,
+      name: initialDataViaUrl.data.title,
+      description: initialDataViaUrl.data.description,
+    }));
+  });
 
   const handleSubmit = async (e: Event) => {
     const p = plan;
-    if(!p) return;
+    if (!p) return;
     e.preventDefault();
     const nE = p.newPlan();
     await p.createPlan(nE);

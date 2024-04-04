@@ -43,7 +43,7 @@ export const NearbyPlansList = (props: { session: UserSession }) => {
                         variant: "outline",
                         size: "sm",
                       }),
-                      "flex flex-col w-full p-2 relative rounded-md h-auto"
+                      "flex flex-col w-full p-3 relative rounded-md h-auto gap-2"
                     )}
                   >
                     <div class="w-full flex flex-row items-center justify-between">

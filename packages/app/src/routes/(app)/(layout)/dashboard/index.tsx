@@ -8,13 +8,17 @@ import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
-import { Match, Show, Suspense, Switch } from "solid-js";
+import { Match, Show, Suspense, Switch, onMount } from "solid-js";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
   const session = useSession();
   const isLoggedInLonger = (minutes: number) =>
     dayjs(session?.()?.createdAt).add(minutes, "minutes").isBefore(Date.now());
+
+  onMount(() => {
+    document.title = "Dashboard | Plaaaner";
+  });
 
   return (
     <Suspense
@@ -48,11 +52,11 @@ export default function DashboardPage() {
         <Match when={typeof session !== "undefined" && session().user !== null && session()}>
           {(s) => (
             <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
-              <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)] bg-neutral-100 dark:bg-neutral-900">
+              <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)]">
                 <div class="flex flex-col w-full flex-grow min-h-0 max-h-screen overflow-y-auto">
                   <div class="container flex flex-col gap-4 max-w-full md:max-w-6xl h-screen">
                     <div class="w-full h-auto flex flex-col pb-2 gap-2">
-                      <div class="flex w-full flex-col gap-2 py-4">
+                      <div class="flex w-full flex-col gap-2 pb-0 pt-8">
                         <span class="font-medium text-3xl">
                           Welcome
                           <Show when={isLoggedInLonger(15)} fallback="">
