@@ -4,6 +4,7 @@ import { EntryBox } from "@/components/dashboard/entrybox";
 import { NearbyPlansList } from "@/components/dashboard/nearby-plans";
 import { NotificationList } from "@/components/dashboard/notifications";
 import { Activities } from "@/components/dashboard/plans-list";
+import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
 import { Skeleton } from "@/components/ui/skeleton";
 import { A } from "@solidjs/router";
 import dayjs from "dayjs";
@@ -81,11 +82,11 @@ export default function DashboardPage() {
                         <Suspense
                           fallback={
                             <div class="py-10 w-full flex flex-col items-center justify-center gap-4">
-                            <Skeleton class="w-full h-48"/>
-                            <Skeleton class="w-full h-48"/>
-                            <Skeleton class="w-full h-48"/>
-                            <Skeleton class="w-full h-48"/>
-                            <Skeleton class="w-full h-48"/>
+                              <Skeleton class="w-full h-48" />
+                              <Skeleton class="w-full h-48" />
+                              <Skeleton class="w-full h-48" />
+                              <Skeleton class="w-full h-48" />
+                              <Skeleton class="w-full h-48" />
                             </div>
                           }
                         >
@@ -101,7 +102,24 @@ export default function DashboardPage() {
                               </div>
                             }
                           >
+                            <UpcomingPlans session={s()} />
+                          </Suspense>
+                          <Suspense
+                            fallback={
+                              <div class="p-4 w-full flex flex-col items-center justify-center">
+                                <Loader2 class="size-4 animate-spin" />
+                              </div>
+                            }
+                          >
                             <NotificationList session={s()} />
+                          </Suspense>
+                          <Suspense
+                            fallback={
+                              <div class="p-4 w-full flex flex-col items-center justify-center">
+                                <Loader2 class="size-4 animate-spin" />
+                              </div>
+                            }
+                          >
                             <NearbyPlansList session={s()} />
                           </Suspense>
                         </div>

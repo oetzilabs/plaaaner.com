@@ -340,3 +340,28 @@ export const deletePlanComment = action(async (comment_id) => {
 
   return removed;
 }, "planComments");
+
+export const getUpcomingPlans = cache(async () => {
+  "use server";
+  const event = getEvent()!;
+  const locale = getLocaleSettings(event);
+  dayjs.updateLocale(locale.language, {});
+
+  const user = event.context.user;
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+
+  const session = event.context.session;
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  const plans = await Plans.findBy({
+    user_id: user.id,
+    workspace_id: session.workspace_id,
+    organization_id: session.organization_id,
+    fromDate: dayjs().startOf("day").toDate(),
+  });
+  return plans;
+}, "plans");

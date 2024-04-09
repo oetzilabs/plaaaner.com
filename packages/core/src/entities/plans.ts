@@ -103,6 +103,7 @@ export const findBy = z
         fromDate
           ? operators.and(operators.eq(fields.workspace_id, workspace.id), operators.gte(fields.createdAt, fromDate))
           : operators.eq(fields.workspace_id, workspace.id),
+      orderBy: (fields, operators) => operators.desc(fields.createdAt),
       with: {
         plan: {
           with: {
@@ -417,7 +418,7 @@ export const findComment = z.function(z.tuple([z.string().uuid()])).implement(as
     with: {
       plan: true,
       user: true,
-    }
+    },
   });
   return comment;
 });
