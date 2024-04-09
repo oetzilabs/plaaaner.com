@@ -8,6 +8,7 @@ import { z } from "zod";
 import { users_organizations } from "./user_organizations";
 import { organizations_joins } from "./organizations_joins";
 import { plan_comment_user_mention_notifications } from "./notifications/plan/comment_user_mention";
+import { plan_comments } from "./plan_comments";
 
 export const users = schema.table("users", {
   ...Entity.defaults,
@@ -52,6 +53,7 @@ export const userRelation = relations(users, ({ many }) => ({
   organizations: many(users_organizations),
   joins: many(organizations_joins),
   notification_comment_mentions: many(plan_comment_user_mention_notifications),
+  comments: many(plan_comments),
 }));
 
 export type UserSelect = typeof users.$inferSelect;

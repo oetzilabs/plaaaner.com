@@ -6,12 +6,15 @@ import {
   PlanCreateSchema,
   PlanTimesCreateSchema,
   PlanUpdateSchema,
+  plan_comments,
   plan_times,
   plans,
   workspaces_plans,
 } from "../drizzle/sql/schema";
 import { Organization } from "./organizations";
 import { Workspace } from "./workspaces";
+import { throws } from "assert";
+import { User } from "./users";
 
 export * as Plans from "./plans";
 
@@ -43,6 +46,14 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
   return db.query.plans.findFirst({
     where: (plans, operations) => operations.eq(plans.id, input),
     with: {
+      comments: {
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
+        with: {
+          user: true,
+        },
+      },
       owner: true,
     },
   });
@@ -95,6 +106,14 @@ export const findBy = z
       with: {
         plan: {
           with: {
+            comments: {
+              orderBy(fields, operators) {
+                return operators.desc(fields.createdAt);
+              },
+              with: {
+                user: true,
+              },
+            },
             owner: true,
           },
         },
@@ -108,6 +127,11 @@ export const findByName = z.function(z.tuple([z.string()])).implement(async (inp
   return db.query.plans.findFirst({
     where: (plans, operations) => operations.eq(plans.name, input),
     with: {
+      comments: {
+        with: {
+          user: true,
+        },
+      },
       owner: true,
     },
   });
@@ -116,6 +140,14 @@ export const findByName = z.function(z.tuple([z.string()])).implement(async (inp
 export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
   return db.query.plans.findMany({
     with: {
+      comments: {
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
+        with: {
+          user: true,
+        },
+      },
       owner: true,
     },
     where(fields, operations) {
@@ -127,6 +159,11 @@ export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
 export const all = z.function(z.tuple([])).implement(async () => {
   return db.query.plans.findMany({
     with: {
+      comments: {
+        with: {
+          user: true,
+        },
+      },
       owner: true,
     },
   });
@@ -191,6 +228,14 @@ export const findByUserId = z
       },
       with: {
         owner: true,
+        comments: {
+          orderBy(fields, operators) {
+            return operators.desc(fields.createdAt);
+          },
+          with: {
+            user: true,
+          },
+        },
       },
     });
     return ws;
@@ -222,6 +267,14 @@ export const findByOrganizationId = z
           with: {
             plan: {
               with: {
+                comments: {
+                  orderBy(fields, operators) {
+                    return operators.desc(fields.createdAt);
+                  },
+                  with: {
+                    user: true,
+                  },
+                },
                 owner: true,
               },
             },
@@ -245,6 +298,11 @@ export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implem
       return operators.desc(fields.createdAt);
     },
     with: {
+      comments: {
+        with: {
+          user: true,
+        },
+      },
       owner: true,
     },
   });
@@ -263,6 +321,14 @@ export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).i
       return operators.and(operators.notInArray(fields.id, userOrgs), operators.isNull(fields.deletedAt));
     },
     with: {
+      comments: {
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
+        with: {
+          user: true,
+        },
+      },
       owner: true,
     },
   });
@@ -315,6 +381,51 @@ export const nearbyPlans = z
       },
     ]);
   });
+
+export const addComment = z
+  .function(z.tuple([z.string().uuid(), z.string().uuid(), z.string()]))
+  .implement(async (plan_id, user_id, comment) => {
+    const plan = await findById(plan_id);
+
+    if (!plan) {
+      throw new Error("This plan does not exist");
+    }
+
+    const user = await User.findById(user_id);
+
+    if (!user) {
+      throw new Error("This user does not exist");
+    }
+
+    const commented = await db
+      .insert(plan_comments)
+      .values({
+        comment,
+        planId: plan_id,
+        userId: user_id,
+      })
+      .returning();
+
+    return commented;
+  });
+
+export const findComment = z.function(z.tuple([z.string().uuid()])).implement(async (comment_id) => {
+  const comment = await db.query.plan_comments.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.id, comment_id);
+    },
+    with: {
+      plan: true,
+      user: true,
+    }
+  });
+  return comment;
+});
+
+export const deleteComment = z.function(z.tuple([z.string().uuid()])).implement(async (comment_id) => {
+  const removed = await db.delete(plan_comments).where(eq(plan_comments.id, comment_id)).returning();
+  return removed;
+});
 
 export const safeParseCreate = PlanCreateSchema.safeParse;
 export const safeParseUpdate = PlanUpdateSchema.safeParse;

@@ -63,17 +63,7 @@ export const EntryBox = () => {
                 </TextField>
               </div>
               <div class="flex flex-row items-center justify-between px-4">
-                <div class="w-full">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      resetForm();
-                    }}
-                  >
-                    Reset
-                  </Button>
-                </div>
+                <div class="w-full"></div>
                 <div class="w-max flex flex-row gap-2 items-center">
                   <Button variant="outline" size="sm">
                     Drafts

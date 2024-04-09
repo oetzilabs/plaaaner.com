@@ -6,11 +6,15 @@ import { Entity } from "./entity";
 import { plans } from "./plans";
 import { schema } from "./utils";
 import { plan_comments_mentions } from "./plan_comments_mentions";
+import { users } from "./users";
 
 export const plan_comments = schema.table("plan_comments", {
   ...Entity.defaults,
   planId: uuid("plan_id")
     .references(() => plans.id)
+    .notNull(),
+  userId: uuid("user_id")
+    .references(() => users.id)
     .notNull(),
   comment: text("comment").notNull(),
 });
@@ -19,6 +23,10 @@ export const plan_comments_relation = relations(plan_comments, ({ many, one }) =
   plan: one(plans, {
     fields: [plan_comments.planId],
     references: [plans.id],
+  }),
+  user: one(users, {
+    fields: [plan_comments.userId],
+    references: [users.id],
   }),
   mentions: many(plan_comments_mentions),
 }));

@@ -218,7 +218,7 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
         plan_id: createdPlan.id,
         quantity: t.quantity,
         ticket_type_id: t.ticket_type.id,
-      } as z.infer<typeof TicketCreateSchema>)
+      }) as z.infer<typeof TicketCreateSchema>
   );
 
   const ticketsValidation = TicketCreateSchema.array().safeParse(ticketCreationData);
@@ -238,7 +238,7 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
             ends_at: ts.end,
             starts_at: ts.start,
             plan_id: createdPlan.id,
-          } as TS)
+          }) as TS
       )
     );
 
@@ -266,3 +266,77 @@ export const getPlanTypeId = cache(async (plan_type: z.infer<typeof CreatePlanFo
 
   return plan_type_?.id ?? null;
 }, "plan_type_id");
+
+export const commentOnPlan = action(async (data: { planId: string; comment: string }) => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+  const commented = await Plans.addComment(data.planId, user.id, data.comment);
+  return true;
+}, "activities");
+
+export const getPlanComments = cache(async (plan_id) => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+  const plan = await Plans.findById(plan_id);
+  if (!plan) {
+    throw new Error("This plan does not exist");
+  }
+  return plan.comments;
+}, "planComments");
+
+export const deletePlanComment = action(async (comment_id) => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+  const comment = await Plans.findComment(comment_id);
+
+  if(!comment) {
+    throw new Error("This Comment does not exist");
+  }
+
+  const removed = await Plans.deleteComment(comment.id);
+
+  return removed;
+}, "planComments");
