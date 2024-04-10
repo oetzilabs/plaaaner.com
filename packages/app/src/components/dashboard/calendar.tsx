@@ -1,23 +1,20 @@
-import { createAsync } from "@solidjs/router";
-import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
-import type { UserSession } from "@/lib/auth/util";
-import { getPlans } from "@/lib/api/plans";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getLocale } from "@/lib/api/locale";
+import { getPlans } from "@/lib/api/plans";
+import type { UserSession } from "@/lib/auth/util";
+import { As } from "@kobalte/core";
+import { createAsync } from "@solidjs/router";
 import dayjs, { Dayjs } from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
-import localeData from "dayjs/plugin/localeData";
-import updateLocale from "dayjs/plugin/updateLocale";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { Button } from "@/components/ui/button";
+import localeData from "dayjs/plugin/localeData";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
+import updateLocale from "dayjs/plugin/updateLocale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-solid";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { As } from "@kobalte/core";
-import { CreatePlanPopover } from "./create-plan-popover";
+import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 import { createStore, produce } from "solid-js/store";
-import { toast } from "solid-sonner";
-import { relative } from "path";
-import { cn } from "@/lib/utils";
+import { CreatePlanPopover } from "./create-plan-popover";
 dayjs.extend(advancedFormat);
 dayjs.extend(localeData);
 dayjs.extend(updateLocale);
@@ -36,7 +33,7 @@ export const Calendar = (props: { session: UserSession }) => {
     console.log("updated locale to:", l);
     dayjs.updateLocale(l.language, { weekStart: l.startOfWeek });
   });
-  const plans = createAsync(() => getPlans());
+  const plans = createAsync(() => getPlans({ fromDate: null }));
   const [currentDate, setCurrentDate] = createSignal(dayjs());
 
   const createCalendar = () => {
@@ -238,7 +235,7 @@ export const Calendar = (props: { session: UserSession }) => {
                                               {p().name}
                                             </div>
                                             <div class="w-max truncate text-white text-xs py-1">
-                                              {dayjs(p().startsAt).format("LT")}
+                                              {dayjs(p().starts_at).format("LT")}
                                             </div>
                                           </div>
                                         </As>

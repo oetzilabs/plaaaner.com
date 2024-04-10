@@ -12,8 +12,8 @@ import { Toaster } from "solid-sonner";
 import { SessionProvider } from "@/components/SessionProvider";
 import { WebsocketProvider } from "@/components/providers/Websocket";
 import { Button } from "@/components/ui/button";
-import "./app.css";
 import { logout } from "./utils/api/actions";
+import "./app.css";
 
 // const getServerCookies = () => {
 //   "use server";

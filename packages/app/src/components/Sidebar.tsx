@@ -1,14 +1,11 @@
 import { cn } from "@/lib/utils";
 import { As } from "@kobalte/core";
 import { A, useLocation, useResolvedPath } from "@solidjs/router";
-import { Activity, Bell, Box, Circle, HelpCircle, LayoutDashboard, MessageCircle, Settings2 } from "lucide-solid";
+import { Activity, Bell, Circle, HelpCircle, LayoutDashboard } from "lucide-solid";
 import { JSXElement, Show } from "solid-js";
-import ModeToggle from "./ModeToogle";
 import { OrganizationWorkspaceSelection } from "./OrganizationWorkspaceSelection";
 import { useSession } from "./SessionProvider";
-import UserMenu from "./UserMenu";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 import { Skeleton } from "./ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 

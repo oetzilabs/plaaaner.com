@@ -1,30 +1,3 @@
-import { UserSession } from "@/lib/auth/util";
-import { cn } from "@/lib/utils";
-import { A, useAction, useSubmission } from "@solidjs/router";
-import {
-  Cloud,
-  CreditCard,
-  Github,
-  Group,
-  Keyboard,
-  LifeBuoy,
-  Loader2,
-  LogIn,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Monitor,
-  Moon,
-  Plus,
-  Settings,
-  Settings2,
-  Sun,
-  User,
-  UserPlus,
-} from "lucide-solid";
-import { Match, Show, Switch } from "solid-js";
-import { logout } from "../utils/api/actions";
-import { As, useColorMode } from "@kobalte/core";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -39,6 +12,31 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UserSession } from "@/lib/auth/util";
+import { cn } from "@/lib/utils";
+import { As, useColorMode } from "@kobalte/core";
+import { A, useAction, useSubmission } from "@solidjs/router";
+import {
+  Cloud,
+  CreditCard,
+  Github,
+  Group,
+  Keyboard,
+  LifeBuoy,
+  LogIn,
+  LogOut,
+  Mail,
+  MessageSquare,
+  Monitor,
+  Moon,
+  Plus,
+  Settings,
+  Sun,
+  User,
+  UserPlus,
+} from "lucide-solid";
+import { Match, Show, Switch } from "solid-js";
+import { logout } from "../utils/api/actions";
 
 export default function UserMenu(props: { user: UserSession["user"] }) {
   const isLoggingOut = useSubmission(logout);

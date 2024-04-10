@@ -1,8 +1,7 @@
 import { Footer } from "@/components/Footer";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
-import { cn } from "../lib/utils";
 
 export default function IndexPage() {
   return (

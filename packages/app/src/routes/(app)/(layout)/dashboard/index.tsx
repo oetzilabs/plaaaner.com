@@ -76,7 +76,7 @@ export default function DashboardPage() {
                         </A>
                       </span>
                     </div>
-                    <div class="w-full h-auto flex flex-row pb-2 gap-8 relative">
+                    <div class="w-full h-auto flex flex-row gap-8 relative">
                       <div class="md:w-8/12 w-full">
                         <EntryBox />
                         <Suspense
@@ -95,15 +95,7 @@ export default function DashboardPage() {
                       </div>
                       <div class="hidden md:w-4/12 md:flex flex-col">
                         <div class="flex flex-col w-full gap-4 sticky top-0 pt-4">
-                          <Suspense
-                            fallback={
-                              <div class="p-4 w-full flex flex-col items-center justify-center">
-                                <Loader2 class="size-4 animate-spin" />
-                              </div>
-                            }
-                          >
-                            <UpcomingPlans session={s()} />
-                          </Suspense>
+                          <UpcomingPlans session={s()} />
                           <Suspense
                             fallback={
                               <div class="p-4 w-full flex flex-col items-center justify-center">

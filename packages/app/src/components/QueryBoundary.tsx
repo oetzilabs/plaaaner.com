@@ -2,7 +2,6 @@ import type { CreateQueryResult } from "@tanstack/solid-query";
 import type { JSX } from "solid-js";
 import { Match, Suspense, Switch } from "solid-js";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-solid";
 
 export interface QueryBoundaryProps<T = unknown> {
   query: CreateQueryResult<T, Error>;

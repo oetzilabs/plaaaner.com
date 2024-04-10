@@ -1,14 +1,13 @@
-import { As } from "@kobalte/core";
-import { A, useNavigate } from "@solidjs/router";
-import { For, JSX, createSignal } from "solid-js";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/custom/logo";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
-import { cn } from "@/lib/utils";
-import { SVGAttributes } from "lucide-solid/dist/types/types";
-import { toast } from "solid-sonner";
 import { loginViaEmail } from "@/lib/api/user";
-import { useSubmission, useAction } from "@solidjs/router";
+import { cn } from "@/lib/utils";
+import { As } from "@kobalte/core";
+import { A, useAction, useNavigate, useSubmission } from "@solidjs/router";
+import type { SVGAttributes } from "lucide-solid/dist/types/types";
+import { For, JSX, createSignal } from "solid-js";
+import { toast } from "solid-sonner";
 
 const generateAuthUrl = (provider: string) => {
   const url = new URL("/authorize", import.meta.env.VITE_AUTH_URL);

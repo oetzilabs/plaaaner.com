@@ -20,22 +20,20 @@ export default defineConfig({
     },
   },
   middleware: "./src/middleware.ts",
-  vite(options) {
-    return {
-      ssr: { noExternal: ["@kobalte/core", "@internationalized/message"] },
-      resolve: {
-        alias: {
-          "@": path.resolve(process.cwd(), "src"),
-        },
+  vite: {
+    ssr: { noExternal: ["@kobalte/core", "@internationalized/message"] },
+    resolve: {
+      alias: {
+        "@": path.resolve(process.cwd(), "src"),
       },
-      optimizeDeps: {
-        esbuildOptions: {
-          target: "esnext",
-        },
-      },
-      build: {
+    },
+    optimizeDeps: {
+      esbuildOptions: {
         target: "esnext",
       },
-    };
+    },
+    build: {
+      target: "esnext",
+    },
   },
 });

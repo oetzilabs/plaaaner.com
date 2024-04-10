@@ -1,12 +1,8 @@
 import { A } from "@solidjs/router";
 import { AppSearch } from "./AppSearch";
-import ModeToggle from "./ModeToogle";
+import { useSession } from "./SessionProvider";
 import UserMenu from "./UserMenu";
 import { Logo } from "./ui/custom/logo";
-import { useSession } from "./SessionProvider";
-import { Show } from "solid-js";
-import { buttonVariants } from "./ui/button";
-import { cn } from "@/lib/utils";
 
 export function Header() {
   const userSession = useSession();

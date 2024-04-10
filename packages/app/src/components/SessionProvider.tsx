@@ -13,6 +13,7 @@ export const [SessionProvider, useSession] = createContextProvider(() => {
     expiresAt: null,
     organization: null,
     id: null,
+    createdAt: null,
   });
   createEffect(() => {
     const aS = authenticatedSession();

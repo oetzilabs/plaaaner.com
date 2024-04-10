@@ -1,9 +1,9 @@
-import { cache, redirect } from "@solidjs/router";
-import { lucia } from ".";
-import { getCookie, getEvent } from "vinxi/http";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
+import { cache, redirect } from "@solidjs/router";
+import { getCookie, getEvent } from "vinxi/http";
+import { lucia } from ".";
 
 export const getAuthenticatedUser = cache(async () => {
   "use server";

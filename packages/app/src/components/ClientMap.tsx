@@ -1,16 +1,13 @@
 // @refresh reload
+import { useColorMode } from "@kobalte/core";
 import { A } from "@solidjs/router";
-import { Accessor, createEffect } from "solid-js";
+import { createQuery } from "@tanstack/solid-query";
 import L, { LatLng, LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Match, Switch, createSignal, onCleanup, onMount } from "solid-js";
-import { createStore } from "solid-js/store";
-import { useColorMode } from "@kobalte/core";
-import { createQuery } from "@tanstack/solid-query";
-import { toast } from "solid-sonner";
-import { QueryBoundary } from "./QueryBoundary";
 import { Loader2 } from "lucide-solid";
-import { Show } from "solid-js";
+import { Accessor, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { createStore } from "solid-js/store";
+import { QueryBoundary } from "./QueryBoundary";
 
 type Geo =
   | {
@@ -40,14 +37,14 @@ const [darkTile] = createSignal<L.TileLayer>(
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     subdomains: "abcd",
     maxZoom: 20,
-  }),
+  })
 );
 
 const [lightTile] = createSignal<L.TileLayer>(
   L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
     subdomains: "abcd",
     maxZoom: 20,
-  }),
+  })
 );
 
 function loadMap(
@@ -61,7 +58,7 @@ function loadMap(
     zoom: number;
     accuracy?: number;
   },
-  themeMode: "dark" | "light",
+  themeMode: "dark" | "light"
 ) {
   if (!div) return;
   let m = map();
@@ -132,7 +129,7 @@ export default function ClientMap(props: { query: Accessor<string> }) {
         return null;
       }
       const result = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURI(q)}&format=json&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURI(q)}&format=json&addressdetails=1`
       ).then((res) => res.json());
       const m = map();
       if (m) {
@@ -184,7 +181,7 @@ export default function ClientMap(props: { query: Accessor<string> }) {
             zoom: 13,
             accuracy: position.coords.accuracy ?? 25,
           },
-          t,
+          t
         );
       },
       (error) => {
@@ -193,7 +190,7 @@ export default function ClientMap(props: { query: Accessor<string> }) {
           message: error.message,
         });
         console.log(error);
-      },
+      }
     );
   };
 

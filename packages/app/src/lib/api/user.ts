@@ -41,6 +41,7 @@ export const loginViaEmail = action(async (email: string) => {
     access_token: null,
     organization_id: null,
     workspace_id: null,
+    createdAt: new Date(),
   });
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
@@ -110,6 +111,7 @@ export const setDashboard = action(async (organization_id: string, workspace_id:
       access_token: currentSession.access_token,
       organization_id: o.id,
       workspace_id: w.id,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,
@@ -152,6 +154,7 @@ export const setCurrentOrganization = action(async (id: string) => {
       access_token: currentSession.access_token,
       organization_id: o.id,
       workspace_id: null,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,

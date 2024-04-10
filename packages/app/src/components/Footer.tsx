@@ -1,7 +1,7 @@
+import { createMediaQuery } from "@solid-primitives/media";
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import { Logo } from "./ui/custom/logo";
-import { createMediaQuery } from "@solid-primitives/media";
 
 const footer = {
   "Open Source": [

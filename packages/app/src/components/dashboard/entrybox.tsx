@@ -22,7 +22,7 @@ export const EntryBox = () => {
   const isPostEmpty = () => postContent().length === 0;
 
   return (
-    <div class="flex w-full flex-col sticky top-0 z-10 bg-background">
+    <div class="flex w-full flex-col sticky top-0 z-10 bg-background pb-4">
       <div class="flex w-full flex-col gap-8 pt-4">
         <div class="flex flex-col w-full border border-neutral-200 dark:border-neutral-800 rounded-lg gap-4 bg-background shadow-md">
           <Tabs defaultValue="plan" class="w-full">
@@ -69,7 +69,7 @@ export const EntryBox = () => {
                     Drafts
                   </Button>
                   <A
-                    href={`/plan/create${
+                    href={`/plan/create/custom${
                       isEmpty()
                         ? ""
                         : `?${new URLSearchParams({ title: title(), description: description() }).toString()}`

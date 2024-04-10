@@ -30,7 +30,7 @@ export const revokeAllSessions = action(async () => {
   return true;
 }, "sessions");
 
-export const revokeSession = action(async(data:FormData) => {
+export const revokeSession = action(async (data: FormData) => {
   "use server";
   const event = getEvent()!;
 
@@ -41,17 +41,18 @@ export const revokeSession = action(async(data:FormData) => {
   }
 
   const d = Object.fromEntries(data.entries());
-  const validation = z.object({
-    session_id: z.string(),
-  }).safeParse(d);
+  const validation = z
+    .object({
+      session_id: z.string(),
+    })
+    .safeParse(d);
 
-  if(!validation.success) {
+  if (!validation.success) {
     throw validation.error;
   }
   await lucia.invalidateSession(validation.data.session_id);
 
   return true;
-
 });
 
 export const changeNotificationSettings = action(async (type: string) => {
@@ -98,6 +99,7 @@ export const disconnectFromOrganization = action(async (data: string) => {
       access_token: session.access_token,
       organization_id: null,
       workspace_id: null,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,
@@ -134,6 +136,7 @@ export const deleteOrganization = action(async (id: string) => {
       access_token: session.access_token,
       organization_id: null,
       workspace_id: null,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,

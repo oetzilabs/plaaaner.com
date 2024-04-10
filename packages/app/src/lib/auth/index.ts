@@ -1,7 +1,7 @@
 import { Lucia, TimeSpan } from "lucia";
 
 import { luciaAdapter } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql";
-import type { UserSelect, SessionSelect } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
+import type { SessionSelect, UserSelect } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 
 export const lucia = new Lucia(luciaAdapter, {
   sessionExpiresIn: new TimeSpan(2, "w"),

@@ -1,4 +1,3 @@
-import type { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { getUpcomingPlans } from "@/lib/api/plans";
 import type { UserSession } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
@@ -28,10 +27,10 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
         </A>
         <div class="flex flex-col w-full gap-2">
           <Show when={typeof upcomingPlans !== "undefined" && upcomingPlans()}>
-            {(upcomingplanlist) => (
+            {(list) => (
               <TransitionGroup name="slide-fade-up">
                 <For
-                  each={upcomingplanlist()}
+                  each={list()}
                   fallback={
                     <div class="w-full flex flex-col items-center justify-center bg-neutral-50 dark:bg-neutral-950 text-muted-foreground text-xs p-3 border border-neutral-200 dark:border-neutral-800 rounded-md">
                       <span>No upcoming Plans, create one!</span>
@@ -51,12 +50,8 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
                         )}
                       >
                         <div class="w-full flex flex-col gap-2">
-                          <div class="w-full text-sm font-semibold">
-                            {upcomingplan.name}
-                          </div>
-                          <div class="w-full text-xs">
-                            {upcomingplan.description}
-                          </div>
+                          <div class="w-full text-sm font-semibold">{upcomingplan.name}</div>
+                          <div class="w-full text-xs text-muted-foreground">{upcomingplan.description}</div>
                         </div>
                       </A>
                     </Transition>

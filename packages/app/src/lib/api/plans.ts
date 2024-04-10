@@ -1,23 +1,22 @@
-import { action, cache, redirect } from "@solidjs/router";
-import { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
-import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
-import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
-import { getCookie, getRequestHeaders } from "vinxi/http";
-import { lucia } from "../auth";
-import { z } from "zod";
-import { CreatePlanFormSchema } from "../../utils/schemas/plan";
-import { getEvent } from "vinxi/http";
 import {
   PlanCreateSchema,
   PlanTimesCreateSchema,
   TicketCreateSchema,
 } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
+import { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
+import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
+import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
+import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
+import { action, cache, redirect } from "@solidjs/router";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import updateLocale from "dayjs/plugin/updateLocale";
+import { getCookie, getEvent } from "vinxi/http";
+import { z } from "zod";
+import { CreatePlanFormSchema } from "../../utils/schemas/plan";
+import { lucia } from "../auth";
 import { getLocaleSettings } from "./locale";
-import { getRequestIP } from "vinxi/http";
+
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
 
@@ -218,7 +217,7 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
         plan_id: createdPlan.id,
         quantity: t.quantity,
         ticket_type_id: t.ticket_type.id,
-      }) as z.infer<typeof TicketCreateSchema>
+      } as z.infer<typeof TicketCreateSchema>)
   );
 
   const ticketsValidation = TicketCreateSchema.array().safeParse(ticketCreationData);
@@ -238,7 +237,7 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
             ends_at: ts.end,
             starts_at: ts.start,
             plan_id: createdPlan.id,
-          }) as TS
+          } as TS)
       )
     );
 
@@ -332,7 +331,7 @@ export const deletePlanComment = action(async (comment_id) => {
   }
   const comment = await Plans.findComment(comment_id);
 
-  if(!comment) {
+  if (!comment) {
     throw new Error("This Comment does not exist");
   }
 
@@ -356,12 +355,18 @@ export const getUpcomingPlans = cache(async () => {
   if (!session) {
     throw redirect("/auth/login");
   }
-
+  const fromDate = dayjs().startOf("day").toDate();
   const plans = await Plans.findBy({
     user_id: user.id,
     workspace_id: session.workspace_id,
     organization_id: session.organization_id,
-    fromDate: dayjs().startOf("day").toDate(),
+    fromDate: null,
   });
-  return plans;
+  return plans.filter((p) => {
+    // take plans that are after or on the same day as the fromDate
+    if (fromDate) {
+      return dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day");
+    }
+    return false;
+  });
 }, "plans");

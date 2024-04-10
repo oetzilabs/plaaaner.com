@@ -1,8 +1,7 @@
 import { createMiddleware } from "@solidjs/start/middleware";
 import { Session, User, verifyRequestOrigin } from "lucia";
-import { appendHeader, getCookie, getHeader } from "vinxi/http";
+import { appendHeader, getCookie, getEvent, getHeader } from "vinxi/http";
 import { lucia } from "./lib/auth";
-import { getEvent } from "vinxi/http";
 
 export default createMiddleware({
   onRequest: async () => {

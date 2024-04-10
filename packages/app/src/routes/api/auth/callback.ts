@@ -1,5 +1,5 @@
-import type { APIEvent } from "@solidjs/start/server";
 import { lucia } from "@/lib/auth";
+import type { APIEvent } from "@solidjs/start/server";
 import { appendHeader, sendRedirect } from "vinxi/http";
 
 export async function GET(e: APIEvent) {

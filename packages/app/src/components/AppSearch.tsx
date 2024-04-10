@@ -1,18 +1,18 @@
-import { createSignal, createEffect, onCleanup, JSX, JSXElement, ComponentProps } from "solid-js";
 import {
   CommandDialog,
+  CommandHeading,
+  CommandInput,
   CommandItem,
   CommandItemLabel,
-  CommandInput,
   CommandList,
-  CommandHeading,
 } from "@/components/ui/command";
-import { Search } from "lucide-solid";
-import { toast } from "solid-sonner";
-import { User } from "lucia";
-import { createAsync } from "@solidjs/router";
 import { getAuthenticatedUser } from "@/lib/auth/util";
 import { useColorMode } from "@kobalte/core";
+import { createAsync } from "@solidjs/router";
+import { User } from "lucia";
+import { Search } from "lucide-solid";
+import { createEffect, createSignal, onCleanup } from "solid-js";
+import { toast } from "solid-sonner";
 
 type Option = {
   label: string;

@@ -3,11 +3,13 @@ import { getNotifications } from "@/lib/api/notifications";
 import { buttonVariants } from "@/components/ui/button";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 import { cn } from "@/lib/utils";
 import type { UserSession } from "@/lib/auth/util";
 import { Show } from "solid-js";
 import { For } from "solid-js";
 dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
 
 export const NotificationList = (props: { session: UserSession }) => {
   const notifications = createAsync(() => getNotifications());

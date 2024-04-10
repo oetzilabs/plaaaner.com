@@ -58,6 +58,7 @@ export const createOrganization = action(async (form: FormData) => {
       access_token: currentSession.access_token,
       workspace_id: currentSession.workspace_id,
       organization_id: organization.id,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,

@@ -1,8 +1,8 @@
-import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { WorkspaceCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schemas/workspaces";
+import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { action, cache, redirect } from "@solidjs/router";
-import { z } from "zod";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
+import { z } from "zod";
 import { lucia } from "../auth";
 
 const WorkspaceCreateSchemaWithConnect = WorkspaceCreateSchema.extend({
@@ -61,6 +61,7 @@ export const connectToWorkspace = action(async (data: FormData) => {
       access_token: session.access_token,
       workspace_id: ws!.id,
       organization_id: session.organization_id,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,
@@ -96,6 +97,7 @@ export const disconnectFromWorkspace = action(async (data: FormData) => {
       access_token: session.access_token,
       workspace_id: null,
       organization_id: session.organization_id,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,
@@ -129,6 +131,7 @@ export const createWorkspace = action(
           access_token: session.access_token,
           workspace_id: workspace.id,
           organization_id: session.organization_id,
+          createdAt: new Date(),
         },
         {
           sessionId: sessionId,
@@ -169,6 +172,7 @@ export const deleteWorkspace = action(async (id: string) => {
       access_token: session.access_token,
       organization_id: session.organization_id,
       workspace_id: null,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,
@@ -226,6 +230,7 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
       access_token: currentSession.access_token,
       workspace_id: ws.id,
       organization_id: currentSession.organization_id,
+      createdAt: new Date(),
     },
     {
       sessionId: sessionId,
