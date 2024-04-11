@@ -1,15 +1,15 @@
 import { relations } from "drizzle-orm";
 import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
 import { plan_comments } from "./plan_comments";
-import { plans } from "./plans";
+import { posts } from "./posts";
 import { users } from "./users";
 import { schema } from "./utils";
 
-export const plan_comments_mentions = schema.table(
-  "plan_comments_mentions",
+export const post_comments_mentions = schema.table(
+  "post_comments_mentions",
   {
-    planId: uuid("plan_id")
-      .references(() => plans.id)
+    postId: uuid("post_id")
+      .references(() => posts.id)
       .notNull(),
     commentId: uuid("comment_id")
       .references(() => plan_comments.id)
@@ -34,22 +34,22 @@ export const plan_comments_mentions = schema.table(
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.userId, table.planId, table.commentId] }),
+      pk: primaryKey({ columns: [table.userId, table.postId, table.commentId] }),
     };
   }
 );
 
-export const plan_comments_mentions_relation = relations(plan_comments_mentions, ({ many, one }) => ({
-  plan: one(plans, {
-    fields: [plan_comments_mentions.planId],
-    references: [plans.id],
+export const post_comments_mentions_relation = relations(post_comments_mentions, ({ many, one }) => ({
+  post: one(posts, {
+    fields: [post_comments_mentions.postId],
+    references: [posts.id],
   }),
   comment: one(plan_comments, {
-    fields: [plan_comments_mentions.commentId],
+    fields: [post_comments_mentions.commentId],
     references: [plan_comments.id],
   }),
   user: one(users, {
-    fields: [plan_comments_mentions.userId],
+    fields: [post_comments_mentions.userId],
     references: [users.id],
   }),
 }));

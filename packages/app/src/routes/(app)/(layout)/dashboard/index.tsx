@@ -3,7 +3,7 @@ import { useSession } from "@/components/SessionProvider";
 import { EntryBox } from "@/components/dashboard/entrybox";
 import { NearbyPlansList } from "@/components/dashboard/nearby-plans";
 import { NotificationList } from "@/components/dashboard/notifications";
-import { Activities } from "@/components/dashboard/plans-list";
+import { Activities } from "@/components/dashboard/activity-list";
 import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
 import { Skeleton } from "@/components/ui/skeleton";
 import { A } from "@solidjs/router";

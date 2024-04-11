@@ -1,12 +1,13 @@
 import type { UserSession } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
-import { A } from "@solidjs/router";
+import { A, useAction, useSubmission } from "@solidjs/router";
 import { CalendarFold, Newspaper, Plus } from "lucide-solid";
 import { createSignal } from "solid-js";
 import { Button, buttonVariants } from "../ui/button";
 import { TextFieldTextArea } from "../ui/textarea";
 import { TextField, TextFieldInput } from "../ui/textfield";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createNewPost } from "../../lib/api/posts";
 
 export const EntryBox = () => {
   const [title, setTitle] = createSignal("");
@@ -20,6 +21,9 @@ export const EntryBox = () => {
 
   const isEmpty = () => title().length + description().length === 0;
   const isPostEmpty = () => postContent().length === 0;
+
+  const createPost = useAction(createNewPost);
+  const isCreatingPost = useSubmission(createNewPost);
 
   return (
     <div class="flex w-full flex-col sticky top-0 z-10 bg-background pb-4">
@@ -107,10 +111,18 @@ export const EntryBox = () => {
                     Drafts
                   </Button>
                   <Button
-                    disabled={isPostEmpty()}
+                    disabled={isPostEmpty() || isCreatingPost.pending}
                     variant="default"
                     size="sm"
                     class="w-max flex items-center justify-center gap-2"
+                    onClick={async () => {
+                      console.log("create post");
+                      const content = postContent();
+                      if (content.length === 0) {
+                        return;
+                      }
+                      await createPost(content);
+                    }}
                   >
                     <Plus class="size-4" />
                     <span class="">Create Post</span>

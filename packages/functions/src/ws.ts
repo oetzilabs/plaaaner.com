@@ -26,6 +26,7 @@ export const ping = WebSocketApiHandler(async (event) => {
   if (!payload.userId) return error("No userId", StatusCodes.BAD_REQUEST);
   const userId = payload.userId;
   const x = await WebsocketCore.update(connectionId, userId);
+  // console.log("Updated Websocket Connection Entry", x, "payload", payload);
   const id = payload.id;
   const sentAt = Date.now();
 
