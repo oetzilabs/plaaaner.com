@@ -1,5 +1,4 @@
-import type { UserSession } from "@/lib/auth/util";
-import { cn } from "@/lib/utils";
+import { cn, refreshActivities, setFreshActivities } from "@/lib/utils";
 import { A, useAction, useSubmission } from "@solidjs/router";
 import { CalendarFold, Newspaper, Plus } from "lucide-solid";
 import { createSignal } from "solid-js";
@@ -17,6 +16,7 @@ export const EntryBox = () => {
   const resetForm = () => {
     setTitle("");
     setDescription("");
+    setPostContent("");
   };
 
   const isEmpty = () => title().length + description().length === 0;
@@ -40,8 +40,8 @@ export const EntryBox = () => {
                 Post
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="plan" class="pt-0">
-              <div class="flex flex-col w-full px-4">
+            <TabsContent value="plan" class="pt-0 gap-2 flex flex-col">
+              <div class="flex flex-col w-full px-2">
                 <TextField onChange={(v) => setTitle(v)} value={title()}>
                   <TextFieldInput
                     placeholder="Plan Name"
@@ -56,7 +56,7 @@ export const EntryBox = () => {
                 <TextField onChange={(v) => setDescription(v)} value={description()}>
                   <TextFieldTextArea
                     placeholder="Describe your new plan..."
-                    class="border-none shadow-none !ring-0 !outline-none rounded-md px-0 resize-none"
+                    class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none bg-muted"
                     autoResize
                     onKeyDown={(e) => {
                       if (e.key === "Escape") {
@@ -89,12 +89,12 @@ export const EntryBox = () => {
                 </div>
               </div>
             </TabsContent>
-            <TabsContent value="post" class="pt-0">
-              <div class="flex flex-col w-full px-4">
+            <TabsContent value="post" class="pt-0 gap-2 flex flex-col">
+              <div class="flex flex-col w-full px-2">
                 <TextField onChange={(v) => setPostContent(v)} value={postContent()}>
                   <TextFieldTextArea
                     placeholder="What's up?"
-                    class="border-none shadow-none !ring-0 !outline-none rounded-md px-0 resize-none min-h-24"
+                    class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none min-h-24 bg-muted"
                     autoResize
                     onKeyDown={(e) => {
                       if (e.key === "Escape") {
@@ -121,7 +121,11 @@ export const EntryBox = () => {
                       if (content.length === 0) {
                         return;
                       }
-                      await createPost(content);
+                      const post = await createPost(content);
+                      if (post) {
+                        setPostContent("");
+                        setFreshActivities([{ type: "post", value: post }]);
+                      }
                     }}
                   >
                     <Plus class="size-4" />

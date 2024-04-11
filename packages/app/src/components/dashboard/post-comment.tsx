@@ -1,6 +1,6 @@
 import { commentOnPlan, deletePlanComment, getPlanComments } from "@/lib/api/plans";
 import { commentOnPost, deletePostComment, getPostComments } from "@/lib/api/posts";
-import { shortUsername } from "@/lib/utils";
+import { setFreshActivities, shortUsername } from "@/lib/utils";
 import { useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { CircleAlert, Ellipsis, Loader2, MessageSquareDiff, Trash } from "lucide-solid";

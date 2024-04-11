@@ -18,7 +18,7 @@ export const Activities = (props: { session: UserSession }) => {
       >
         <span class="text-sm font-bold group-hover:underline group-hover:underline-offset-2">Activities</span>
         <div class="size-3 bg-neutral-100 dark:bg-neutral-900 rounded-full p-3 items-center justify-center flex text-muted-foreground text-xs">
-          {activities()?.plans.length}
+          {activities?.()?.length}
         </div>
       </A>
     </div>

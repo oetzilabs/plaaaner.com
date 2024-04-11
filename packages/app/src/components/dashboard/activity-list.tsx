@@ -1,25 +1,66 @@
 import { getActivities } from "@/lib/api/activity";
 import type { UserSession } from "@/lib/auth/util";
-import { cn } from "@/lib/utils";
+import { cn, refreshActivities, setFreshActivities } from "@/lib/utils";
 import type { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { For, Match, Show, Switch, createResource } from "solid-js";
+import { For, Match, Show, Switch, createEffect, createResource, onMount } from "solid-js";
 import { Transition, TransitionGroup } from "solid-transition-group";
 import { useSession } from "../SessionProvider";
 import { PlanCommentsSection, PostCommentsSection } from "./post-comment";
 import { Image, ImageFallback, ImageRoot } from "../ui/image";
 import { shortUsername } from "@/lib/utils";
+import { toast } from "solid-sonner";
+import { createSignal } from "solid-js";
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
 
 export const Activities = (props: { session: UserSession }) => {
   const [activities, actions] = createResource(() => getActivities({ fromDate: null }));
+  const [listOfActivities, setListOfActivities] = createSignal<NonNullable<Awaited<ReturnType<typeof getActivities>>>>(
+    []
+  );
   const session = useSession();
+
+  createEffect(async () => {
+    const rA = refreshActivities();
+    if (rA.length > 0) {
+      actions.mutate((oldActivities) => {
+        if (!oldActivities) {
+          const sortedActivities = rA.sort((a, b) => {
+            return dayjs(a.value.updatedAt ?? a.value.createdAt).isBefore(b.value.updatedAt ?? b.value.createdAt)
+              ? 1
+              : -1;
+          });
+          return sortedActivities;
+        }
+        const acs = [...oldActivities, ...rA];
+        const sortedActivities = acs.sort((a, b) => {
+          return dayjs(a.value.updatedAt ?? a.value.createdAt).isBefore(b.value.updatedAt ?? b.value.createdAt)
+            ? 1
+            : -1;
+        });
+        return sortedActivities;
+      });
+      setFreshActivities([]);
+    }
+  });
+
+  // const mergeActivities = (a: NonNullable<Awaited<ReturnType<typeof getActivities>>>) => {
+  //   // skip all activities that are already in the list
+  //   const newActivities = a.filter((a) => !listOfActivities().some((b) => b.value.id === a.value.id));
+  //   const acs = [...listOfActivities(), ...newActivities];
+  //   const sortedActivities = acs.sort((a, b) => {
+  //     return dayjs(a.value.updatedAt ?? a.value.createdAt).isBefore(b.value.updatedAt ?? b.value.createdAt) ? 1 : -1;
+  //   });
+  //   setListOfActivities(sortedActivities);
+
+  //   return sortedActivities;
+  // };
 
   const lastActivity = (index: number, plans: any[]) => index < plans.length - 1;
 

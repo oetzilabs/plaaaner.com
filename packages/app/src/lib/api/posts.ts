@@ -82,8 +82,8 @@ export const createNewPost = action(async (content: string) => {
   }
 
   const [createdPost] = await Posts.create({ content }, user.id, workspace.id);
-
-  return createdPost;
+  const post = await Posts.findById(createdPost.id);
+  return post;
 }, "posts");
 
 export const commentOnPost = action(async (data: { postId: string; comment: string }) => {
