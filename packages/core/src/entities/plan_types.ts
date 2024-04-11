@@ -20,7 +20,7 @@ export const DEFAULT_PLAN_TYPES: Parameters<typeof create>[0] = [
     description: "",
   },
   {
-    name: "custom",
+    name: "custom-event",
     description: "",
   },
 ] as const;
@@ -154,8 +154,7 @@ export const setOwner = z
 
 export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
   const ws = await db.query.plan_types.findFirst({
-    where: (plan_types, operations) =>
-      and(operations.eq(plan_types.owner_id, user_id), isNull(plan_types.deletedAt)),
+    where: (plan_types, operations) => and(operations.eq(plan_types.owner_id, user_id), isNull(plan_types.deletedAt)),
     orderBy(fields, operators) {
       return operators.desc(fields.createdAt);
     },

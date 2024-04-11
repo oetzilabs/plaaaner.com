@@ -73,7 +73,7 @@ export const EntryBox = () => {
                     Drafts
                   </Button>
                   <A
-                    href={`/plan/create/custom${
+                    href={`/plan/create/custom-event${
                       isEmpty()
                         ? ""
                         : `?${new URLSearchParams({ title: title(), description: description() }).toString()}`
