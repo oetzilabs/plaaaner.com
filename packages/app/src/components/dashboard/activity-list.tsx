@@ -19,7 +19,7 @@ export const Activities = (props: { session: UserSession }) => {
   const [activities, actions] = createResource(() => getActivities({ fromDate: null }));
   const session = useSession();
 
-  createEffect(async () => {
+  createEffect(() => {
     const rA = refreshActivities();
     if (rA.length > 0) {
       actions.mutate((oldActivities) => {
