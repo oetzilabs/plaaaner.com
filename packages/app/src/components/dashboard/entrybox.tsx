@@ -139,7 +139,6 @@ export const EntryBox = () => {
                     size="sm"
                     class="w-max flex items-center justify-center gap-2"
                     onClick={async () => {
-                      console.log("create post");
                       const content = postContent();
                       if (content.length === 0) {
                         return;
