@@ -1,23 +1,30 @@
 import { commentOnPlan, deletePlanComment, getPlanComments } from "@/lib/api/plans";
 import { commentOnPost, deletePostComment, getPostComments } from "@/lib/api/posts";
-import { setFreshActivities, shortUsername } from "@/lib/utils";
+import { cn, setFreshActivities, shortUsername } from "@/lib/utils";
 import { useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
-import { CircleAlert, Ellipsis, Loader2, MessageSquareDiff, Trash } from "lucide-solid";
+import { CircleAlert, Ellipsis, Loader2, MessageSquareDiff, Trash, Search } from "lucide-solid";
 import { For, Match, Show, Switch, createResource, createSignal } from "solid-js";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Image, ImageFallback, ImageRoot } from "../ui/image";
-import { TextFieldTextArea } from "../ui/textarea";
-import { TextField } from "../ui/textfield";
+} from "../../ui/dropdown-menu";
+import { Image, ImageFallback, ImageRoot } from "../../ui/image";
+import { TextFieldTextArea } from "../../ui/textarea";
+import { TextField } from "../../ui/textfield";
+import { UserSession } from "@/lib/auth/util";
+import { Transition } from "solid-transition-group";
 
-export const PlanCommentsSection = (props: { planId: string; username: string; increment: number }) => {
+export const PlanCommentsSection = (props: {
+  planId: string;
+  username: string;
+  increment: number;
+  session: UserSession;
+}) => {
   const [comments, actions] = createResource(() => getPlanComments(props.planId), {
     name: "getPlanComments",
     initialValue: [],
@@ -104,10 +111,10 @@ export const PlanCommentsSection = (props: { planId: string; username: string; i
                   </ImageRoot>
                   <div class="flex flex-row items-start justify-between w-full">
                     <div class="flex-1 flex flex-col w-full gap-1">
-                      <span class="text-justify w-full pr-1">{comment.comment}</span>
                       <span class="text-muted-foreground text-xs font-bold">
                         {props.username} {dayjs(comment.createdAt).format("LT")}
                       </span>
+                      <span class="text-justify w-full pr-1">{comment.comment}</span>
                     </div>
                     <div class="w-max flex">
                       <DropdownMenu>
@@ -115,22 +122,26 @@ export const PlanCommentsSection = (props: { planId: string; username: string; i
                           <Ellipsis class="size-4" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem disabled>
+                          <DropdownMenuItem disabled closeOnSelect={false}>
                             <CircleAlert class="size-4" />
                             Report
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
-                            disabled={isDeletingComment.pending}
-                            onClick={async () => {
-                              await removeComment(comment.id);
-                              await actions.refetch();
-                            }}
-                          >
-                            <Trash class="size-4" />
-                            Delete
-                          </DropdownMenuItem>
+                          <Show when={comment.user.id === props.session?.user?.id}>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
+                              disabled={isDeletingComment.pending}
+                              closeOnSelect={false}
+                              onSelect={async () => {
+                                if (comment.user.id !== props.session?.user?.id) return;
+                                await removeComment(comment.id);
+                                await actions.refetch();
+                              }}
+                            >
+                              <Trash class="size-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </Show>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -141,7 +152,7 @@ export const PlanCommentsSection = (props: { planId: string; username: string; i
           </div>
         )}
       </Show>
-      <div class="flex flex-row items-center justify-between px-3 py-2 gap-2">
+      <div class="flex flex-row items-center justify-between p-4 gap-2">
         <ImageRoot class="self-start size-8 text-xs text-muted-foreground">
           <Image src={""} alt={`Profile Picture of ${props.username}`} />
           <ImageFallback>{shortUsername(props.username)}</ImageFallback>
@@ -159,7 +170,12 @@ export const PlanCommentsSection = (props: { planId: string; username: string; i
   );
 };
 
-export const PostCommentsSection = (props: { postId: string; username: string; increment: number }) => {
+export const PostCommentsSection = (props: {
+  postId: string;
+  username: string;
+  increment: number;
+  session: UserSession;
+}) => {
   const [comments, actions] = createResource(() => getPostComments(props.postId), {
     name: "getPlanComments",
     initialValue: [],
@@ -236,10 +252,10 @@ export const PostCommentsSection = (props: { postId: string; username: string; i
                   </ImageRoot>
                   <div class="flex flex-row items-start justify-between w-full">
                     <div class="flex-1 flex flex-col w-full gap-1">
-                      <span class="text-justify w-full pr-1">{comment.comment}</span>
                       <span class="text-muted-foreground text-xs font-bold">
                         {props.username} {dayjs(comment.createdAt).format("LT")}
                       </span>
+                      <span class="text-justify w-full pr-1">{comment.comment}</span>
                     </div>
                     <div class="w-max flex">
                       <DropdownMenu>
@@ -251,18 +267,22 @@ export const PostCommentsSection = (props: { postId: string; username: string; i
                             <CircleAlert class="size-4" />
                             Report
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
-                            disabled={isDeletingComment.pending}
-                            onClick={async () => {
-                              await removeComment(comment.id);
-                              await actions.refetch();
-                            }}
-                          >
-                            <Trash class="size-4" />
-                            Delete
-                          </DropdownMenuItem>
+                          <Show when={comment.user.id === props.session?.user?.id}>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
+                              disabled={isDeletingComment.pending}
+                              closeOnSelect={false}
+                              onSelect={async () => {
+                                if (comment.user.id !== props.session?.user?.id) return;
+                                await removeComment(comment.id);
+                                await actions.refetch();
+                              }}
+                            >
+                              <Trash class="size-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </Show>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -273,7 +293,7 @@ export const PostCommentsSection = (props: { postId: string; username: string; i
           </div>
         )}
       </Show>
-      <div class="flex flex-row items-center justify-between px-3 py-2 gap-2">
+      <div class="flex flex-row items-center justify-between p-4 gap-2">
         <ImageRoot class="self-start size-8 text-xs text-muted-foreground">
           <Image src={""} alt={`Profile Picture of ${props.username}`} />
           <ImageFallback>{shortUsername(props.username)}</ImageFallback>
@@ -296,6 +316,7 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
 
   const addComment = useAction(commentOnPost);
   const isCommenting = useSubmission(commentOnPost);
+  const [isFocused, setIsFocused] = createSignal(false);
 
   const postComment = async () => {
     const c = comment();
@@ -308,7 +329,6 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
     <div class="w-full h-auto flex flex-col gap-2">
       <TextField
         onChange={(v) => {
-          if (!v) return;
           setComment(v);
         }}
         value={comment()}
@@ -316,39 +336,60 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
         <TextFieldTextArea
           placeholder="Add a comment..."
           autoResize
-          class="border-none shadow-none !ring-0 !outline-none rounded-md px-0 resize-none bg-muted p-2"
+          class={cn("shadow-none !ring-0 !outline-none rounded-md px-0 resize-none  p-2 min-h-10 transition-height", {
+            "bg-muted": isFocused() || comment().length > 0,
+          })}
+          style={{
+            height: isFocused() || comment().length > 0 ? "auto" : "0",
+          }}
+          onFocus={() => {
+            setIsFocused(true);
+          }}
+          onBlur={() => {
+            if (comment().length > 0) return;
+            setIsFocused(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setComment("");
+            }
+          }}
         ></TextFieldTextArea>
       </TextField>
-      <div class="flex flex-row w-full items-center justify-between gap-2">
-        <div class="w-full"></div>
-        <div class="w-max flex flex-row gap-1">
-          <Button
-            size="sm"
-            aria-disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
-            disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
-            onClick={async () => {
-              await postComment();
-              setComment("");
-              props.onPost();
-            }}
-            class="flex flex-row gap-2"
-          >
-            <Switch
-              fallback={
-                <div class="flex flex-row gap-2 items-center justify-center">
-                  <MessageSquareDiff class="size-4" />
-                  <span>Comment</span>
-                </div>
-              }
-            >
-              <Match when={isCommenting.pending && isCommenting.input[0].postId === props.postId}>
-                <Loader2 class="size-4 animate-spin" />
-                <span>Commenting</span>
-              </Match>
-            </Switch>
-          </Button>
-        </div>
-      </div>
+      <Transition name="slide-fade-down">
+        <Show when={isFocused()}>
+          <div class="flex flex-row w-full items-center justify-between gap-2">
+            <div class="w-full"></div>
+            <div class="w-max flex flex-row gap-1">
+              <Button
+                size="sm"
+                aria-disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
+                disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
+                onClick={async () => {
+                  await postComment();
+                  setComment("");
+                  props.onPost();
+                }}
+                class="flex flex-row gap-2"
+              >
+                <Switch
+                  fallback={
+                    <div class="flex flex-row gap-2 items-center justify-center">
+                      <MessageSquareDiff class="size-4" />
+                      <span>Comment</span>
+                    </div>
+                  }
+                >
+                  <Match when={isCommenting.pending && isCommenting.input[0].postId === props.postId}>
+                    <Loader2 class="size-4 animate-spin" />
+                    <span>Commenting</span>
+                  </Match>
+                </Switch>
+              </Button>
+            </div>
+          </div>
+        </Show>
+      </Transition>
     </div>
   );
 };
@@ -359,6 +400,8 @@ const PlanComment = (props: { planId: string; onPost: () => void }) => {
   const addComment = useAction(commentOnPlan);
   const isCommenting = useSubmission(commentOnPlan);
 
+  const [isFocused, setIsFocused] = createSignal(false);
+
   const postComment = async () => {
     const c = comment();
     if (c.trim().length === 0) return;
@@ -367,50 +410,70 @@ const PlanComment = (props: { planId: string; onPost: () => void }) => {
   };
 
   return (
-    <div class="w-full h-auto flex flex-col gap-2">
+    <div class="w-full h-auto flex flex-col gap-4">
       <TextField
         onChange={(v) => {
-          if (!v) return;
           setComment(v);
         }}
         value={comment()}
       >
         <TextFieldTextArea
           placeholder="Add a comment..."
-          autoResize
-          class="border-none shadow-none !ring-0 !outline-none rounded-md px-0 resize-none bg-muted p-2"
+          autoResize={isFocused() || comment().length > 0}
+          class={cn("shadow-none !ring-0 !outline-none rounded-md px-0 resize-none  p-2 min-h-10 transition-height", {
+            "bg-muted": isFocused() || comment().length > 0,
+          })}
+          style={{
+            height: isFocused() || comment().length > 0 ? "auto" : "0",
+          }}
+          onFocus={() => {
+            setIsFocused(true);
+          }}
+          onBlur={() => {
+            if (comment().length > 0) return;
+            setIsFocused(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setComment("");
+            }
+          }}
         ></TextFieldTextArea>
       </TextField>
-      <div class="flex flex-row w-full items-center justify-between gap-2">
-        <div class="w-full"></div>
-        <div class="w-max flex flex-row gap-1">
-          <Button
-            size="sm"
-            aria-disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
-            disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
-            onClick={async () => {
-              await postComment();
-              setComment("");
-              props.onPost();
-            }}
-            class="flex flex-row gap-2"
-          >
-            <Switch
-              fallback={
-                <div class="flex flex-row gap-2 items-center justify-center">
-                  <MessageSquareDiff class="size-4" />
-                  <span>Comment</span>
-                </div>
-              }
-            >
-              <Match when={isCommenting.pending && isCommenting.input[0].planId === props.planId}>
-                <Loader2 class="size-4 animate-spin" />
-                <span>Commenting</span>
-              </Match>
-            </Switch>
-          </Button>
-        </div>
-      </div>
+      <Transition name="slide-fade-down">
+        <Show when={isFocused()}>
+          <div class="flex flex-row w-full items-center justify-between gap-4">
+            <div class="w-full"></div>
+            <div class="w-max flex flex-row gap-1">
+              <Button
+                size="sm"
+                aria-disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
+                disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
+                onClick={async () => {
+                  await postComment();
+                  setComment("");
+                  props.onPost();
+                }}
+                class="flex flex-row gap-2"
+              >
+                <Switch
+                  fallback={
+                    <div class="flex flex-row gap-2 items-center justify-center">
+                      <MessageSquareDiff class="size-4" />
+                      <span>Comment</span>
+                    </div>
+                  }
+                >
+                  <Match when={isCommenting.pending && isCommenting.input[0].planId === props.planId}>
+                    <Loader2 class="size-4 animate-spin" />
+                    <span>Commenting</span>
+                  </Match>
+                </Switch>
+              </Button>
+            </div>
+          </div>
+        </Show>
+      </Transition>
     </div>
   );
 };

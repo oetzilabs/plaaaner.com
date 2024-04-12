@@ -362,11 +362,52 @@ export const getUpcomingPlans = cache(async () => {
     organization_id: session.organization_id,
     fromDate: null,
   });
-  return plans.filter((p) => {
+  const filtered = plans.filter((p) => {
     // take plans that are after or on the same day as the fromDate
     if (fromDate) {
       return dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day");
     }
     return false;
   });
+  const sorted = filtered.sort((a, b) => {
+    return dayjs(a.starts_at).isBefore(dayjs(b.starts_at)) ? -1 : 1;
+  });
+  return sorted;
+}, "upcomingPlans");
+
+export const deletePlan = action(async (plan_id) => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+  const plan = await Plans.findById(plan_id);
+
+  if (!plan) {
+    throw new Error("This Plan does not exist");
+  }
+
+  if (plan.deletedAt) {
+    throw new Error("This Plan has already been deleted");
+  }
+
+  if (plan.owner.id !== user.id) {
+    throw new Error("You do not have permission to delete this Plan");
+  }
+
+  const removed = await Plans.update({ id: plan.id, deletedAt: new Date() });
+
+  return removed;
 }, "plans");

@@ -158,4 +158,42 @@ export const deletePostComment = action(async (comment_id) => {
   const removed = await Posts.deleteComment(comment.id);
 
   return removed;
-}, "planComments");
+}, "postComments");
+
+export const deletePost = action(async (post_id: string) => {
+  "use server";
+  const event = getEvent()!;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+  const post = await Posts.findById(post_id);
+
+  if (!post) {
+    throw new Error("This Post does not exist");
+  }
+
+  if (post.deletedAt) {
+    throw new Error("This Post has already been deleted");
+  }
+
+  if (post.owner.id !== user.id) {
+    throw new Error("You do not have permission to delete this Post");
+  }
+
+  const removed = await Posts.update({ id: post.id, deletedAt: new Date() });
+
+  const removedPost = await Posts.findById(post.id);
+  return removedPost;
+}, "posts");

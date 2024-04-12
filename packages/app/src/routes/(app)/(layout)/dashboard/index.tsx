@@ -1,16 +1,18 @@
 import { NotLoggedIn } from "@/components/NotLoggedIn";
 import { useSession } from "@/components/SessionProvider";
+import { Activities } from "@/components/dashboard/activity-list";
+import { Disclaimers } from "@/components/dashboard/disclaimers";
 import { EntryBox } from "@/components/dashboard/entrybox";
 import { NearbyPlansList } from "@/components/dashboard/nearby-plans";
 import { NotificationList } from "@/components/dashboard/notifications";
-import { Activities } from "@/components/dashboard/activity-list";
+import { SmallFooter } from "@/components/dashboard/small-footer";
 import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
 import { Skeleton } from "@/components/ui/skeleton";
 import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
-import { Match, Show, Suspense, Switch, onMount } from "solid-js";
+import { For, Match, Show, Suspense, Switch, onMount } from "solid-js";
 dayjs.extend(relativeTime);
 
 export default function DashboardPage() {
@@ -76,17 +78,20 @@ export default function DashboardPage() {
                         </A>
                       </span>
                     </div>
-                    <div class="w-full h-auto flex flex-row gap-8 relative">
+                    <div class="w-full h-auto flex flex-row gap-4 relative">
                       <div class="md:w-8/12 w-full">
                         <EntryBox />
                         <Suspense
                           fallback={
                             <div class="py-10 w-full flex flex-col items-center justify-center gap-4">
-                              <Skeleton class="w-full h-48" />
-                              <Skeleton class="w-full h-48" />
-                              <Skeleton class="w-full h-48" />
-                              <Skeleton class="w-full h-48" />
-                              <Skeleton class="w-full h-48" />
+                              <For each={Array(5).fill(null)}>
+                                {() => (
+                                  <Skeleton
+                                    class="w-full"
+                                    style={{ height: `${Math.floor(Math.random() * 200) + 100}px` }}
+                                  />
+                                )}
+                              </For>
                             </div>
                           }
                         >
@@ -114,6 +119,10 @@ export default function DashboardPage() {
                           >
                             <NearbyPlansList session={s()} />
                           </Suspense>
+                          <div class="flex flex-col w-full gap-2">
+                            <SmallFooter />
+                            <Disclaimers />
+                          </div>
                         </div>
                       </div>
                     </div>

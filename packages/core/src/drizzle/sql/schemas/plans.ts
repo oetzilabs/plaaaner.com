@@ -12,6 +12,8 @@ import { plan_comments_mentions } from "./plan_comments_mentions";
 import { plan_comment_user_mention_notifications } from "./notifications/plan/comment_user_mention";
 import { workspaces_plans } from "./workspaces_plans";
 
+export const plansStatus = schema.enum("plans_status", ["published", "draft", "hidden"]);
+
 export const plans = schema.table("plans", {
   ...Entity.defaults,
   name: text("name").notNull(),
@@ -30,6 +32,7 @@ export const plans = schema.table("plans", {
     withTimezone: true,
     mode: "date",
   }).notNull(),
+  status: plansStatus("status").notNull().default("published"),
 });
 
 export const plans_relation = relations(plans, ({ many, one }) => ({

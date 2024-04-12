@@ -10,12 +10,15 @@ import { post_comments_mentions } from "./post_comments_mentions";
 import { post_comment_user_mention_notifications } from "./notifications/post/comment_user_mention";
 import { workspaces_posts } from "./workspaces_posts";
 
+export const postStatus = schema.enum("post_status", ["published", "draft", "hidden"]);
+
 export const posts = schema.table("posts", {
   ...Entity.defaults,
   content: text("content").notNull(),
   owner_id: uuid("owner")
     .notNull()
     .references(() => users.id),
+  status: postStatus("status").notNull().default("published"),
 });
 
 export const post_relation = relations(posts, ({ many, one }) => ({

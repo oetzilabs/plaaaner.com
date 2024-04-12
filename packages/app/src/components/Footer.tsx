@@ -1,62 +1,8 @@
+import { footer_links } from "@/lib/utils";
 import { createMediaQuery } from "@solid-primitives/media";
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import { Logo } from "./ui/custom/logo";
-
-const footer = {
-  "Open Source": [
-    {
-      name: "GitHub",
-      href: "https://github.com/oetzilabs/plaaaner.com",
-    },
-    {
-      name: "Issues",
-      href: "https://github.com/oetzilabs/plaaaner.com/issues",
-    },
-  ],
-  Community: [
-    {
-      name: "Blog",
-      href: "#",
-    },
-    {
-      name: "Discord",
-      href: "#",
-    },
-    {
-      name: "Twitter",
-      href: "#",
-    },
-  ],
-  Legal: [
-    {
-      name: "Privacy",
-      href: "/privacy",
-    },
-    {
-      name: "Terms of Service",
-      href: "/terms-of-service",
-    },
-  ],
-  Project: [
-    {
-      name: "Roadmap",
-      href: "#",
-    },
-    {
-      name: "Team",
-      href: "#",
-    },
-    {
-      name: "Vision",
-      href: "#",
-    },
-    {
-      name: "Brand",
-      href: "#",
-    },
-  ],
-};
 
 export function Footer() {
   const isSmall = createMediaQuery("(max-width: 768px)", true);
@@ -72,7 +18,7 @@ export function Footer() {
             </A>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-20 w-full md:w-max">
-            <For each={Object.entries(footer)}>
+            <For each={Object.entries(footer_links)}>
               {([title, links]) => (
                 <div class="flex flex-col gap-4">
                   <h4 class="text-base font-semibold text-[#4F46E4]">{title}</h4>

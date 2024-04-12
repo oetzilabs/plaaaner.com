@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
@@ -13,9 +13,7 @@ import {
 } from "../drizzle/sql/schema";
 import { Organization } from "./organizations";
 import { Workspace } from "./workspaces";
-import { throws } from "assert";
 import { User } from "./users";
-import dayjs from "dayjs";
 
 export * as Plans from "./plans";
 
@@ -221,10 +219,10 @@ export const findByUserId = z
         options?.fromDate
           ? operations.and(
               operations.eq(plans.owner_id, user_id),
-              isNull(plans.deletedAt),
+              operations.isNull(plans.deletedAt),
               operations.gte(plans.createdAt, options?.fromDate)
             )
-          : operations.and(operations.eq(plans.owner_id, user_id), isNull(plans.deletedAt)),
+          : operations.and(operations.eq(plans.owner_id, user_id), operations.isNull(plans.deletedAt)),
       orderBy(fields, operators) {
         return operators.desc(fields.createdAt);
       },

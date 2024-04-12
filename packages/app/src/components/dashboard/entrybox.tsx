@@ -1,22 +1,26 @@
-import { cn, refreshActivities, setFreshActivities } from "@/lib/utils";
+import { ActivityChange, cn, refreshActivities, setFreshActivities } from "@/lib/utils";
 import { A, useAction, useSubmission } from "@solidjs/router";
-import { CalendarFold, Newspaper, Plus } from "lucide-solid";
-import { createSignal } from "solid-js";
+import { CalendarFold, CircleAlert, Newspaper, Pencil, Plus } from "lucide-solid";
+import { Switch, createSignal } from "solid-js";
 import { Button, buttonVariants } from "../ui/button";
 import { TextFieldTextArea } from "../ui/textarea";
 import { TextField, TextFieldInput } from "../ui/textfield";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createNewPost } from "../../lib/api/posts";
+import { ToggleButton } from "../ui/toggle";
+import { Match } from "solid-js";
 
 export const EntryBox = () => {
   const [title, setTitle] = createSignal("");
   const [description, setDescription] = createSignal("");
   const [postContent, setPostContent] = createSignal("");
+  const [isPublished, setIsPublished] = createSignal(false);
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setPostContent("");
+    setIsPublished(false);
   };
 
   const isEmpty = () => title().length + description().length === 0;
@@ -40,8 +44,8 @@ export const EntryBox = () => {
                 Post
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="plan" class="pt-0 gap-2 flex flex-col">
-              <div class="flex flex-col w-full px-2">
+            <TabsContent value="plan" class="pt-0 gap-4 flex flex-col">
+              <div class="flex flex-col w-full px-4">
                 <TextField onChange={(v) => setTitle(v)} value={title()}>
                   <TextFieldInput
                     placeholder="Plan Name"
@@ -67,7 +71,25 @@ export const EntryBox = () => {
                 </TextField>
               </div>
               <div class="flex flex-row items-center justify-between px-4">
-                <div class="w-full"></div>
+                <div class="w-full">
+                  <ToggleButton
+                    variant="outline"
+                    class="w-max flex items-center justify-center gap-2"
+                    onChange={setIsPublished}
+                    size="sm"
+                  >
+                    <Switch>
+                      <Match when={isPublished()}>
+                        <Pencil class="size-4" />
+                        As Draft
+                      </Match>
+                      <Match when={!isPublished()}>
+                        <Newspaper class="size-4" />
+                        Public
+                      </Match>
+                    </Switch>
+                  </ToggleButton>
+                </div>
                 <div class="w-max flex flex-row gap-2 items-center">
                   <Button variant="outline" size="sm">
                     Drafts
@@ -89,8 +111,8 @@ export const EntryBox = () => {
                 </div>
               </div>
             </TabsContent>
-            <TabsContent value="post" class="pt-0 gap-2 flex flex-col">
-              <div class="flex flex-col w-full px-2">
+            <TabsContent value="post" class="pt-0 gap-4 flex flex-col">
+              <div class="flex flex-col w-full px-4">
                 <TextField onChange={(v) => setPostContent(v)} value={postContent()}>
                   <TextFieldTextArea
                     placeholder="What's up?"
@@ -124,7 +146,8 @@ export const EntryBox = () => {
                       const post = await createPost(content);
                       if (post) {
                         setPostContent("");
-                        setFreshActivities([{ type: "post", value: post }]);
+                        const changed: ActivityChange[] = [{ change: "add", activity: { type: "post", value: post } }];
+                        setFreshActivities(changed);
                       }
                     }}
                   >
