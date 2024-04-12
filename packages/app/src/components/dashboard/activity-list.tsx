@@ -49,7 +49,6 @@ export const Activities = (props: { session: UserSession }) => {
             ? 1
             : -1;
         });
-        console.log("sortedActivities", sortedActivities);
         return sortedActivities;
       });
       setFreshActivities([]);
