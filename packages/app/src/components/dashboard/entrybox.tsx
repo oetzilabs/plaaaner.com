@@ -73,6 +73,7 @@ export const EntryBox = () => {
               <div class="flex flex-row items-center justify-between px-4">
                 <div class="w-full">
                   <ToggleButton
+                    disabled
                     variant="outline"
                     class="w-max flex items-center justify-center gap-2"
                     onChange={setIsPublished}
