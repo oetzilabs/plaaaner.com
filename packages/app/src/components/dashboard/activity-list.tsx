@@ -7,17 +7,14 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { For, Match, Show, Switch, createEffect, createResource } from "solid-js";
 import { Transition, TransitionGroup } from "solid-transition-group";
-import { useSession } from "../SessionProvider";
 import { PlanActivity } from "./activity-components/plan";
 import { PostActivity } from "./activity-components/post";
-import { A } from "@solidjs/router";
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
 
 export const Activities = (props: { session: UserSession }) => {
   const [activities, actions] = createResource(() => getActivities({ fromDate: null }));
-  const session = useSession();
 
   createEffect(() => {
     const rA = refreshActivities();
@@ -55,40 +52,34 @@ export const Activities = (props: { session: UserSession }) => {
     }
   });
 
-  const lastActivity = (index: number, plans: any[]) => index < plans.length - 1;
-
   return (
     <div class="flex flex-col w-full gap-2">
       <div class="w-full h-auto py-2">
         <ol class="w-full pb-20">
-          <Show when={typeof session !== "undefined" && session()!}>
-            {(sess) => (
-              <TransitionGroup name="slide-fade-up">
-                <Show when={typeof activities !== "undefined" && activities()}>
-                  {(acts) => (
-                    <div class="w-full flex flex-col gap-4">
-                      <For each={acts()}>
-                        {(activity, index) => (
-                          <Transition name="slide-fade-up">
-                            <li class="border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">
-                              <Switch>
-                                <Match when={activity.type === "plan" && activity.value}>
-                                  {(plan) => <PlanActivity plan={plan()} session={sess()} />}
-                                </Match>
-                                <Match when={activity.type === "post" && activity.value}>
-                                  {(post) => <PostActivity post={post()} session={sess()} />}
-                                </Match>
-                              </Switch>
-                            </li>
-                          </Transition>
-                        )}
-                      </For>
-                    </div>
-                  )}
-                </Show>
-              </TransitionGroup>
-            )}
-          </Show>
+          <TransitionGroup name="slide-fade-up">
+            <Show when={typeof activities !== "undefined" && activities()}>
+              {(acts) => (
+                <div class="w-full flex flex-col gap-4">
+                  <For each={acts()}>
+                    {(activity) => (
+                      <Transition name="slide-fade-up">
+                        <li class="border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">
+                          <Switch>
+                            <Match when={activity.type === "plan" && activity.value}>
+                              {(plan) => <PlanActivity plan={plan()} session={props.session} />}
+                            </Match>
+                            <Match when={activity.type === "post" && activity.value}>
+                              {(post) => <PostActivity post={post()} session={props.session} />}
+                            </Match>
+                          </Switch>
+                        </li>
+                      </Transition>
+                    )}
+                  </For>
+                </div>
+              )}
+            </Show>
+          </TransitionGroup>
         </ol>
       </div>
     </div>
