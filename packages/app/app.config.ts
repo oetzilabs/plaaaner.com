@@ -21,7 +21,7 @@ export default defineConfig({
   },
   middleware: "./src/middleware.ts",
   vite: {
-    ssr: { noExternal: ["@kobalte/core", "@internationalized/message"] },
+    ssr: { noExternal: ["@kobalte/core", "@internationalized/message", "lucide-solid"] },
     resolve: {
       alias: {
         "@": path.resolve(process.cwd(), "src"),
