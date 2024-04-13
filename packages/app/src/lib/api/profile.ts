@@ -1,5 +1,5 @@
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
-import { action, cache, redirect } from "@solidjs/router";
+import { action, cache, redirect, revalidate } from "@solidjs/router";
 import { getEvent } from "vinxi/http";
 
 export const updateProfile = action(async (form: FormData) => {
@@ -21,8 +21,9 @@ export const updateProfile = action(async (form: FormData) => {
   if (!x) {
     throw new Error("Couldn't update user profile");
   }
+  await revalidate(getProfile.key, true);
   return redirect("/setup/organization");
-}, "profile");
+});
 
 export const getProfile = cache(async () => {
   "use server";

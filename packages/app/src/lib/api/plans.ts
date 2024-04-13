@@ -7,7 +7,7 @@ import { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { action, cache, redirect } from "@solidjs/router";
+import { action, cache, redirect, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import updateLocale from "dayjs/plugin/updateLocale";
@@ -16,6 +16,7 @@ import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import { lucia } from "../auth";
 import { getLocaleSettings } from "./locale";
+import { getActivities } from "./activity";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
@@ -65,7 +66,7 @@ export const getPlans = cache(async (data: { fromDate: Date | null }) => {
     fromDate: data.fromDate,
   });
   return plans;
-}, "plans");
+}, "activities");
 
 export const getRecommendedPlans = cache(async () => {
   "use server";
@@ -248,9 +249,11 @@ export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSc
 
     // const e = { id: "test" };
   }
+  await revalidate(getActivities.key, true);
+  await revalidate(getUpcomingPlans.key, true);
 
   return createdPlan;
-}, "plans");
+});
 
 export const getDefaultFreeTicketType = cache(async () => {
   "use server";
@@ -284,8 +287,10 @@ export const commentOnPlan = action(async (data: { planId: string; comment: stri
     throw redirect("/auth/login");
   }
   const commented = await Plans.addComment(data.planId, user.id, data.comment);
+  await revalidate(getPlanComments.keyFor(commented.planId), true);
+  await revalidate(getActivities.key, true);
   return true;
-}, "activities");
+});
 
 export const getPlanComments = cache(async (plan_id) => {
   "use server";
@@ -309,7 +314,7 @@ export const getPlanComments = cache(async (plan_id) => {
     throw new Error("This plan does not exist");
   }
   return plan.comments;
-}, "planComments");
+}, "activities");
 
 export const deletePlanComment = action(async (comment_id) => {
   "use server";
@@ -336,9 +341,13 @@ export const deletePlanComment = action(async (comment_id) => {
   }
 
   const removed = await Plans.deleteComment(comment.id);
+  if (removed) {
+    await revalidate(getPlanComments.keyFor(removed.planId), true);
+    await revalidate(getActivities.key, true);
+  }
 
   return removed;
-}, "planComments");
+});
 
 export const getUpcomingPlans = cache(async () => {
   "use server";
@@ -409,5 +418,10 @@ export const deletePlan = action(async (plan_id) => {
 
   const removed = await Plans.update({ id: plan.id, deletedAt: new Date() });
 
-  return removed;
-}, "plans");
+  await revalidate(getActivities.key, true);
+  await revalidate(getUpcomingPlans.key, true);
+
+  const removedPlan = await Plans.findById(plan_id);
+
+  return removedPlan;
+});

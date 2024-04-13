@@ -1,9 +1,12 @@
 import { lucia } from "@/lib/auth";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
-import { action, redirect } from "@solidjs/router";
+import { action, redirect, revalidate } from "@solidjs/router";
 import { appendHeader, getCookie } from "vinxi/http";
 import { z } from "zod";
 import { getEvent } from "vinxi/http";
+import { getAuthenticatedSession } from "@/lib/auth/util";
+import { getNotificationSettings } from "../../lib/api/notifications";
+import { getMessagingSettings } from "../../lib/api/messages";
 
 export const logout = action(async () => {
   "use server";
@@ -14,8 +17,10 @@ export const logout = action(async () => {
   await lucia.invalidateSession(event.context.session.id);
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
   event.context.session = null;
+
+  await revalidate(getAuthenticatedSession.key, true);
   throw redirect("/auth/login", 303);
-}, "session");
+});
 
 export const revokeAllSessions = action(async () => {
   "use server";
@@ -26,9 +31,10 @@ export const revokeAllSessions = action(async () => {
   }
   const { id } = event.context.user;
   await lucia.invalidateUserSessions(id);
+  await revalidate(getAuthenticatedSession.key, true);
 
   return true;
-}, "sessions");
+});
 
 export const revokeSession = action(async (data: FormData) => {
   "use server";
@@ -51,6 +57,7 @@ export const revokeSession = action(async (data: FormData) => {
     throw validation.error;
   }
   await lucia.invalidateSession(validation.data.session_id);
+  await revalidate(getAuthenticatedSession.key, true);
 
   return true;
 });
@@ -61,8 +68,10 @@ export const changeNotificationSettings = action(async (type: string) => {
   if (!event.context.user) {
     return new Error("Unauthorized");
   }
+
+  await revalidate(getNotificationSettings.key, true);
   return { type };
-}, "notificationSettings");
+});
 
 export const changeMessageSettings = action(async (type: string) => {
   "use server";
@@ -70,8 +79,9 @@ export const changeMessageSettings = action(async (type: string) => {
   if (!event.context.user) {
     return new Error("Unauthorized");
   }
+  await revalidate(getMessagingSettings.key, true);
   return { type };
-}, "messageSetting");
+});
 
 export const disconnectFromOrganization = action(async (data: string) => {
   "use server";
@@ -107,8 +117,9 @@ export const disconnectFromOrganization = action(async (data: string) => {
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = session;
+  await revalidate(getAuthenticatedSession.key, true);
   return o;
-}, "session");
+});
 
 export const deleteOrganization = action(async (id: string) => {
   "use server";
@@ -144,9 +155,10 @@ export const deleteOrganization = action(async (id: string) => {
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = session;
+  await revalidate(getAuthenticatedSession.key, true);
 
   return o;
-}, "session");
+});
 
 export const setOrganizationOwner = action(async (id: string) => {
   "use server";
@@ -160,6 +172,7 @@ export const setOrganizationOwner = action(async (id: string) => {
   }
   const organizationId = valid.data;
   const o = await Organization.setOwner(organizationId, event.context.user.id);
+  await revalidate(getAuthenticatedSession.key, true);
 
   return o;
 });

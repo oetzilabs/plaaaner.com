@@ -1,9 +1,10 @@
 import { WorkspaceCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schemas/workspaces";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { action, cache, redirect } from "@solidjs/router";
+import { action, cache, redirect, revalidate } from "@solidjs/router";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
+import { getAuthenticatedSession } from "../auth/util";
 
 const WorkspaceCreateSchemaWithConnect = WorkspaceCreateSchema.extend({
   connect: z.boolean().optional().default(true),
@@ -69,8 +70,9 @@ export const connectToWorkspace = action(async (data: FormData) => {
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = new_session;
+  await revalidate(getAuthenticatedSession.key, true);
   return ws;
-}, "workspaces");
+});
 
 export const disconnectFromWorkspace = action(async (data: FormData) => {
   "use server";
@@ -105,9 +107,10 @@ export const disconnectFromWorkspace = action(async (data: FormData) => {
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = new_session;
+  await revalidate(getAuthenticatedSession.key, true);
 
   return ws;
-}, "workspaces");
+});
 
 export const createWorkspace = action(
   async (data: z.infer<typeof WorkspaceCreateSchemaWithConnect>, organization_id: string) => {
@@ -139,10 +142,11 @@ export const createWorkspace = action(
       );
       appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
       event.context.session = new_session;
+      await revalidate(getAuthenticatedSession.key, true);
     }
+
     return workspace;
-  },
-  "workspaces"
+  }
 );
 
 export const deleteWorkspace = action(async (id: string) => {
@@ -179,8 +183,9 @@ export const deleteWorkspace = action(async (id: string) => {
     }
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
+  await revalidate(getAuthenticatedSession.key, true);
   return ws;
-}, "session");
+});
 
 export const setWorkspaceOwner = action(async (id: string) => {
   "use server";
@@ -195,6 +200,7 @@ export const setWorkspaceOwner = action(async (id: string) => {
   const workspaceId = valid.data;
   const ws = await Workspace.setOwner(workspaceId, event.context.user.id);
 
+  await revalidate(getAuthenticatedSession.key, true);
   return ws;
 });
 
@@ -238,5 +244,6 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
+  await revalidate(getAuthenticatedSession.key, true);
   return ws;
-}, "session");
+});

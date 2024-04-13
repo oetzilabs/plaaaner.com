@@ -1,13 +1,13 @@
 // import { PostCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 import { Posts } from "@oetzilabs-plaaaner-com/core/src/entities/posts";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { action, cache, redirect } from "@solidjs/router";
+import { action, cache, redirect, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import updateLocale from "dayjs/plugin/updateLocale";
 import { getCookie, getEvent } from "vinxi/http";
-import { z } from "zod";
 import { lucia } from "../auth";
+import { getActivities } from "./activity";
 import { getLocaleSettings } from "./locale";
 
 dayjs.extend(isoWeek);
@@ -25,7 +25,7 @@ export const getPost = cache(async (postId: string) => {
     throw new Error("This post does not exist");
   }
   return post;
-}, "post");
+}, "activities");
 
 export const getPosts = cache(async (data: { fromDate: Date | null }) => {
   "use server";
@@ -50,7 +50,7 @@ export const getPosts = cache(async (data: { fromDate: Date | null }) => {
     fromDate: data.fromDate,
   });
   return posts;
-}, "posts");
+}, "activities");
 
 export const createNewPost = action(async (content: string) => {
   "use server";
@@ -82,9 +82,13 @@ export const createNewPost = action(async (content: string) => {
   }
 
   const [createdPost] = await Posts.create({ content }, user.id, workspace.id);
+  await revalidate(getActivities.key, true);
+  await revalidate(getPosts.key, true);
+
   const post = await Posts.findById(createdPost.id);
+
   return post;
-}, "posts");
+});
 
 export const commentOnPost = action(async (data: { postId: string; comment: string }) => {
   "use server";
@@ -104,8 +108,11 @@ export const commentOnPost = action(async (data: { postId: string; comment: stri
     throw redirect("/auth/login");
   }
   const commented = await Posts.addComment(data.postId, user.id, data.comment);
+  await revalidate(getPostComments.keyFor(commented.postId), true);
+  await revalidate(getActivities.key, true);
+  await revalidate(getActivities.keyFor({ fromDate: null }), true);
   return true;
-}, "activities");
+});
 
 export const getPostComments = cache(async (plan_id) => {
   "use server";
@@ -129,7 +136,7 @@ export const getPostComments = cache(async (plan_id) => {
     throw new Error("This plan does not exist");
   }
   return plan.comments;
-}, "planComments");
+}, "activities");
 
 export const deletePostComment = action(async (comment_id) => {
   "use server";
@@ -156,9 +163,10 @@ export const deletePostComment = action(async (comment_id) => {
   }
 
   const removed = await Posts.deleteComment(comment.id);
+  await revalidate(getPostComments.keyFor(removed.postId), true);
 
   return removed;
-}, "postComments");
+});
 
 export const deletePost = action(async (post_id: string) => {
   "use server";
@@ -194,6 +202,8 @@ export const deletePost = action(async (post_id: string) => {
 
   const removed = await Posts.update({ id: post.id, deletedAt: new Date() });
 
-  const removedPost = await Posts.findById(post.id);
+  const removedPost = await Posts.findById(removed.id);
+  await revalidate(getActivities.key, true);
+  await revalidate(getPosts.key, true);
   return removedPost;
-}, "posts");
+});

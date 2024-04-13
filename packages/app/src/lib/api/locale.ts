@@ -53,4 +53,4 @@ export const changeLocaleCookie = action(async (l: string) => {
   const event = getEvent()!;
   setCookie(event, "language", l);
   return l;
-}, "locale");
+});

@@ -1,10 +1,12 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
-import { action, redirect } from "@solidjs/router";
+import { action, redirect, revalidate } from "@solidjs/router";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
+import { getProfile } from "./profile";
+import { getAuthenticatedSession, getAuthenticatedUser } from "../auth/util";
 
 export const saveUser = action(async (data: FormData) => {
   "use server";
@@ -21,8 +23,11 @@ export const saveUser = action(async (data: FormData) => {
     return new Error("Invalid data");
   }
   const updatedUser = await User.update(valid.data);
+  await revalidate(getProfile.key, true);
+  await revalidate(getAuthenticatedUser.key, true);
+  await revalidate(getAuthenticatedSession.key, true);
   return updatedUser;
-}, "users");
+});
 
 export const loginViaEmail = action(async (email: string) => {
   "use server";
@@ -45,8 +50,11 @@ export const loginViaEmail = action(async (email: string) => {
   });
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
+  await revalidate(getProfile.key, true);
+  await revalidate(getAuthenticatedUser.key, true);
+  await revalidate(getAuthenticatedSession.key, true);
   return user;
-}, "users");
+});
 
 export const disableUser = action(async () => {
   "use server";
@@ -68,8 +76,11 @@ export const disableUser = action(async () => {
   });
   await lucia.invalidateSession(sessionId);
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
+  await revalidate(getProfile.key, true);
+  await revalidate(getAuthenticatedUser.key, true);
+  await revalidate(getAuthenticatedSession.key, true);
   throw redirect("/");
-}, "user");
+});
 
 export const setDashboard = action(async (organization_id: string, workspace_id: string) => {
   "use server";
@@ -120,8 +131,9 @@ export const setDashboard = action(async (organization_id: string, workspace_id:
   // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
+  await revalidate(getAuthenticatedSession.key, true);
   return o;
-}, "session");
+});
 
 export const setCurrentOrganization = action(async (id: string) => {
   "use server";
@@ -163,5 +175,7 @@ export const setCurrentOrganization = action(async (id: string) => {
   // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
+  await revalidate(getAuthenticatedSession.key, true);
+
   return o;
-}, "session");
+});

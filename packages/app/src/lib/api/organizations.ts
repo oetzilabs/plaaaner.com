@@ -1,6 +1,6 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
-import { action, cache, redirect } from "@solidjs/router";
+import { action, cache, redirect, revalidate } from "@solidjs/router";
 import organization from "dist/server/chunks/build/organization.mjs";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
@@ -69,7 +69,7 @@ export const createOrganization = action(async (form: FormData) => {
   event.context.session = session;
 
   return redirect("/dashboard");
-}, "session");
+});
 
 export const getUserOrganizations = cache(async () => {
   "use server";
@@ -184,7 +184,7 @@ export const requestOrganizationJoin = action(async (form: FormData) => {
   console.log("Requested to join:", organizationJoin);
 
   return organizationJoin;
-}, "organizations");
+});
 
 export const getAllOrganizations = cache(async () => {
   "use server";
@@ -256,9 +256,11 @@ export const fillDefaultTicketTypes = action(async () => {
   }
 
   const org_ticket_types = await Organization.fillDefaultTicketTypes(session.organization_id);
+  await revalidate(getDefaultTicketTypeCount.key, true);
+  await revalidate(getTicketTypes.key, true);
 
   return org_ticket_types;
-}, "organization_ticket_types");
+});
 
 export const getDefaultTicketTypeCount = cache(async () => {
   "use server";
