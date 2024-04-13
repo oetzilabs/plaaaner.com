@@ -397,7 +397,7 @@ export const addComment = z
       throw new Error("This user does not exist");
     }
 
-    const commented = await db
+    const [commented] = await db
       .insert(plan_comments)
       .values({
         comment,
@@ -423,7 +423,11 @@ export const findComment = z.function(z.tuple([z.string().uuid()])).implement(as
 });
 
 export const deleteComment = z.function(z.tuple([z.string().uuid()])).implement(async (comment_id) => {
-  const removed = await db.delete(plan_comments).where(eq(plan_comments.id, comment_id)).returning();
+  const comment = await findComment(comment_id);
+  if (!comment) {
+    throw new Error("This comment does not exist");
+  }
+  const [removed] = await db.delete(plan_comments).where(eq(plan_comments.id, comment_id)).returning();
   return removed;
 });
 
