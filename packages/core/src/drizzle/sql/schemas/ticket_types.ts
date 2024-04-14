@@ -13,7 +13,7 @@ export const ticket_types = schema.table("ticket_types", {
   ...Entity.defaults,
   name: text("name").notNull(),
   description: text("description"),
-  owner_id: uuid("owner").references(() => users.id),
+  owner_id: uuid("owner").references(() => users.id, { onDelete: "cascade" }),
   payment_type: ticketPaymentType("payment_type").default("FREE").notNull(),
 });
 

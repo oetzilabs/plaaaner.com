@@ -13,7 +13,7 @@ export const Activities = (props: { session: UserSession }) => {
   return (
     <div class="flex flex-col w-full">
       <A
-        href={`/dashboard/organizations/${props.session.organization?.id}/activity`}
+        href={`/dashboard/o//${props.session.organization?.id}/activity`}
         class={cn(buttonVariants({ variant: "ghost" }), "flex flex-row items-center justify-between gap-2 px-4 pr-2")}
       >
         <span class="text-sm font-bold group-hover:underline group-hover:underline-offset-2">Activities</span>

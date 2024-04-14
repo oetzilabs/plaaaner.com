@@ -12,7 +12,7 @@ export const workspaces = schema.table("workspaces", {
   ...Entity.defaults,
   name: text("name").notNull(),
   owner_id: uuid("owner")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
 });
 

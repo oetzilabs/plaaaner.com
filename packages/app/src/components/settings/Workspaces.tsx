@@ -66,7 +66,7 @@ export const Workspaces = (props: { session: UserSession }) => {
                     <span class="text-lg font-semibold">No workspaces</span>
                     <span class="text-sm text-muted-foreground">Create a new workspace</span>
                     <Button variant="default" size="sm" type="submit" class="w-max" asChild>
-                      <As component={A} href="/workspaces/new">
+                      <As component={A} href="/dashboard/w/new">
                         <span>Create workspace</span>
                       </As>
                     </Button>
@@ -114,7 +114,7 @@ export const Workspaces = (props: { session: UserSession }) => {
                         <div class="w-full"></div>
                         <div class="w-max flex items-center justify-end gap-2">
                           <Button variant="outline" size="sm" type="submit" class="w-max" asChild>
-                            <As component={A} href={`/dashboard/workspaces/${workspace.id}`}>
+                            <As component={A} href={`/dashboard/w/${workspace.id}`}>
                               <span>Manage</span>
                             </As>
                           </Button>
@@ -161,7 +161,7 @@ export const Workspaces = (props: { session: UserSession }) => {
             </Suspense>
             <div class="flex flex-col items-start gap-2">
               <A
-                href="/workspaces/new"
+                href="/dashboard/w/new"
                 class={cn(
                   "flex flex-row items-center gap-2 justify-center",
                   buttonVariants({

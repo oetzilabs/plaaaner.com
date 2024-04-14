@@ -23,24 +23,25 @@ export const session = ApiHandler(async (_event) => {
   let workspace = await Workspace.lastCreatedByUser(user.id);
   let organization_id = null;
   let organization = await Organization.lastCreatedByUser(user.id);
-  if (organization !== undefined) {
-    organization_id = organization.id;
+
+  if (!organization) {
+    organization = await Organization.create({ name: "default" }, user.id);
+    await Organization.connectUser(organization.id, user.id);
   }
 
-  // if (!workspace) {
-  //   workspace = await Workspace.create({ name: "default" }, user.id);
+  if (!workspace && organization) {
+    workspace = await Workspace.create({ name: "default" }, user.id, organization.id);
 
-  //   await Workspace.connectUser(workspace.id, user.id);
-  //   // console.log("workspace-inner", workspace);
+    await Workspace.connectUser(workspace.id, user.id);
+    // console.log("workspace-inner", workspace);
 
-  //   return json({ email: user.email, id: user.id, workspace_id: workspace.id, organization_id });
-  // }
-  // console.log("workspace", workspace);
+    return json({ email: user.email, id: user.id, workspace_id: workspace.id, organization_id: organization.id });
+  }
 
-  return json({ email: user.email, id: user.id, workspace_id: workspace?.id, organization_id });
+  return json({ email: user.email, id: user.id, workspace_id: workspace?.id, organization_id: organization.id });
 });
 
 export const all = ApiHandler(async (_event) => {
   const users = await User.all();
-  return json(users)
+  return json(users);
 });

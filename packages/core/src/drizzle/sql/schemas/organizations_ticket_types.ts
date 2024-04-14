@@ -10,10 +10,10 @@ import { schema } from "./utils";
 export const organizations_ticket_types = schema.table("organizations_ticket_types", {
   ...Entity.defaults,
   organization_id: uuid("organization_id")
-    .references(() => organizations.id)
+    .references(() => organizations.id, { onDelete: "cascade" })
     .notNull(),
   ticket_type_id: uuid("ticket_type_id")
-    .references(() => ticket_types.id)
+    .references(() => ticket_types.id, { onDelete: "cascade" })
     .notNull(),
 });
 

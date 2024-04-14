@@ -6,22 +6,26 @@ import { plans } from "./plans";
 import { workspaces } from "./workspaces";
 import { schema } from "./utils";
 
-export const workspaces_plans = schema.table("workspaces_plans", {
-  workspace_id: uuid("workspace_id")
-    .references(() => workspaces.id)
-    .notNull(),
-  plan_id: uuid("plan_id")
-    .references(() => plans.id)
-    .notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
+export const workspaces_plans = schema.table(
+  "workspaces_plans",
+  {
+    workspace_id: uuid("workspace_id")
+      .references(() => workspaces.id, { onDelete: "cascade" })
+      .notNull(),
+    plan_id: uuid("plan_id")
+      .references(() => plans.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.workspace_id, table.plan_id] }),
   })
-    .notNull()
-    .defaultNow(),
-}, (table) => ({
-  pk: primaryKey({ columns: [table.workspace_id, table.plan_id] })
-}));
+);
 
 export const workspaces_plans_relation = relations(workspaces_plans, ({ many, one }) => ({
   workspace: one(workspaces, {

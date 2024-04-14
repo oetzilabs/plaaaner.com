@@ -41,10 +41,10 @@ export function Api({ stack }: StackContext) {
           description: "This is the user.session function",
         },
       },
-      "POST /corrupted": {
+      "DELETE /corrupted/plans": {
         function: {
-          handler: "packages/functions/src/corrupted.main",
-          description: "This is the corrupted entities function",
+          handler: "packages/functions/src/corrupted.plans",
+          description: "This is the remove corrupted plans function",
         },
       },
       "GET /healthcheck": {

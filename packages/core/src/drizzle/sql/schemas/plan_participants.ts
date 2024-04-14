@@ -11,10 +11,10 @@ export const plan_participants = schema.table("plan_participants", {
   ...Entity.defaults,
   participant_id: uuid("participant_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   plan_id: uuid("plan_id")
     .notNull()
-    .references(() => plans.id),
+    .references(() => plans.id, { onDelete: "cascade" }),
 });
 
 export const plan_participants_relation = relations(plan_participants, ({ one }) => ({

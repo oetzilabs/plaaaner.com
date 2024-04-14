@@ -9,8 +9,12 @@ import { workspaces } from "./workspaces";
 export const workspaces_organizations = schema.table(
   "workspaces_organizations",
   {
-    organization_id: uuid("organization_id").notNull().references(() => organizations.id),
-    workspace_id: uuid("workspace_id").notNull().references(() => workspaces.id),
+    organization_id: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    workspace_id: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",

@@ -10,10 +10,10 @@ import { users } from "./users";
 export const plan_times = schema.table("plan_times", {
   ...Entity.defaults,
   owner_id: uuid("owner_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   plan_id: uuid("plan_id")
-    .references(() => plans.id)
+    .references(() => plans.id, { onDelete: "cascade" })
     .notNull(),
   starts_at: timestamp("starts_at", {
     withTimezone: true,

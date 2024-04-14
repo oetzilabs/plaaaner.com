@@ -14,7 +14,7 @@ export const plan_tickets = schema.table(
       .references(() => tickets.id),
     plan_id: uuid("plan_id")
       .notNull()
-      .references(() => plans.id),
+      .references(() => plans.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",

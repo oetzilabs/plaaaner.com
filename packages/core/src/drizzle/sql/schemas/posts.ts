@@ -17,7 +17,7 @@ export const posts = schema.table("posts", {
   content: text("content").notNull(),
   owner_id: uuid("owner")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   status: postStatus("status").notNull().default("published"),
 });
 

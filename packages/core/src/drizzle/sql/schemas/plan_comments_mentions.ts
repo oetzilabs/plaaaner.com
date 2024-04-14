@@ -9,13 +9,13 @@ export const plan_comments_mentions = schema.table(
   "plan_comments_mentions",
   {
     planId: uuid("plan_id")
-      .references(() => plans.id)
+      .references(() => plans.id, { onDelete: "cascade" })
       .notNull(),
     commentId: uuid("comment_id")
-      .references(() => plan_comments.id)
+      .references(() => plan_comments.id, { onDelete: "cascade" })
       .notNull(),
     userId: uuid("user_id")
-      .references(() => users.id)
+      .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
     createdAt: timestamp("created_at", {
       withTimezone: true,

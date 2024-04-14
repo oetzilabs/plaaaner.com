@@ -19,10 +19,10 @@ export const tickets = schema.table("tickets", {
     .references(() => ticket_types.id),
   owner_id: uuid("owner")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   plan_id: uuid("plan_id")
     .notNull()
-    .references(() => plans.id),
+    .references(() => plans.id, { onDelete: "cascade" }),
   price: decimal("price", { precision: 2 }).notNull(),
   currency: currency("currency").notNull(),
   quantity: integer("quantity").notNull(),

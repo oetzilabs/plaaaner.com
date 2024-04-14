@@ -17,6 +17,27 @@ import { User } from "./users";
 
 export * as Plans from "./plans";
 
+export const ConcertLocationSchema = z.discriminatedUnion("location_type", [
+  z.object({
+    location_type: z.literal("online"),
+    url: z.string().url(),
+  }),
+  z.object({
+    location_type: z.literal("venue"),
+    address: z.string(),
+  }),
+  z.object({
+    location_type: z.literal("festival"),
+    address: z.string(),
+  }),
+  z.object({
+    location_type: z.literal("other"),
+    details: z.string(),
+  }),
+]);
+
+export type ConcertLocation = z.infer<typeof ConcertLocationSchema>;
+
 export const create = z
   .function(z.tuple([z.array(PlanCreateSchema).or(PlanCreateSchema), z.string().uuid(), z.string().uuid()]))
   .implement(async (userInput, userId, workspace_id) => {
@@ -179,17 +200,17 @@ export const update = z
     z.tuple([
       createInsertSchema(plans)
         .partial()
-        .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
+        .omit({ createdAt: true, updatedAt: true, location: true })
+        .merge(z.object({ id: z.string().uuid(), location: ConcertLocationSchema.optional() })),
     ])
   )
   .implement(async (input) => {
-    const [updatedOrganization] = await db
+    const [updatedPlan] = await db
       .update(plans)
       .set({ ...input, updatedAt: new Date() })
       .where(eq(plans.id, input.id))
       .returning();
-    return updatedOrganization;
+    return updatedPlan;
   });
 
 export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
@@ -391,6 +412,15 @@ export const nearbyPlans = z
     ]);
   });
 
+export const getLocation = z.function(z.tuple([z.string().uuid()])).implement(async (id) => {
+  const plan = await findById(id);
+  if (!plan) {
+    throw new Error("This plan does not exist");
+  }
+
+  return plan.location;
+});
+
 export const addComment = z
   .function(z.tuple([z.string().uuid(), z.string().uuid(), z.string()]))
   .implement(async (plan_id, user_id, comment) => {
@@ -437,6 +467,11 @@ export const deleteComment = z.function(z.tuple([z.string().uuid()])).implement(
     throw new Error("This comment does not exist");
   }
   const [removed] = await db.delete(plan_comments).where(eq(plan_comments.id, comment_id)).returning();
+  return removed;
+});
+
+export const removeAll = z.function(z.tuple([])).implement(async () => {
+  const removed = await db.delete(plans).returning();
   return removed;
 });
 

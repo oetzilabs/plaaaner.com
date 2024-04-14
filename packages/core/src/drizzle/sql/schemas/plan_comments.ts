@@ -11,10 +11,10 @@ import { users } from "./users";
 export const plan_comments = schema.table("plan_comments", {
   ...Entity.defaults,
   planId: uuid("plan_id")
-    .references(() => plans.id)
+    .references(() => plans.id, { onDelete: "cascade" })
     .notNull(),
   userId: uuid("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   comment: text("comment").notNull(),
 });

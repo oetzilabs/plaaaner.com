@@ -1,4 +1,4 @@
-import { text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { jsonb, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
@@ -11,6 +11,7 @@ import { plan_comments } from "./plan_comments";
 import { plan_comments_mentions } from "./plan_comments_mentions";
 import { plan_comment_user_mention_notifications } from "./notifications/plan/comment_user_mention";
 import { workspaces_plans } from "./workspaces_plans";
+import { ConcertLocationSchema } from "../../../entities/plans";
 
 export const plansStatus = schema.enum("plans_status", ["published", "draft", "hidden"]);
 
@@ -18,7 +19,7 @@ export const plans = schema.table("plans", {
   ...Entity.defaults,
   name: text("name").notNull(),
   description: text("description"),
-  plan_type_id: uuid("plan_type_id").references(() => plan_types.id),
+  plan_type_id: uuid("plan_type_id").references(() => plan_types.id, { onDelete: "cascade" }),
   owner_id: uuid("owner")
     .notNull()
     .references(() => users.id),
@@ -30,6 +31,10 @@ export const plans = schema.table("plans", {
     withTimezone: true,
     mode: "date",
   }).notNull(),
+  location: jsonb("location").$type<z.infer<typeof ConcertLocationSchema>>().notNull().default({
+    location_type: "other",
+    details: "",
+  }),
   status: plansStatus("status").notNull().default("published"),
 });
 
@@ -52,7 +57,8 @@ export const plans_relation = relations(plans, ({ many, one }) => ({
 export type PlanSelect = typeof plans.$inferSelect;
 export type PlanInsert = typeof plans.$inferInsert;
 
-export const PlanCreateSchema = createInsertSchema(plans).omit({ owner_id: true });
+export const PlanCreateSchema = createInsertSchema(plans).omit({ owner_id: true, location: true });
+// .merge(z.object({ location: ConcertLocationSchema.optional() }));
 export const PlanUpdateSchema = PlanCreateSchema.partial().omit({ createdAt: true, updatedAt: true }).extend({
   id: z.string().uuid(),
 });

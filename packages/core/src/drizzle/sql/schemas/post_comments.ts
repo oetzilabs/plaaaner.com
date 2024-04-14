@@ -11,10 +11,10 @@ import { schema } from "./utils";
 export const post_comments = schema.table("post_comments", {
   ...Entity.defaults,
   postId: uuid("post_id")
-    .references(() => posts.id)
+    .references(() => posts.id, { onDelete: "cascade" })
     .notNull(),
   userId: uuid("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   comment: text("comment").notNull(),
 });

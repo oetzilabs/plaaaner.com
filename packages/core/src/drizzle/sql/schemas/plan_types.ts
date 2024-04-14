@@ -11,7 +11,7 @@ export const plan_types = schema.table("plan_types", {
   ...Entity.defaults,
   name: text("name").notNull(),
   description: text("description"),
-  owner_id: uuid("owner").references(() => users.id),
+  owner_id: uuid("owner").references(() => users.id, { onDelete: "cascade" }),
 });
 
 export const plan_types_relation = relations(plan_types, ({ many, one }) => ({

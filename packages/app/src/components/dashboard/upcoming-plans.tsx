@@ -20,7 +20,7 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
     <div class="flex flex-col w-full gap-2">
       <div class="flex flex-col w-full gap-2">
         <A
-          href={`/dashboard/organizations/${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans`}
+          href={`/dashboard/o//${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans`}
           class="flex flex-col w-full font-medium text-sm"
         >
           Upcoming Plans

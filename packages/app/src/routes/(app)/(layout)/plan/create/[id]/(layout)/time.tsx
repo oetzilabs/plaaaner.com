@@ -29,7 +29,7 @@ import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textf
 import { getPlan, savePlanTimeslots } from "@/lib/api/plans";
 import { today } from "@internationalized/date";
 import { update, remove } from "@solid-primitives/signal-builders";
-import { createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
+import { A, createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -474,7 +474,7 @@ export default function PlanCreateGeneralPage() {
             </div>
             <div class="w-full flex flex-row items-center justify-between gap-2">
               <div class="w-full"></div>
-              <div class="w-max">
+              <div class="w-max flex flex-row items-center justify-end gap-2">
                 <Button
                   disabled={isSaving.pending}
                   size="sm"
@@ -499,6 +499,11 @@ export default function PlanCreateGeneralPage() {
                     </Match>
                   </Switch>
                 </Button>
+                <A href={`/plan/create/${p().id}/location`}>
+                  <Button size="sm" class="w-full flex flex-row items-center justify-center gap-2">
+                    <span class="text-sm font-medium leading-none">Next</span>
+                  </Button>
+                </A>
               </div>
             </div>
           </>

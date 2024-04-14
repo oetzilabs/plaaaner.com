@@ -73,12 +73,12 @@ export const createNewPost = action(async (content: string) => {
   const workspaceId = session.workspace_id;
 
   if (!workspaceId) {
-    throw redirect("/workspaces/new");
+    throw redirect("/dashboard/w/new");
   }
   const workspace = await Workspace.findById(workspaceId);
 
   if (!workspace) {
-    throw redirect("/workspaces/new");
+    throw redirect("/dashboard/w/new");
   }
 
   const [createdPost] = await Posts.create({ content }, user.id, workspace.id);

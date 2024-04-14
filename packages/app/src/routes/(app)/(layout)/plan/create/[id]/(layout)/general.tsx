@@ -1,6 +1,6 @@
 import { TextField, TextFieldLabel, TextFieldInput } from "@/components/ui/textfield";
 import { getPlan, savePlanGeneral } from "@/lib/api/plans";
-import { createAsync, redirect, useAction, useNavigate, useParams, useSubmission } from "@solidjs/router";
+import { A, createAsync, redirect, useAction, useNavigate, useParams, useSubmission } from "@solidjs/router";
 import { Loader2 } from "lucide-solid";
 import { Match } from "solid-js";
 import { Show, Switch, createDeferred, createEffect, createSignal } from "solid-js";
@@ -80,15 +80,11 @@ export default function PlanCreateGeneralPage() {
                     </Match>
                   </Switch>
                 </Button>
-                <Button
-                  size="sm"
-                  class="w-full flex flex-row items-center justify-center gap-2"
-                  onClick={() => {
-                    navigate(`/plan/create/${p().id}/time`);
-                  }}
-                >
-                  <span class="text-sm font-medium leading-none">Next</span>
-                </Button>
+                <A href={`/plan/create/${p().id}/time`}>
+                  <Button size="sm" class="w-full flex flex-row items-center justify-center gap-2">
+                    <span class="text-sm font-medium leading-none">Next</span>
+                  </Button>
+                </A>
               </div>
             </div>
           </>

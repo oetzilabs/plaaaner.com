@@ -199,7 +199,7 @@ export const Organizations = (props: { session: UserSession }) => {
                         <div class="w-full"></div>
                         <div class="w-max flex items-center justify-end gap-2">
                           <Button variant="outline" size="sm" type="submit" class="w-max" asChild>
-                            <As component={A} href={`/dashboard/organizations/${organization.id}`}>
+                            <As component={A} href={`/dashboard/o//${organization.id}`}>
                               <span>Manage</span>
                             </As>
                           </Button>

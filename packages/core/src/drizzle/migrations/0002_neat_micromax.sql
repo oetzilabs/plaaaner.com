@@ -1,1 +1,0 @@
-ALTER TABLE "plaaaner"."users_organizations" ADD COLUMN "joined_at" timestamp with time zone DEFAULT now() NOT NULL;

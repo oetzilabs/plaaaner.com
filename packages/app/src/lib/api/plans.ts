@@ -3,7 +3,7 @@ import {
   PlanTimesCreateSchema,
   TicketCreateSchema,
 } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
-import { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
+import { ConcertLocationSchema, Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
@@ -307,6 +307,88 @@ export const getUpcomingThreePlans = cache(async () => {
   return sorted.slice(0, 3);
 }, "upcomingPlans");
 
+export const getPlanLocation = cache(async (id: string) => {
+  "use server";
+  const event = getEvent()!;
+  const locale = getLocaleSettings(event);
+  dayjs.updateLocale(locale.language, {});
+
+  const user = event.context.user;
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+
+  const session = event.context.session;
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  const plan = await Plans.findById(id);
+
+  if (!plan) {
+    throw new Error("This plan does not exist");
+  }
+
+  // check if the plan is in the user's workspace
+  if (!plan.workspaces.some((ws) => ws.workspace_id === session.workspace_id)) {
+    throw new Error("You do not have permission to view this plan");
+  }
+  // get the location of the plan
+  const location = await Plans.getLocation(plan.id);
+  if (!location) {
+    throw new Error("This plan does not have a location");
+  }
+
+  return location;
+}, "planLocation");
+
+export const savePlanLocation = action(
+  async (data: { plan_id: string; plan: { location: z.infer<typeof ConcertLocationSchema> } }) => {
+    "use server";
+    const event = getEvent()!;
+
+    const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+    if (!sessionId) {
+      throw redirect("/auth/login");
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      throw redirect("/auth/login");
+    }
+
+    if (!session.organization_id) {
+      throw redirect("/setup/organization");
+    }
+    const workspaceId = session.workspace_id;
+
+    if (!workspaceId) {
+      throw redirect("/dashboard/w/new");
+    }
+    const workspace = await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      throw redirect("/dashboard/w/new");
+    }
+    const plan = await Plans.findById(data.plan_id);
+    if (!plan) {
+      throw new Error("This plan does not exist");
+    }
+    const updated = await Plans.update({
+      id: plan.id,
+      location: data.plan.location,
+    });
+    const updatedPlan = await Plans.findById(updated.id);
+
+    if (!updatedPlan) {
+      throw new Error("This plan does not exist anymore");
+    }
+
+    return updatedPlan;
+  }
+);
+
 export const deletePlan = action(async (plan_id) => {
   "use server";
   const event = getEvent()!;
@@ -378,12 +460,12 @@ export const savePlanGeneral = action(
     const workspaceId = session.workspace_id;
 
     if (!workspaceId) {
-      throw redirect("/workspaces/new");
+      throw redirect("/dashboard/w/new");
     }
     const workspace = await Workspace.findById(workspaceId);
 
     if (!workspace) {
-      throw redirect("/workspaces/new");
+      throw redirect("/dashboard/w/new");
     }
     const plan = await Plans.findById(data.plan_id);
     if (!plan) {
@@ -445,12 +527,12 @@ export const savePlanTimeslots = action(
     const workspaceId = session.workspace_id;
 
     if (!workspaceId) {
-      throw redirect("/workspaces/new");
+      throw redirect("/dashboard/w/new");
     }
     const workspace = await Workspace.findById(workspaceId);
 
     if (!workspace) {
-      throw redirect("/workspaces/new");
+      throw redirect("/dashboard/w/new");
     }
     const plan = await Plans.findById(data.plan_id);
     if (!plan) {

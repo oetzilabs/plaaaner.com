@@ -78,7 +78,7 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
           </DropdownMenu>
         </div>
         <A
-          href={`/dashboard/organizations/${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans/${props.plan.id}`}
+          href={`/dashboard/o//${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans/${props.plan.id}`}
           class="rounded-md bg-background"
         >
           <div class="w-full h-48 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 relative"></div>

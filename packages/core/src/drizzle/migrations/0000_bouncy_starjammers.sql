@@ -1,4 +1,4 @@
-CREATE SCHEMA IF NOT EXISTS "plaaaner";
+CREATE SCHEMA "plaaaner";
 --> statement-breakpoint
 DO $$ BEGIN
  CREATE TYPE "joinType" AS ENUM('request', 'invite');
@@ -7,7 +7,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "currency" AS ENUM('USD', 'EUR', 'CHF', 'OTHER');
+ CREATE TYPE "plans_status" AS ENUM('published', 'draft', 'hidden');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "post_status" AS ENUM('published', 'draft', 'hidden');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "currency" AS ENUM('FREE', 'USD', 'EUR', 'CHF', 'OTHER');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -77,6 +89,7 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."organizations_ticket_types" (
 CREATE TABLE IF NOT EXISTS "plaaaner"."users_organizations" (
 	"organization_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
+	"joined_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "users_organizations_user_id_organization_id_pk" PRIMARY KEY("user_id","organization_id")
 );
 --> statement-breakpoint
@@ -103,6 +116,13 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."workspaces_plans" (
 	CONSTRAINT "workspaces_plans_workspace_id_plan_id_pk" PRIMARY KEY("workspace_id","plan_id")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "plaaaner"."workspaces_posts" (
+	"workspace_id" uuid NOT NULL,
+	"post_id" uuid NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "workspaces_posts_workspace_id_post_id_pk" PRIMARY KEY("workspace_id","post_id")
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaaaner"."users_workspaces" (
 	"user_id" uuid NOT NULL,
 	"workspace_id" uuid NOT NULL,
@@ -117,10 +137,12 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."plans" (
 	"deleted_at" timestamp with time zone,
 	"name" text NOT NULL,
 	"description" text,
-	"plan_type_id" uuid NOT NULL,
+	"plan_type_id" uuid,
 	"owner" uuid NOT NULL,
 	"starts_at" timestamp with time zone NOT NULL,
-	"ends_at" timestamp with time zone NOT NULL
+	"ends_at" timestamp with time zone NOT NULL,
+	"location" jsonb DEFAULT '{"location_type":"other","details":""}'::jsonb NOT NULL,
+	"status" "plans_status" DEFAULT 'published' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaaaner"."plan_tickets" (
@@ -146,6 +168,7 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."plan_comments" (
 	"updated_at" timestamp with time zone,
 	"deleted_at" timestamp with time zone,
 	"plan_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
 	"comment" text NOT NULL
 );
 --> statement-breakpoint
@@ -164,6 +187,7 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."plan_times" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	"deleted_at" timestamp with time zone,
+	"owner_id" uuid NOT NULL,
 	"plan_id" uuid NOT NULL,
 	"starts_at" timestamp with time zone NOT NULL,
 	"ends_at" timestamp with time zone NOT NULL
@@ -176,6 +200,36 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."plan_participants" (
 	"deleted_at" timestamp with time zone,
 	"participant_id" uuid NOT NULL,
 	"plan_id" uuid NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "plaaaner"."posts" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	"deleted_at" timestamp with time zone,
+	"content" text NOT NULL,
+	"owner" uuid NOT NULL,
+	"status" "post_status" DEFAULT 'published' NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "plaaaner"."post_comments" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	"deleted_at" timestamp with time zone,
+	"post_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
+	"comment" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "plaaaner"."post_comments_mentions" (
+	"post_id" uuid NOT NULL,
+	"comment_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	"deleted_at" timestamp with time zone,
+	CONSTRAINT "post_comments_mentions_user_id_post_id_comment_id_pk" PRIMARY KEY("user_id","post_id","comment_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaaaner"."tickets" (
@@ -271,6 +325,14 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."plan_comment_mention_notifications" (
 	CONSTRAINT "plan_comment_mention_notifications_user_id_plan_id_comment_id_pk" PRIMARY KEY("user_id","plan_id","comment_id")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "plaaaner"."post_comment_mention_notifications" (
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"comment_id" uuid NOT NULL,
+	"post_id" uuid NOT NULL,
+	CONSTRAINT "post_comment_mention_notifications_user_id_post_id_comment_id_pk" PRIMARY KEY("user_id","post_id","comment_id")
+);
+--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "plaaaner"."session" ADD CONSTRAINT "session_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
@@ -278,91 +340,103 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."organizations" ADD CONSTRAINT "organizations_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."organizations" ADD CONSTRAINT "organizations_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."organizations_joins" ADD CONSTRAINT "organizations_joins_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."organizations_joins" ADD CONSTRAINT "organizations_joins_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."organizations_joins" ADD CONSTRAINT "organizations_joins_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."organizations_joins" ADD CONSTRAINT "organizations_joins_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."organizations_ticket_types" ADD CONSTRAINT "organizations_ticket_types_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."organizations_ticket_types" ADD CONSTRAINT "organizations_ticket_types_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."organizations_ticket_types" ADD CONSTRAINT "organizations_ticket_types_ticket_type_id_ticket_types_id_fk" FOREIGN KEY ("ticket_type_id") REFERENCES "plaaaner"."ticket_types"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."organizations_ticket_types" ADD CONSTRAINT "organizations_ticket_types_ticket_type_id_ticket_types_id_fk" FOREIGN KEY ("ticket_type_id") REFERENCES "plaaaner"."ticket_types"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."users_organizations" ADD CONSTRAINT "users_organizations_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."users_organizations" ADD CONSTRAINT "users_organizations_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."users_organizations" ADD CONSTRAINT "users_organizations_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."users_organizations" ADD CONSTRAINT "users_organizations_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."workspaces" ADD CONSTRAINT "workspaces_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."workspaces" ADD CONSTRAINT "workspaces_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."workspaces_organizations" ADD CONSTRAINT "workspaces_organizations_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."workspaces_organizations" ADD CONSTRAINT "workspaces_organizations_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "plaaaner"."organizations"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."workspaces_organizations" ADD CONSTRAINT "workspaces_organizations_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "plaaaner"."workspaces"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."workspaces_organizations" ADD CONSTRAINT "workspaces_organizations_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "plaaaner"."workspaces"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."workspaces_plans" ADD CONSTRAINT "workspaces_plans_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "plaaaner"."workspaces"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."workspaces_plans" ADD CONSTRAINT "workspaces_plans_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "plaaaner"."workspaces"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."workspaces_plans" ADD CONSTRAINT "workspaces_plans_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."workspaces_plans" ADD CONSTRAINT "workspaces_plans_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."users_workspaces" ADD CONSTRAINT "users_workspaces_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."workspaces_posts" ADD CONSTRAINT "workspaces_posts_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "plaaaner"."workspaces"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."users_workspaces" ADD CONSTRAINT "users_workspaces_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "plaaaner"."workspaces"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."workspaces_posts" ADD CONSTRAINT "workspaces_posts_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "plaaaner"."posts"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plans" ADD CONSTRAINT "plans_plan_type_id_plan_types_id_fk" FOREIGN KEY ("plan_type_id") REFERENCES "plaaaner"."plan_types"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."users_workspaces" ADD CONSTRAINT "users_workspaces_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."users_workspaces" ADD CONSTRAINT "users_workspaces_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "plaaaner"."workspaces"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."plans" ADD CONSTRAINT "plans_plan_type_id_plan_types_id_fk" FOREIGN KEY ("plan_type_id") REFERENCES "plaaaner"."plan_types"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -380,55 +454,103 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_tickets" ADD CONSTRAINT "plan_tickets_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_tickets" ADD CONSTRAINT "plan_tickets_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_types" ADD CONSTRAINT "plan_types_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_types" ADD CONSTRAINT "plan_types_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_comments" ADD CONSTRAINT "plan_comments_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_comments" ADD CONSTRAINT "plan_comments_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_comments_mentions" ADD CONSTRAINT "plan_comments_mentions_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_comments" ADD CONSTRAINT "plan_comments_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_comments_mentions" ADD CONSTRAINT "plan_comments_mentions_comment_id_plan_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "plaaaner"."plan_comments"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_comments_mentions" ADD CONSTRAINT "plan_comments_mentions_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_comments_mentions" ADD CONSTRAINT "plan_comments_mentions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_comments_mentions" ADD CONSTRAINT "plan_comments_mentions_comment_id_plan_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "plaaaner"."plan_comments"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_times" ADD CONSTRAINT "plan_times_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_comments_mentions" ADD CONSTRAINT "plan_comments_mentions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_participants" ADD CONSTRAINT "plan_participants_participant_id_users_id_fk" FOREIGN KEY ("participant_id") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_times" ADD CONSTRAINT "plan_times_owner_id_users_id_fk" FOREIGN KEY ("owner_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."plan_participants" ADD CONSTRAINT "plan_participants_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."plan_times" ADD CONSTRAINT "plan_times_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."plan_participants" ADD CONSTRAINT "plan_participants_participant_id_users_id_fk" FOREIGN KEY ("participant_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."plan_participants" ADD CONSTRAINT "plan_participants_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."posts" ADD CONSTRAINT "posts_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comments" ADD CONSTRAINT "post_comments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "plaaaner"."posts"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comments" ADD CONSTRAINT "post_comments_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comments_mentions" ADD CONSTRAINT "post_comments_mentions_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "plaaaner"."posts"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comments_mentions" ADD CONSTRAINT "post_comments_mentions_comment_id_plan_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "plaaaner"."plan_comments"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comments_mentions" ADD CONSTRAINT "post_comments_mentions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -440,19 +562,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."tickets" ADD CONSTRAINT "tickets_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."tickets" ADD CONSTRAINT "tickets_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."tickets" ADD CONSTRAINT "tickets_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."tickets" ADD CONSTRAINT "tickets_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "plaaaner"."ticket_types" ADD CONSTRAINT "ticket_types_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "plaaaner"."ticket_types" ADD CONSTRAINT "ticket_types_owner_users_id_fk" FOREIGN KEY ("owner") REFERENCES "plaaaner"."users"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -525,6 +647,24 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "plaaaner"."plan_comment_mention_notifications" ADD CONSTRAINT "plan_comment_mention_notifications_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "plaaaner"."plans"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comment_mention_notifications" ADD CONSTRAINT "post_comment_mention_notifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "plaaaner"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comment_mention_notifications" ADD CONSTRAINT "post_comment_mention_notifications_comment_id_plan_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "plaaaner"."plan_comments"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "plaaaner"."post_comment_mention_notifications" ADD CONSTRAINT "post_comment_mention_notifications_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "plaaaner"."posts"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

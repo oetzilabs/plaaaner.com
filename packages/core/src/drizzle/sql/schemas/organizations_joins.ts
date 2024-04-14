@@ -12,10 +12,10 @@ export const joinType = pgEnum("joinType", ["request", "invite"]);
 export const organizations_joins = schema.table("organizations_joins", {
   ...Entity.defaults,
   organization_id: uuid("organization_id")
-    .references(() => organizations.id)
+    .references(() => organizations.id, { onDelete: "cascade" })
     .notNull(),
   user_id: uuid("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   type: joinType("type").notNull(),
   expiresAt: timestamp("expires_at", {

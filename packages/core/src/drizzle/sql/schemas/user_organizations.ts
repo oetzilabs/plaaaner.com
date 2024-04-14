@@ -11,10 +11,10 @@ export const users_organizations = schema.table(
   "users_organizations",
   {
     organization_id: uuid("organization_id")
-      .references(() => organizations.id)
+      .references(() => organizations.id, { onDelete: "cascade" })
       .notNull(),
     user_id: uuid("user_id")
-      .references(() => users.id)
+      .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
     joinedAt: timestamp("joined_at", { mode: "date", withTimezone: true }).defaultNow().notNull(),
   },

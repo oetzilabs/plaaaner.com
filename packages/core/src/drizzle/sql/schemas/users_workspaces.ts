@@ -11,10 +11,10 @@ export const users_workspaces = schema.table(
   {
     user_id: uuid("user_id")
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
     workspace_id: uuid("workspace_id")
       .notNull()
-      .references(() => workspaces.id),
+      .references(() => workspaces.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "date",
