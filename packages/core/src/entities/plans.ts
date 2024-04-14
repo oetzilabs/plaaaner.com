@@ -53,6 +53,7 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
           user: true,
         },
       },
+      workspaces: true,
       owner: true,
     },
   });
@@ -115,6 +116,7 @@ export const findBy = z
               },
             },
             owner: true,
+            workspaces: true,
           },
         },
       },
@@ -133,6 +135,7 @@ export const findByName = z.function(z.tuple([z.string()])).implement(async (inp
         },
       },
       owner: true,
+      workspaces: true,
     },
   });
 });
@@ -149,6 +152,7 @@ export const allNonDeleted = z.function(z.tuple([])).implement(async () => {
         },
       },
       owner: true,
+      workspaces: true,
     },
     where(fields, operations) {
       return operations.isNull(fields.deletedAt);
@@ -165,6 +169,7 @@ export const all = z.function(z.tuple([])).implement(async () => {
         },
       },
       owner: true,
+      workspaces: true,
     },
   });
 });
@@ -236,6 +241,7 @@ export const findByUserId = z
             user: true,
           },
         },
+        workspaces: true,
       },
     });
     return ws;
@@ -276,6 +282,7 @@ export const findByOrganizationId = z
                   },
                 },
                 owner: true,
+                workspaces: true,
               },
             },
           },
@@ -304,6 +311,7 @@ export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implem
         },
       },
       owner: true,
+      workspaces: true,
     },
   });
   return ws;
@@ -330,6 +338,7 @@ export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).i
         },
       },
       owner: true,
+      workspaces: true,
     },
   });
   return orgs;

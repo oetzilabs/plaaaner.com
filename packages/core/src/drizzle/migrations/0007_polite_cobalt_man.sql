@@ -1,0 +1,1 @@
+ALTER TABLE "plaaaner"."plans" ALTER COLUMN "plan_type_id" DROP NOT NULL;

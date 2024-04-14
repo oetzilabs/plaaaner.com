@@ -54,28 +54,7 @@ const BasePlanSchema = z.object({
   tickets: z.array(BaseTicketSchema),
 });
 
-export const CreatePlanFormSchema = z.discriminatedUnion("plan_type", [
-  BasePlanSchema.merge(
-    z.object({
-      plan_type: z.literal("event"),
-    })
-  ),
-  BasePlanSchema.merge(
-    z.object({
-      plan_type: z.literal("concert"),
-    })
-  ),
-  BasePlanSchema.merge(
-    z.object({
-      plan_type: z.literal("tournament"),
-    })
-  ),
-  BasePlanSchema.merge(
-    z.object({
-      plan_type: z.literal("custom-event"),
-    })
-  ),
-]);
+export const CreatePlanFormSchema = BasePlanSchema;
 
 export const PlanType = z.union([
   z.literal("event"),

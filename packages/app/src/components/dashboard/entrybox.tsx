@@ -1,12 +1,13 @@
 import { ActivityChange, cn, refreshActivities, setFreshActivities } from "@/lib/utils";
-import { A, useAction, useSubmission } from "@solidjs/router";
+import { A, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import { CalendarFold, CircleAlert, Newspaper, Pencil, Plus } from "lucide-solid";
 import { Switch, createSignal } from "solid-js";
 import { Button, buttonVariants } from "../ui/button";
 import { TextFieldTextArea } from "../ui/textarea";
 import { TextField, TextFieldInput } from "../ui/textfield";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createNewPost } from "../../lib/api/posts";
+import { createNewPost } from "@/lib/api/posts";
+import { createPlanCreationForm } from "@/lib/api/plans";
 import { ToggleButton } from "../ui/toggle";
 import { Match } from "solid-js";
 
@@ -28,6 +29,11 @@ export const EntryBox = () => {
 
   const createPost = useAction(createNewPost);
   const isCreatingPost = useSubmission(createNewPost);
+
+  const createPlan = useAction(createPlanCreationForm);
+  const isCreatingPlan = useSubmission(createPlanCreationForm);
+
+  const navigate = useNavigate();
 
   return (
     <div class="flex w-full flex-col sticky top-0 z-10 bg-background pb-4">
@@ -95,20 +101,29 @@ export const EntryBox = () => {
                   <Button variant="outline" size="sm">
                     Drafts
                   </Button>
-                  <A
-                    href={`/plan/create/custom-event${
-                      isEmpty()
-                        ? ""
-                        : `?${new URLSearchParams({ title: title(), description: description() }).toString()}`
-                    }`}
-                    class={cn(
-                      buttonVariants({ variant: "default", size: "sm" }),
-                      "w-max flex items-center justify-center gap-2"
-                    )}
+                  <Button
+                    disabled={isEmpty() || isCreatingPlan.pending}
+                    variant="default"
+                    size="sm"
+                    class="w-max flex items-center justify-center gap-2"
+                    onClick={async () => {
+                      const t = title();
+                      const d = description();
+                      if (t.length === 0 || d.length === 0) {
+                        return;
+                      }
+                      const plan = await createPlan({
+                        title: t,
+                        description: d,
+                      });
+                      if (plan) {
+                        navigate(`/plan/create/${plan.id}/general`);
+                      }
+                    }}
                   >
                     <Plus class="size-4" />
                     <span class="">Create Plan</span>
-                  </A>
+                  </Button>
                 </div>
               </div>
             </TabsContent>

@@ -17,6 +17,7 @@ import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import { lucia } from "../auth";
 import { getLocaleSettings } from "./locale";
 import { getActivities } from "./activity";
+import { DEFAULT_PLAN_TYPES } from "../../../../core/src/entities/plan_types";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
@@ -67,6 +68,35 @@ export const getPlans = cache(async (data: { fromDate: Date | null }) => {
   });
   return plans;
 }, "activities");
+
+export const getPlan = cache(async (id: string) => {
+  "use server";
+  const event = getEvent()!;
+  const locale = getLocaleSettings(event);
+  dayjs.updateLocale(locale.language, {});
+
+  const user = event.context.user;
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+
+  const session = event.context.session;
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  const plan = await Plans.findById(id);
+
+  if (!plan) {
+    throw new Error("This plan does not exist");
+  }
+
+  // check if the plan is in the user's workspace
+  if (!plan.workspaces.some((ws) => ws.workspace_id === session.workspace_id)) {
+    throw new Error("You do not have permission to view this plan");
+  }
+  return plan;
+}, "plan");
 
 export const getRecommendedPlans = cache(async () => {
   "use server";
@@ -148,113 +178,6 @@ export const getNearbyPlans = cache(async () => {
   return plans;
 }, "nearbyPlans");
 
-export const createNewPlan = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
-  "use server";
-  const event = getEvent()!;
-  console.log(data);
-
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!session.organization_id) {
-    throw redirect("/setup/organization");
-  }
-  const workspaceId = session.workspace_id;
-
-  if (!workspaceId) {
-    throw redirect("/workspaces/new");
-  }
-  const workspace = await Workspace.findById(workspaceId);
-
-  if (!workspace) {
-    throw redirect("/workspaces/new");
-  }
-
-  const plan_name = data.name;
-  const plan_description = data.description;
-  const plan_type = await Plans.getTypeId(data.plan_type);
-  if (!plan_type) {
-    console.log("error: This plan type does not exist, please try again");
-    throw new Error("This plan type does not exist, please try again");
-  }
-
-  const [starts_at, ends_at] = data.days;
-  const time_slots = data.time_slots;
-
-  const plan_location = data.location;
-
-  const tickets = data.tickets;
-
-  const planCreationData: z.infer<typeof PlanCreateSchema> = {
-    name: plan_name,
-    plan_type_id: plan_type.id,
-    description: plan_description,
-    ends_at,
-    starts_at,
-  };
-
-  const validation = PlanCreateSchema.safeParse(planCreationData);
-  if (!validation.success) {
-    throw new Error("Validation failed", { cause: validation.error.flatten() });
-  }
-
-  const [createdPlan] = await Plans.create(validation.data, user.id, workspace.id);
-
-  const ticketCreationData = tickets.map(
-    (t) =>
-      ({
-        name: t.name,
-        price: t.price.toFixed(2),
-        currency: t.currency.currency_type,
-        shape: t.shape,
-        plan_id: createdPlan.id,
-        quantity: t.quantity,
-        ticket_type_id: t.ticket_type.id,
-      } as z.infer<typeof TicketCreateSchema>)
-  );
-
-  const ticketsValidation = TicketCreateSchema.array().safeParse(ticketCreationData);
-
-  if (!ticketsValidation.success) {
-    throw ticketsValidation.error;
-  }
-  if (ticketsValidation.data.length > 0) {
-    const ticketsForPlan = await Tickets.create(ticketsValidation.data, user.id);
-    const timeSlotsObject = Object.values(time_slots);
-    type TS = z.infer<typeof PlanTimesCreateSchema>;
-
-    const tss = timeSlotsObject.map((tso) =>
-      Object.values(tso).map(
-        (ts) =>
-          ({
-            ends_at: ts.end,
-            starts_at: ts.start,
-            plan_id: createdPlan.id,
-          } as TS)
-      )
-    );
-
-    const timeSlots = tss.flat();
-
-    const planTimesCreated = await Plans.createTimeSlots(timeSlots, user.id);
-    console.log({ planTimesCreated, createdPlan, ticketsForPlan });
-
-    // const e = { id: "test" };
-  }
-  await revalidate(getActivities.key, true);
-  await revalidate(getUpcomingPlans.key, true);
-
-  return createdPlan;
-});
-
 export const getDefaultFreeTicketType = cache(async () => {
   "use server";
   const defaultFreeTicketType = await TicketTypes.getDefaultFreeTicketType();
@@ -262,7 +185,7 @@ export const getDefaultFreeTicketType = cache(async () => {
   return defaultFreeTicketType;
 }, "default_free_ticket_type");
 
-export const getPlanTypeId = cache(async (plan_type: z.infer<typeof CreatePlanFormSchema>["plan_type"]) => {
+export const getPlanTypeId = cache(async (plan_type: string) => {
   "use server";
   const plan_type_ = await Plans.getTypeId(plan_type);
 
@@ -349,7 +272,7 @@ export const deletePlanComment = action(async (comment_id) => {
   return removed;
 });
 
-export const getUpcomingPlans = cache(async () => {
+export const getUpcomingThreePlans = cache(async () => {
   "use server";
   const event = getEvent()!;
   const locale = getLocaleSettings(event);
@@ -381,7 +304,7 @@ export const getUpcomingPlans = cache(async () => {
   const sorted = filtered.sort((a, b) => {
     return dayjs(a.starts_at).isBefore(dayjs(b.starts_at)) ? -1 : 1;
   });
-  return sorted;
+  return sorted.slice(0, 3);
 }, "upcomingPlans");
 
 export const deletePlan = action(async (plan_id) => {
@@ -419,9 +342,196 @@ export const deletePlan = action(async (plan_id) => {
   const removed = await Plans.update({ id: plan.id, deletedAt: new Date() });
 
   await revalidate(getActivities.key, true);
-  await revalidate(getUpcomingPlans.key, true);
+  await revalidate(getUpcomingThreePlans.key, true);
 
-  const removedPlan = await Plans.findById(plan_id);
+  const removedPlan = await Plans.findById(removed.id);
 
   return removedPlan;
+});
+
+export const savePlanGeneral = action(
+  async (data: {
+    plan_id: string;
+    plan: {
+      name: string;
+      description: string;
+    };
+  }) => {
+    "use server";
+    const event = getEvent()!;
+    console.log(data);
+
+    const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+    if (!sessionId) {
+      throw redirect("/auth/login");
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      throw redirect("/auth/login");
+    }
+
+    if (!session.organization_id) {
+      throw redirect("/setup/organization");
+    }
+    const workspaceId = session.workspace_id;
+
+    if (!workspaceId) {
+      throw redirect("/workspaces/new");
+    }
+    const workspace = await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      throw redirect("/workspaces/new");
+    }
+    const plan = await Plans.findById(data.plan_id);
+    if (!plan) {
+      throw new Error("This plan does not exist");
+    }
+
+    const savedPlan = await Plans.update({
+      id: plan.id,
+      name: data.plan.name,
+      description: data.plan.description,
+    });
+
+    const updatedPlan = await Plans.findById(savedPlan.id);
+    if (!updatedPlan) {
+      throw new Error("This plan does not exist anymore");
+    }
+
+    await revalidate(getActivities.key, true);
+    await revalidate(getUpcomingThreePlans.key, true);
+
+    return updatedPlan;
+  }
+);
+
+export const savePlanTimeslots = action(
+  async (data: {
+    plan_id: string;
+    plan: {
+      days: [Date, Date];
+      time_slots: Record<
+        string,
+        Record<
+          string,
+          {
+            start: Date;
+            end: Date;
+          }
+        >
+      >;
+    };
+  }) => {
+    "use server";
+    const event = getEvent()!;
+
+    const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+    if (!sessionId) {
+      throw redirect("/auth/login");
+    }
+
+    const { session, user } = await lucia.validateSession(sessionId);
+    if (!session) {
+      throw redirect("/auth/login");
+    }
+
+    if (!session.organization_id) {
+      throw redirect("/setup/organization");
+    }
+    const workspaceId = session.workspace_id;
+
+    if (!workspaceId) {
+      throw redirect("/workspaces/new");
+    }
+    const workspace = await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      throw redirect("/workspaces/new");
+    }
+    const plan = await Plans.findById(data.plan_id);
+    if (!plan) {
+      throw new Error("This plan does not exist");
+    }
+    const [starts_at, ends_at] = data.plan.days;
+
+    const savedPlan = await Plans.update({
+      id: plan.id,
+      starts_at,
+      ends_at,
+    });
+
+    const time_slots = data.plan.time_slots;
+
+    const timeSlotsObject = Object.values(time_slots);
+    type TS = z.infer<typeof PlanTimesCreateSchema>;
+
+    const tss = timeSlotsObject.map((tso) =>
+      Object.values(tso).map(
+        (ts) =>
+          ({
+            starts_at: ts.start,
+            ends_at: ts.end,
+            plan_id: savedPlan.id,
+          } as TS)
+      )
+    );
+
+    const timeSlots = tss.flat();
+
+    await Plans.createTimeSlots(timeSlots, user.id);
+
+    const updatedPlan = await Plans.findById(savedPlan.id);
+    if (!updatedPlan) {
+      throw new Error("This plan does not exist anymore");
+    }
+
+    await revalidate(getActivities.key, true);
+    await revalidate(getUpcomingThreePlans.key, true);
+
+    return updatedPlan;
+  }
+);
+
+export const createPlanCreationForm = action(async (data: { title: string; description: string }) => {
+  "use server";
+  const event = getEvent()!;
+  const locale = getLocaleSettings(event);
+  dayjs.updateLocale(locale.language, {});
+
+  const user = event.context.user;
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+
+  const session = event.context.session;
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
+  if (!session.organization_id) {
+    throw redirect("/setup/organization");
+  }
+  const workspaceId = session.workspace_id;
+  if (!workspaceId) {
+    throw new Error("No workspace selected");
+  }
+
+  const [plan] = await Plans.create(
+    {
+      name: data.title,
+      description: data.description,
+      plan_type_id: null,
+      starts_at: dayjs().startOf("day").toDate(),
+      ends_at: dayjs().endOf("day").toDate(),
+      status: "draft",
+    },
+    user.id,
+    workspaceId
+  );
+
+  return plan;
 });

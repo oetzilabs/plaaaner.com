@@ -1,4 +1,4 @@
-import { getUpcomingPlans } from "@/lib/api/plans";
+import { getUpcomingThreePlans } from "@/lib/api/plans";
 import type { UserSession } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
 import { A, createAsync } from "@solidjs/router";
@@ -14,7 +14,7 @@ dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
 
 export const UpcomingPlans = (props: { session: UserSession }) => {
-  const upcomingPlans = createAsync(() => getUpcomingPlans());
+  const upcomingPlans = createAsync(() => getUpcomingThreePlans());
 
   return (
     <div class="flex flex-col w-full gap-2">

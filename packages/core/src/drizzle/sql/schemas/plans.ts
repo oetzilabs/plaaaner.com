@@ -18,9 +18,7 @@ export const plans = schema.table("plans", {
   ...Entity.defaults,
   name: text("name").notNull(),
   description: text("description"),
-  plan_type_id: uuid("plan_type_id")
-    .notNull()
-    .references(() => plan_types.id),
+  plan_type_id: uuid("plan_type_id").references(() => plan_types.id),
   owner_id: uuid("owner")
     .notNull()
     .references(() => users.id),
@@ -44,7 +42,7 @@ export const plans_relation = relations(plans, ({ many, one }) => ({
     fields: [plans.owner_id],
     references: [users.id],
   }),
-  workpaces: many(workspaces_plans),
+  workspaces: many(workspaces_plans),
   times: many(plan_times),
   comments: many(plan_comments),
   comments_mentions: many(plan_comments_mentions),

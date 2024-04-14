@@ -50,7 +50,7 @@ export const PostActivity = (props: { session: UserSession; post: Posts.Frontend
               <div class="w-max flex">
                 <DropdownMenu>
                   <DropdownMenuTrigger class="p-2" asChild>
-                    <As component={Button} variant="ghost" size="sm" class="!p-2">
+                    <As component={Button} variant="outline" size="sm" class="!p-2">
                       <Ellipsis class="size-4" />
                     </As>
                   </DropdownMenuTrigger>
