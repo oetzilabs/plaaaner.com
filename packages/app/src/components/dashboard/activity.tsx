@@ -8,12 +8,12 @@ import { buttonVariants } from "../ui/button";
 dayjs.extend(relativeTime);
 
 export const Activities = (props: { session: UserSession }) => {
-  const activities = createAsync(() => getActivities({ fromDate: null }));
+  const activities = createAsync(() => getActivities());
 
   return (
     <div class="flex flex-col w-full">
       <A
-        href={`/dashboard/o//${props.session.organization?.id}/activity`}
+        href={`/dashboard/o/${props.session.organization?.id}/activity`}
         class={cn(buttonVariants({ variant: "ghost" }), "flex flex-row items-center justify-between gap-2 px-4 pr-2")}
       >
         <span class="text-sm font-bold group-hover:underline group-hover:underline-offset-2">Activities</span>

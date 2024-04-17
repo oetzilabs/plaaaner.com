@@ -22,18 +22,16 @@ export const getByOrganizationWorkspace = z
         user_id: z.string().uuid(),
         workspace_id: z.string().uuid(),
         organization_id: z.string().uuid(),
-        fromDate: z.date().nullable(),
       }),
     ])
   )
   .implement(async (data) => {
     const activities: Activity[] = [];
     // const plans: Plans.Frontend[] = [];
-    const plans: Plans.Frontend[] = await Plans.findBy({
+    const plans: Plans.Frontend[] = await Plans.findByOptions({
       user_id: data.user_id,
       workspace_id: data.workspace_id,
       organization_id: data.organization_id,
-      fromDate: data.fromDate,
     });
 
     for (const plan of plans) {
@@ -43,11 +41,10 @@ export const getByOrganizationWorkspace = z
       });
     }
 
-    const posts: Posts.Frontend[] = await Posts.findBy({
+    const posts: Posts.Frontend[] = await Posts.findByOptions({
       user_id: data.user_id,
       workspace_id: data.workspace_id,
       organization_id: data.organization_id,
-      fromDate: data.fromDate,
     });
 
     for (const post of posts) {

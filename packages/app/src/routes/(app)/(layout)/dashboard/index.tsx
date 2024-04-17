@@ -51,9 +51,9 @@ export default function DashboardPage() {
           <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
             <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)]">
               <div class="flex flex-col w-full flex-grow min-h-0 max-h-screen overflow-y-auto">
-                <div class="container flex flex-col gap-4 max-w-full md:max-w-6xl h-screen">
-                  <div class="w-full h-auto flex flex-col pb-2 gap-2">
-                    <div class="flex w-full flex-col gap-2 pb-0 pt-8">
+                <div class="container flex flex-col gap-4 max-w-full md:max-w-6xl h-screen relative">
+                  <div class="w-full h-auto grid grid-cols-1 md:grid-cols-12 grid-flow-row-dense gap-4">
+                    <div class="col-span-8 flex w-full flex-col gap-2 pb-0 pt-4">
                       <span class="font-medium text-3xl">
                         Welcome
                         <Show when={isLoggedInLonger(15)} fallback="">
@@ -78,53 +78,54 @@ export default function DashboardPage() {
                         </A>
                       </span>
                     </div>
-                    <div class="w-full h-auto flex flex-row gap-4 relative">
-                      <div class="md:w-8/12 w-full">
-                        <EntryBox />
+                    <div class="col-span-4 hidden md:flex flex-col"></div>
+                    <div class="col-span-8 w-full flex flex-col row-span-1 sticky top-0 z-10">
+                      <EntryBox />
+                    </div>
+                    <div class="col-span-4 hidden md:flex flex-col row-span-12">
+                      <div class="flex flex-col w-full gap-4 sticky top-0 pt-4">
+                        <UpcomingPlans session={s()} />
                         <Suspense
                           fallback={
-                            <div class="py-10 w-full flex flex-col items-center justify-center gap-4">
-                              <For each={Array(5).fill(null)}>
-                                {() => (
-                                  <Skeleton
-                                    class="w-full"
-                                    style={{ height: `${Math.floor(Math.random() * 200) + 100}px` }}
-                                  />
-                                )}
-                              </For>
+                            <div class="p-4 w-full flex flex-col items-center justify-center">
+                              <Loader2 class="size-4 animate-spin" />
                             </div>
                           }
                         >
-                          <Activities session={s()} />
+                          <NotificationList session={s()} />
                         </Suspense>
-                      </div>
-                      <div class="hidden md:w-4/12 md:flex flex-col">
-                        <div class="flex flex-col w-full gap-4 sticky top-0 pt-4">
-                          <UpcomingPlans session={s()} />
-                          <Suspense
-                            fallback={
-                              <div class="p-4 w-full flex flex-col items-center justify-center">
-                                <Loader2 class="size-4 animate-spin" />
-                              </div>
-                            }
-                          >
-                            <NotificationList session={s()} />
-                          </Suspense>
-                          <Suspense
-                            fallback={
-                              <div class="p-4 w-full flex flex-col items-center justify-center">
-                                <Loader2 class="size-4 animate-spin" />
-                              </div>
-                            }
-                          >
-                            <NearbyPlansList session={s()} />
-                          </Suspense>
-                          <div class="flex flex-col w-full gap-2">
-                            <SmallFooter />
-                            <Disclaimers />
-                          </div>
+                        <Suspense
+                          fallback={
+                            <div class="p-4 w-full flex flex-col items-center justify-center">
+                              <Loader2 class="size-4 animate-spin" />
+                            </div>
+                          }
+                        >
+                          <NearbyPlansList session={s()} />
+                        </Suspense>
+                        <div class="flex flex-col w-full gap-2">
+                          <SmallFooter />
+                          <Disclaimers />
                         </div>
                       </div>
+                    </div>
+                    <div class="col-span-8 row-span-1 w-full flex flex-col">
+                      <Suspense
+                        fallback={
+                          <div class="py-10 w-full flex flex-col items-center justify-center gap-4">
+                            <For each={Array(5).fill(null)}>
+                              {() => (
+                                <Skeleton
+                                  class="w-full"
+                                  style={{ height: `${Math.floor(Math.random() * 200) + 100}px` }}
+                                />
+                              )}
+                            </For>
+                          </div>
+                        }
+                      >
+                        <Activities session={s()} />
+                      </Suspense>
                     </div>
                   </div>
                 </div>

@@ -1,11 +1,6 @@
-import {
-  PlanCreateSchema,
-  PlanTimesCreateSchema,
-  TicketCreateSchema,
-} from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
+import { PlanTimesCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 import { ConcertLocationSchema, Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
-import { Tickets } from "@oetzilabs-plaaaner-com/core/src/entities/tickets";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { action, cache, redirect, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
@@ -13,11 +8,9 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import updateLocale from "dayjs/plugin/updateLocale";
 import { getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
-import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import { lucia } from "../auth";
-import { getLocaleSettings } from "./locale";
 import { getActivities } from "./activity";
-import { DEFAULT_PLAN_TYPES } from "../../../../core/src/entities/plan_types";
+import { getLocaleSettings } from "./locale";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
@@ -40,11 +33,11 @@ export const getPreviousPlans = cache(async () => {
   if (!session.organization_id) {
     throw redirect("/setup/organization");
   }
-  const plans = await Plans.findByOrganizationId(session.organization_id, { fromDate: null });
+  const plans = await Plans.findByOrganizationId(session.organization_id);
   return plans;
 }, "previousPlans");
 
-export const getPlans = cache(async (data: { fromDate: Date | null }) => {
+export const getPlans = cache(async () => {
   "use server";
   const event = getEvent()!;
   const locale = getLocaleSettings(event);
@@ -60,11 +53,10 @@ export const getPlans = cache(async (data: { fromDate: Date | null }) => {
     throw redirect("/auth/login");
   }
 
-  const plans = await Plans.findBy({
+  const plans = await Plans.findByOptions({
     user_id: user.id,
     workspace_id: session.workspace_id,
     organization_id: session.organization_id,
-    fromDate: data.fromDate,
   });
   return plans;
 }, "activities");
@@ -288,19 +280,14 @@ export const getUpcomingThreePlans = cache(async () => {
     throw redirect("/auth/login");
   }
   const fromDate = dayjs().startOf("day").toDate();
-  const plans = await Plans.findBy({
+  const plans = await Plans.findByOptions({
     user_id: user.id,
     workspace_id: session.workspace_id,
     organization_id: session.organization_id,
-    fromDate: null,
   });
-  const filtered = plans.filter((p) => {
-    // take plans that are after or on the same day as the fromDate
-    if (fromDate) {
-      return dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day");
-    }
-    return false;
-  });
+  const filtered = plans.filter(
+    (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day")
+  );
   const sorted = filtered.sort((a, b) => {
     return dayjs(a.starts_at).isBefore(dayjs(b.starts_at)) ? -1 : 1;
   });

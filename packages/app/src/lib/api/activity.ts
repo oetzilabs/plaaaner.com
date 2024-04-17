@@ -18,7 +18,7 @@ export const getActivitySettings = cache(async () => {
   // return n;
 }, "notificationSettings");
 
-export const getActivities = cache(async (data: { fromDate: Date | null }) => {
+export const getActivities = cache(async () => {
   "use server";
   const event = getEvent()!;
 
@@ -46,7 +46,6 @@ export const getActivities = cache(async (data: { fromDate: Date | null }) => {
     user_id: user.id,
     organization_id: session.organization_id,
     workspace_id: session.workspace_id,
-    fromDate: data.fromDate,
   });
 
   return acs;

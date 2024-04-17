@@ -36,7 +36,7 @@ export const EntryBox = () => {
   const navigate = useNavigate();
 
   return (
-    <div class="flex w-full flex-col sticky top-0 z-10 bg-background pb-4">
+    <div class="flex w-full flex-col bg-background pb-4">
       <div class="flex w-full flex-col gap-8 pt-4">
         <div class="flex flex-col w-full border border-neutral-200 dark:border-neutral-800 rounded-lg gap-4 bg-background shadow-md">
           <Tabs defaultValue="plan" class="w-full">
@@ -51,7 +51,7 @@ export const EntryBox = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="plan" class="pt-0 gap-4 flex flex-col">
-              <div class="flex flex-col w-full px-4">
+              <div class="flex flex-col w-full px-4 gap-2">
                 <TextField onChange={(v) => setTitle(v)} value={title()}>
                   <TextFieldInput
                     placeholder="Plan Name"
@@ -98,9 +98,6 @@ export const EntryBox = () => {
                   </ToggleButton>
                 </div>
                 <div class="w-max flex flex-row gap-2 items-center">
-                  <Button variant="outline" size="sm">
-                    Drafts
-                  </Button>
                   <Button
                     disabled={isEmpty() || isCreatingPlan.pending}
                     variant="default"
@@ -121,7 +118,6 @@ export const EntryBox = () => {
                       }
                     }}
                   >
-                    <Plus class="size-4" />
                     <span class="">Create Plan</span>
                   </Button>
                 </div>
@@ -132,7 +128,7 @@ export const EntryBox = () => {
                 <TextField onChange={(v) => setPostContent(v)} value={postContent()}>
                   <TextFieldTextArea
                     placeholder="What's up?"
-                    class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none min-h-24 bg-muted"
+                    class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none min-h-[6.5rem] bg-muted"
                     autoResize
                     onKeyDown={(e) => {
                       if (e.key === "Escape") {

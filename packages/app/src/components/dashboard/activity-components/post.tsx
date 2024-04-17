@@ -4,7 +4,7 @@ import { deletePost } from "@/lib/api/posts";
 import { Posts } from "@oetzilabs-plaaaner-com/core/src/entities/posts";
 import dayjs from "dayjs";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
-import { PostCommentsSection } from "./comments";
+import { PostCommentsSection } from "./post-comments";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";

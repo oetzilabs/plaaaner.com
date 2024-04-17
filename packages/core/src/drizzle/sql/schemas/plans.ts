@@ -11,7 +11,7 @@ import { plan_comments } from "./plan_comments";
 import { plan_comments_mentions } from "./plan_comments_mentions";
 import { plan_comment_user_mention_notifications } from "./notifications/plan/comment_user_mention";
 import { workspaces_plans } from "./workspaces_plans";
-import { ConcertLocationSchema } from "../../../entities/plans";
+import type { ConcertLocation } from "../../../entities/plans";
 
 export const plansStatus = schema.enum("plans_status", ["published", "draft", "hidden"]);
 
@@ -31,7 +31,7 @@ export const plans = schema.table("plans", {
     withTimezone: true,
     mode: "date",
   }).notNull(),
-  location: jsonb("location").$type<z.infer<typeof ConcertLocationSchema>>().notNull().default({
+  location: jsonb("location").$type<ConcertLocation>().notNull().default({
     location_type: "other",
     details: "",
   }),

@@ -14,7 +14,7 @@ dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
 
 export const Activities = (props: { session: UserSession }) => {
-  const [activities, actions] = createResource(() => getActivities({ fromDate: null }));
+  const [activities, actions] = createResource(() => getActivities());
 
   createEffect(() => {
     const rA = refreshActivities();

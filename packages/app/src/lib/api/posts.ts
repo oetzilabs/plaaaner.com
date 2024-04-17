@@ -27,7 +27,7 @@ export const getPost = cache(async (postId: string) => {
   return post;
 }, "activities");
 
-export const getPosts = cache(async (data: { fromDate: Date | null }) => {
+export const getPosts = cache(async () => {
   "use server";
   const event = getEvent()!;
   const locale = getLocaleSettings(event);
@@ -43,11 +43,10 @@ export const getPosts = cache(async (data: { fromDate: Date | null }) => {
     throw redirect("/auth/login");
   }
 
-  const posts = await Posts.findBy({
+  const posts = await Posts.findByOptions({
     user_id: user.id,
     workspace_id: session.workspace_id,
     organization_id: session.organization_id,
-    fromDate: data.fromDate,
   });
   return posts;
 }, "activities");
@@ -110,7 +109,6 @@ export const commentOnPost = action(async (data: { postId: string; comment: stri
   const commented = await Posts.addComment(data.postId, user.id, data.comment);
   await revalidate(getPostComments.keyFor(commented.postId), true);
   await revalidate(getActivities.key, true);
-  await revalidate(getActivities.keyFor({ fromDate: null }), true);
   return true;
 });
 

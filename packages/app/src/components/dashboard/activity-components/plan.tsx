@@ -15,7 +15,7 @@ import dayjs from "dayjs";
 import { CircleAlert, Ellipsis, Eye, EyeOff, Trash } from "lucide-solid";
 import { Match, Show, Switch } from "solid-js";
 import { toast } from "solid-sonner";
-import { PlanCommentsSection } from "./comments";
+import { PlanCommentsSection } from "./plan-comments";
 import { deletePlan } from "@/lib/api/plans";
 
 export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend }) => {
@@ -78,19 +78,20 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
           </DropdownMenu>
         </div>
         <A
-          href={`/dashboard/o//${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans/${props.plan.id}`}
+          href={`/dashboard/o/${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans/${props.plan.id}`}
           class="rounded-md bg-background"
         >
           <div class="w-full h-48 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 relative"></div>
           <div class="flex flex-col p-4 border-b border-neutral-200 dark:border-neutral-800 w-full">
-            <div class="flex flex-col items-start w-full">
-              <div class="flex flex-col gap-0.5">
+            <div class="flex flex-col items-start w-full gap-1">
+              {/* <div class="flex flex-col gap-0.5">
                 <h3 class="text-sm font-semibold w-max">{props.plan.owner.name}</h3>
                 <time class="text-xs font-normal leading-none text-muted-foreground w-max">
                   {dayjs(props.plan.createdAt).format("Do MMM, YYYY")}
                 </time>
-              </div>
-              <span class="text-xs font-normal text-neutral-500 dark:text-neutral-400">{props.plan.description}</span>
+              </div> */}
+              <span class="text-sm font-bold">{props.plan.name}</span>
+              <span class="text-xs font-normal text-muted-foreground">{props.plan.description}</span>
             </div>
           </div>
         </A>

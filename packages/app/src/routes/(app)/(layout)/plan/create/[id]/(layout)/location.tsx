@@ -315,7 +315,7 @@ export default function PlanCreateLocationPage() {
                 </Button>
                 <A href="/dashboard">
                   <Button size="sm" class="w-full flex flex-row items-center justify-center gap-2">
-                    <span class="text-sm font-medium leading-none">Go To Dashboard</span>
+                    <span class="text-sm font-medium leading-none w-max">Go To Dashboard</span>
                   </Button>
                 </A>
               </div>
