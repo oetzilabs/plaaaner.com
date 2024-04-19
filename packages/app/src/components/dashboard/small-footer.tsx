@@ -8,7 +8,7 @@ export const SmallFooter = () => {
       <div class="w-10/12 flex flex-wrap gap-2 items-center justify-center">
         <For each={[...footer_links.Legal, ...footer_links.Community, ...footer_links.Project]}>
           {(link) => (
-            <A href={link.href} rel="external" class="text-xs hover:underline">
+            <A href={link.href} rel="external" class="text-xs hover:underline text-muted-foreground hover:text-black dark:hover:text-white">
               {link.name}
             </A>
           )}

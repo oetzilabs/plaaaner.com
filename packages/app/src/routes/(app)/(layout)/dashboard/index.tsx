@@ -65,11 +65,7 @@ export default function DashboardPage() {
                       <span class="text-sm">
                         Here's what's going on at{" "}
                         <A
-                          href={
-                            (s().workspace?.name ?? "default") === "default"
-                              ? `/dashboard/organization/${s().organization?.id}`
-                              : `/dashboard/organization/${s().organization?.id}/${s().workspace?.id}`
-                          }
+                          href={`/dashboard/o/${s().organization?.id}/w/${s().workspace?.id}`}
                           class="hover:underline text-indigo-500 font-medium"
                         >
                           {(s().workspace?.name ?? "default") === "default"

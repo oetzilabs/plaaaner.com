@@ -50,6 +50,29 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
           user: true,
         },
       },
+      plans: {
+        with: {
+          plan: {
+            with: {
+              comments: {
+                orderBy(fields, operators) {
+                  return operators.desc(fields.createdAt);
+                },
+                with: {
+                  user: true,
+                },
+              },
+              owner: true,
+              workspaces: true,
+            },
+          },
+        },
+      },
+      posts: {
+        with: {
+          post: true,
+        },
+      },
       owner: true,
     },
   });
@@ -86,6 +109,29 @@ export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).impleme
           user: true,
         },
       },
+      plans: {
+        with: {
+          plan: {
+            with: {
+              comments: {
+                orderBy(fields, operators) {
+                  return operators.desc(fields.createdAt);
+                },
+                with: {
+                  user: true,
+                },
+              },
+              owner: true,
+              workspaces: true,
+            },
+          },
+        },
+      },
+      posts: {
+        with: {
+          post: true,
+        },
+      },
       owner: true,
     },
   });
@@ -103,6 +149,29 @@ export const findByName = z.function(z.tuple([z.string()])).implement(async (inp
           user: true,
         },
       },
+      plans: {
+        with: {
+          plan: {
+            with: {
+              comments: {
+                orderBy(fields, operators) {
+                  return operators.desc(fields.createdAt);
+                },
+                with: {
+                  user: true,
+                },
+              },
+              owner: true,
+              workspaces: true,
+            },
+          },
+        },
+      },
+      posts: {
+        with: {
+          post: true,
+        },
+      },
       owner: true,
     },
   });
@@ -114,6 +183,29 @@ export const all = z.function(z.tuple([])).implement(async () => {
       users: {
         with: {
           user: true,
+        },
+      },
+      plans: {
+        with: {
+          plan: {
+            with: {
+              comments: {
+                orderBy(fields, operators) {
+                  return operators.desc(fields.createdAt);
+                },
+                with: {
+                  user: true,
+                },
+              },
+              owner: true,
+              workspaces: true,
+            },
+          },
+        },
+      },
+      posts: {
+        with: {
+          post: true,
         },
       },
       owner: true,

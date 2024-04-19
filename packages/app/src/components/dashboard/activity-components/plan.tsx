@@ -77,11 +77,23 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <A
-          href={`/dashboard/o/${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans/${props.plan.id}`}
-          class="rounded-md bg-background"
-        >
-          <div class="w-full h-48 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 relative"></div>
+        <A href={`/dashboard/p/${props.plan.id}`} class="rounded-md bg-background">
+          <div class="w-full h-48 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 relative overflow-clip">
+            <Switch>
+              <Match when={props.plan.location.location_type === "venue" && props.plan.location}>
+                {(loc) => <div class="">{loc().address}</div>}
+              </Match>
+              <Match when={props.plan.location.location_type === "festival" && props.plan.location}>
+                {(loc) => <div class="">{loc().address}</div>}
+              </Match>
+              <Match when={props.plan.location.location_type === "other" && props.plan.location}>
+                {(loc) => <div class="">{loc().details}</div>}
+              </Match>
+              <Match when={props.plan.location.location_type === "online" && props.plan.location}>
+                {(loc) => <div class="">{loc().url}</div>}
+              </Match>
+            </Switch>
+          </div>
           <div class="flex flex-col p-4 border-b border-neutral-200 dark:border-neutral-800 w-full">
             <div class="flex flex-col items-start w-full gap-1">
               {/* <div class="flex flex-col gap-0.5">

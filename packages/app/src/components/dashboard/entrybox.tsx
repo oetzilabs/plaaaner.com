@@ -30,7 +30,7 @@ export const EntryBox = () => {
   const createPost = useAction(createNewPost);
   const isCreatingPost = useSubmission(createNewPost);
 
-  const createPlan = useAction(createPlanCreationForm);
+  const createAndRedirectToPlanCreation = useAction(createPlanCreationForm);
   const isCreatingPlan = useSubmission(createPlanCreationForm);
 
   const navigate = useNavigate();
@@ -109,13 +109,10 @@ export const EntryBox = () => {
                       if (t.length === 0 || d.length === 0) {
                         return;
                       }
-                      const plan = await createPlan({
+                      await createAndRedirectToPlanCreation({
                         title: t,
                         description: d,
                       });
-                      if (plan) {
-                        navigate(`/plan/create/${plan.id}/general`);
-                      }
                     }}
                   >
                     <span class="">Create Plan</span>

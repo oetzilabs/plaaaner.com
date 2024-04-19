@@ -602,5 +602,5 @@ export const createPlanCreationForm = action(async (data: { title: string; descr
     workspaceId
   );
 
-  return plan;
+  throw redirect(`/plan/create/${plan.id}/time`);
 });

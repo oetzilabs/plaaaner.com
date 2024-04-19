@@ -103,15 +103,15 @@ export const PlanCommentsSection = (props: {
             </Show>
             <For each={filteredComments({ last: visibleComments() }, cs())}>
               {(comment) => (
-                <div class="w-full flex flex-row items-center justify-between gap-2 leading-tight text-sm p-2 hover:bg-muted rounded-md group">
-                  <ImageRoot class="self-start size-8 text-xs text-muted-foreground">
+                <div class="w-full flex flex-row items-center justify-between gap-4 leading-tight text-sm p-2 hover:bg-neutral-100/50 dark:hover:bg-neutral-900/50 rounded-md group">
+                  <ImageRoot class="self-start size-6 text-[8pt] text-muted-foreground">
                     <Image src={""} alt={`Profile Picture of ${comment.user.name}`} />
                     <ImageFallback>{shortUsername(comment.user.name)}</ImageFallback>
                   </ImageRoot>
                   <div class="flex flex-row items-start justify-between w-full">
                     <div class="flex-1 flex flex-col w-full gap-1">
                       <span class="text-muted-foreground text-xs font-bold">
-                        {props.username} {dayjs(comment.createdAt).format("LT")}
+                        {props.username} @ {dayjs(comment.createdAt).format("LT")}
                       </span>
                       <span class="text-justify w-full pr-1">{comment.comment}</span>
                     </div>

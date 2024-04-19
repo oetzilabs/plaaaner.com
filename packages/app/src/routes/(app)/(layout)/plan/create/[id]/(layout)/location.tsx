@@ -11,7 +11,6 @@ import { TextFieldTextArea } from "@/components/ui/textarea";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
 import { getPlan, getPlanLocation, savePlanLocation } from "@/lib/api/plans";
 import { cn } from "@/lib/utils";
-import { ConcertLocationSchema } from "@/utils/schemas/shared";
 import type { ConcertLocation } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { A, createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
 import { clientOnly } from "@solidjs/start";
@@ -45,11 +44,44 @@ export default function PlanCreateLocationPage() {
   return (
     <Show when={typeof planLocation() !== "undefined" && planLocation()}>
       {(pL) => {
+        const lo_type = pL().location_type;
+        switch (lo_type) {
+          case "venue":
+            setLocation({
+              location_type: lo_type,
+              address: "",
+            });
+            break;
+          case "online":
+            setLocation({
+              location_type: lo_type,
+              url: "",
+            });
+
+            break;
+          case "festival":
+            setLocation({
+              location_type: lo_type,
+              address: "",
+            });
+            break;
+          case "other":
+            setLocation({
+              location_type: lo_type,
+              details: "",
+            });
+            break;
+          default:
+            const s: never = lo_type;
+            break;
+        }
+        console.log("lo_type", lo_type);
+
         return (
           <>
             <div class="flex flex-col items-start justify-between gap-2 w-full">
               <RadioGroup
-                value={pL().location_type}
+                value={location().location_type}
                 aria-label={`Where is the plan going to take place?`}
                 onChange={(value) => {
                   const v = value as ConcertLocation["location_type"];
@@ -95,8 +127,8 @@ export default function PlanCreateLocationPage() {
                       class={cn(
                         "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": pL().location_type !== "venue",
-                          "bg-secondary": pL().location_type === "venue",
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": location().location_type !== "venue",
+                          "bg-secondary": location().location_type === "venue",
                         }
                       )}
                     >
@@ -110,8 +142,8 @@ export default function PlanCreateLocationPage() {
                         "flex flex-row items-center justify-center gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
                           "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
-                            pL().location_type !== "festival",
-                          "bg-secondary": pL().location_type === "festival",
+                            location().location_type !== "festival",
+                          "bg-secondary": location().location_type === "festival",
                         }
                       )}
                     >
@@ -124,8 +156,8 @@ export default function PlanCreateLocationPage() {
                       class={cn(
                         "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": pL().location_type !== "online",
-                          "bg-secondary": pL().location_type === "online",
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": location().location_type !== "online",
+                          "bg-secondary": location().location_type === "online",
                         }
                       )}
                     >
@@ -138,8 +170,8 @@ export default function PlanCreateLocationPage() {
                       class={cn(
                         "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": pL().location_type !== "other",
-                          "bg-secondary": pL().location_type === "other",
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": location().location_type !== "other",
+                          "bg-secondary": location().location_type === "other",
                         }
                       )}
                     >
@@ -152,7 +184,7 @@ export default function PlanCreateLocationPage() {
             </div>
             <div class="flex flex-col items-start justify-between gap-2 w-full">
               <Switch>
-                <Match when={pL().location_type === "online"}>
+                <Match when={location().location_type === "online"}>
                   <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       What is the URL of the plan?
@@ -160,7 +192,7 @@ export default function PlanCreateLocationPage() {
                     <TextFieldInput
                       value={
                         // @ts-ignore
-                        pL().location_type === "online" && pL().url
+                        location().location_type === "online" && pL().url
                           ? // @ts-ignore
                             pL().url
                           : urlQuery()
@@ -187,7 +219,7 @@ export default function PlanCreateLocationPage() {
                   </TextField>
                   <URLPreview query={urlQuery} />
                 </Match>
-                <Match when={pL().location_type === "venue"}>
+                <Match when={location().location_type === "venue"}>
                   <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       Where is the plan going to take place?
@@ -195,7 +227,7 @@ export default function PlanCreateLocationPage() {
                     <TextFieldInput
                       value={
                         // @ts-ignore
-                        pL().location_type === "venue" && pL().address
+                        location().location_type === "venue" && pL().address
                           ? // @ts-ignore
                             pL().address
                           : locationQuery()
@@ -222,7 +254,7 @@ export default function PlanCreateLocationPage() {
                   </TextField>
                   <ClientMap query={locationQuery} />
                 </Match>
-                <Match when={pL().location_type === "festival"}>
+                <Match when={location().location_type === "festival"}>
                   <TextField class="w-full flex flex-col gap-2" aria-label="Location">
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       Where is the plan going to take place?
@@ -230,7 +262,7 @@ export default function PlanCreateLocationPage() {
                     <TextFieldInput
                       value={
                         // @ts-ignore
-                        pL().location_type === "festival" && pL().address
+                        location().location_type === "festival" && pL().address
                           ? // @ts-ignore
                             pL().address
                           : locationQuery()
@@ -257,7 +289,7 @@ export default function PlanCreateLocationPage() {
                   </TextField>
                   <ClientMap query={locationQuery} />
                 </Match>
-                <Match when={pL().location_type === "other"}>
+                <Match when={location().location_type === "other"}>
                   <TextField class="w-full flex flex-col gap-2" aria-label="Other Location">
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       Where is the plan going to take place?
@@ -266,7 +298,7 @@ export default function PlanCreateLocationPage() {
                       autoResize
                       value={
                         // @ts-ignore
-                        pL().location_type === "other" && pL().details
+                        location().location_type === "other" && pL().details
                           ? // @ts-ignore
                             pL().details
                           : locationQuery()
