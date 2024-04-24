@@ -97,7 +97,7 @@ export const createNewPost = action(async (content: string) => {
     ],
   });
 
-  console.log("sent to users", sendToUsersViaWebsocket);
+  // console.log("sent to users", sendToUsersViaWebsocket);
 
   await revalidate(getActivities.key, true);
   await revalidate(getPosts.key, true);
