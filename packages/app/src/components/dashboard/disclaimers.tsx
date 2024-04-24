@@ -11,7 +11,7 @@ export const Disclaimers = () => {
           </A>{" "}
           of Plaaaner. It is not intended for use in production environments, yet.
         </span>
-        <div class="flex flex-col">
+        {/* <div class="flex flex-col">
           <span class="text-xs text-muted-foreground text-center">If you have any questions or feedback,</span>
           <span class="text-xs text-muted-foreground text-center">
             please reach out to me on{" "}
@@ -20,7 +20,7 @@ export const Disclaimers = () => {
             </A>
             .
           </span>
-        </div>
+        </div> */}
       </div>
     </div>
   );

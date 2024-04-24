@@ -67,7 +67,7 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
                       return;
                     }
                     toast.success("Post deleted, refreshing!");
-                    setFreshActivities([{ change: "remove", activity: { type: "plan", value: removed } }]);
+                    // setFreshActivities([{ change: "remove", activity: { type: "plan", value: removed } }]);
                   }}
                 >
                   <Trash class="size-4" />

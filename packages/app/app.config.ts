@@ -1,17 +1,13 @@
 import path from "node:path";
 import { defineConfig } from "@solidjs/start/config";
 
-const IS_PROD = process.env.NODE_ENV === "production";
-
 export default defineConfig({
   server: {
-    preset: IS_PROD ? "aws-lambda" : "node-server",
-    output: IS_PROD
-      ? {
-          dir: "dist",
-          publicDir: "dist/client",
-        }
-      : {},
+    preset: "aws-lambda",
+    output: {
+      dir: "dist",
+      publicDir: "dist/client",
+    },
     esbuild: {
       options: {
         target: "esnext",
@@ -28,8 +24,10 @@ export default defineConfig({
       },
     },
     optimizeDeps: {
+      exclude: ["lucide-solid", "@iconify/icons-lucide", "@kobalte/core"],
       esbuildOptions: {
         target: "esnext",
+        treeShaking: true,
       },
     },
     build: {

@@ -14,6 +14,8 @@ dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
 
 export const Activities = (props: { session: UserSession }) => {
+  // const activities = createAsync(() => getActivities());
+
   const [activities, actions] = createResource(() => getActivities());
 
   createEffect(() => {
@@ -57,13 +59,13 @@ export const Activities = (props: { session: UserSession }) => {
       <div class="w-full h-auto py-2">
         <ol class="w-full pb-20">
           <TransitionGroup name="slide-fade-up">
-            <Show when={typeof activities !== "undefined" && activities()}>
+            <Show when={typeof activities() !== "undefined" && activities()}>
               {(acts) => (
                 <div class="w-full flex flex-col gap-4">
                   <For each={acts()}>
                     {(activity) => (
                       <Transition name="slide-fade-up">
-                        <li class="border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">
+                        <li class="border relative border-neutral-200 dark:border-neutral-800 rounded-lg hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">
                           <Switch>
                             <Match when={activity.type === "plan" && activity.value}>
                               {(plan) => <PlanActivity plan={plan()} session={props.session} />}

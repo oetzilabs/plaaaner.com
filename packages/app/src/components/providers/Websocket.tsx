@@ -6,6 +6,7 @@ import { useSession } from "../SessionProvider";
 import type { Notify } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
 import { z } from "zod";
 import { auth } from "./Authentication";
+import { ActivityChange, setFreshActivities } from "../../lib/utils";
 
 export type WSStatus = "connected" | "disconnected" | "pinging" | "sending" | "connecting";
 
@@ -49,15 +50,23 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
 
   const handlers = {
     message: (e: any, ...a: any) => {
+      console.info("message", e);
       const data = JSON.parse(e.data);
-      const n = z.custom<Notify>().parse(data);
-      setRecievedQueue([...recievedQueue(), n]);
+      const n = z.custom<Notify>().safeParse(data);
+      if (n.success) {
+        setRecievedQueue([...recievedQueue(), n.data]);
+      }
       // update downstream
       const pongMessage = z.custom<PongMessage>().safeParse(data);
       if (pongMessage.success) {
         console.log("pong-message", pongMessage);
       } else {
         // updateFailed();
+      }
+      const activityMessage = z.custom<{ type: "activity"; value: ActivityChange[] }>().safeParse(data);
+      if (activityMessage.success && activityMessage.data.type === "activity") {
+        console.log("activity-message changed", activityMessage.data);
+        setFreshActivities(activityMessage.data.value);
       }
     },
     open: (e: any) => {

@@ -15,4 +15,4 @@ export const getMessagingSettings = cache(async () => {
   };
   // const n = await Notifications.findManyByUserId(user.id);
   // return n;
-}, "messageSetting");
+}, "messaging-settings");

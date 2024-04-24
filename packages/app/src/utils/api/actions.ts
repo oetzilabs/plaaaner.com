@@ -1,6 +1,6 @@
 import { lucia } from "@/lib/auth";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
-import { action, redirect, revalidate } from "@solidjs/router";
+import { action, redirect, reload, revalidate } from "@solidjs/router";
 import { appendHeader, getCookie } from "vinxi/http";
 import { z } from "zod";
 import { getEvent } from "vinxi/http";
@@ -18,8 +18,7 @@ export const logout = action(async () => {
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
   event.context.session = null;
 
-  await revalidate(getAuthenticatedSession.key, true);
-  throw redirect("/auth/login", 303);
+  reload({ headers: { Location: "/auth/login" }, status: 303, revalidate: getAuthenticatedSession.key });
 });
 
 export const revokeAllSessions = action(async () => {
@@ -31,9 +30,7 @@ export const revokeAllSessions = action(async () => {
   }
   const { id } = event.context.user;
   await lucia.invalidateUserSessions(id);
-  await revalidate(getAuthenticatedSession.key, true);
-
-  return true;
+  reload({ headers: { Location: "/auth/login" }, status: 303, revalidate: getAuthenticatedSession.key });
 });
 
 export const revokeSession = action(async (data: FormData) => {

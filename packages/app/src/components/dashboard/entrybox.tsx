@@ -1,6 +1,6 @@
 import { ActivityChange, cn, refreshActivities, setFreshActivities } from "@/lib/utils";
-import { A, useAction, useNavigate, useSubmission } from "@solidjs/router";
-import { CalendarFold, CircleAlert, Newspaper, Pencil, Plus } from "lucide-solid";
+import { A, useAction, useSubmission } from "@solidjs/router";
+import { CalendarFold, CircleAlert, Loader, Loader2, Newspaper, Pencil, Plus } from "lucide-solid";
 import { Switch, createSignal } from "solid-js";
 import { Button, buttonVariants } from "../ui/button";
 import { TextFieldTextArea } from "../ui/textarea";
@@ -33,8 +33,6 @@ export const EntryBox = () => {
   const createAndRedirectToPlanCreation = useAction(createPlanCreationForm);
   const isCreatingPlan = useSubmission(createPlanCreationForm);
 
-  const navigate = useNavigate();
-
   return (
     <div class="flex w-full flex-col bg-background pb-4">
       <div class="flex w-full flex-col gap-8 pt-4">
@@ -54,6 +52,7 @@ export const EntryBox = () => {
               <div class="flex flex-col w-full px-4 gap-2">
                 <TextField onChange={(v) => setTitle(v)} value={title()}>
                   <TextFieldInput
+                    autofocus
                     placeholder="Plan Name"
                     class="border-none shadow-none bg-transparent !ring-0 !outline-none text-xl rounded-md font-semibold px-0"
                     onKeyDown={(e) => {
@@ -124,6 +123,7 @@ export const EntryBox = () => {
               <div class="flex flex-col w-full px-4">
                 <TextField onChange={(v) => setPostContent(v)} value={postContent()}>
                   <TextFieldTextArea
+                    autofocus
                     placeholder="What's up?"
                     class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none min-h-[6.5rem] bg-muted"
                     autoResize
@@ -154,12 +154,16 @@ export const EntryBox = () => {
                       const post = await createPost(content);
                       if (post) {
                         setPostContent("");
-                        const changed: ActivityChange[] = [{ change: "add", activity: { type: "post", value: post } }];
-                        setFreshActivities(changed);
+                        // const changed: ActivityChange[] = [{ change: "add", activity: { type: "post", value: post } }];
+                        // setFreshActivities(changed);
                       }
                     }}
                   >
-                    <Plus class="size-4" />
+                    <Switch fallback={<Plus class="size-4" />}>
+                      <Match when={isCreatingPost.pending}>
+                        <Loader2 class="size-4 animate-spin" />
+                      </Match>
+                    </Switch>
                     <span class="">Create Post</span>
                   </Button>
                 </div>

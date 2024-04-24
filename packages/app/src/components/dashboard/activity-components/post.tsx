@@ -89,7 +89,7 @@ export const PostActivity = (props: { session: UserSession; post: Posts.Frontend
                             return;
                           }
                           toast.success("Post deleted, refreshing!");
-                          setFreshActivities([{ change: "remove", activity: { type: "post", value: removed } }]);
+                          // setFreshActivities([{ change: "remove", activity: { type: "post", value: removed } }]);
                         }}
                       >
                         <Trash class="size-4" />

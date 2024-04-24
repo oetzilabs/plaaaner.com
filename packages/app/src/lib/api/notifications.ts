@@ -16,7 +16,7 @@ export const getNotificationSettings = cache(async () => {
   };
   // const n = await Notifications.findManyByUserId(user.id);
   // return n;
-}, "notificationSettings");
+}, "notification-settings");
 
 export const getNotifications = cache(async () => {
   "use server";
@@ -68,4 +68,4 @@ export const getNotificationsCount = cache(async () => {
   const orgNotificationsCount = await Notifications.countByOrganizationId(session.organization_id);
 
   return orgNotificationsCount;
-}, "notificationsCount");
+}, "notifications-count");

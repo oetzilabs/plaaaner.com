@@ -59,7 +59,7 @@ export const getPlans = cache(async () => {
     organization_id: session.organization_id,
   });
   return plans;
-}, "activities");
+}, "plans");
 
 export const getPlan = cache(async (id: string) => {
   "use server";
@@ -229,7 +229,7 @@ export const getPlanComments = cache(async (plan_id) => {
     throw new Error("This plan does not exist");
   }
   return plan.comments;
-}, "activities");
+}, "plan-comments");
 
 export const deletePlanComment = action(async (comment_id) => {
   "use server";

@@ -1,6 +1,6 @@
 import { Activities } from "@oetzilabs-plaaaner-com/core/src/entities/activities";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { cache, redirect } from "@solidjs/router";
+import { action, cache, redirect, reload } from "@solidjs/router";
 import { getEvent } from "vinxi/http";
 
 export const getActivitySettings = cache(async () => {
@@ -17,7 +17,7 @@ export const getActivitySettings = cache(async () => {
   };
   // const n = await Activities.findManyByUserId(user.id);
   // return n;
-}, "notificationSettings");
+}, "activity-settings");
 
 export const getActivities = cache(async () => {
   "use server";
@@ -87,4 +87,19 @@ export const getActivitiesByWorkspace = cache(async (workspaceId: string) => {
   });
 
   return acs;
-}, "activities");
+}, "activities-by-workspace");
+
+export const refreshActivities = action(async () => {
+  "use server";
+  const event = getEvent()!;
+  const session = event.context.session;
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+  const user = event.context.user;
+  if (!user) {
+    throw redirect("/auth/login");
+  }
+
+  reload({ revalidate: [getActivities.key], status: 200 });
+});

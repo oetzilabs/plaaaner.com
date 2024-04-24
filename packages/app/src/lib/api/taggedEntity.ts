@@ -13,4 +13,4 @@ export const getTaggedEntity = cache(async (tag: string) => {
     content: tag,
     tag: "JD",
   };
-}, "taggedEntity");
+}, "tagged-entity");

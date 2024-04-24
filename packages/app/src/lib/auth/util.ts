@@ -97,7 +97,7 @@ export const getCurrentOrganization = cache(async () => {
   }
 
   return org;
-}, "organization");
+}, "current-organization");
 
 export const getCurrentWorkspace = cache(async () => {
   "use server";
@@ -122,4 +122,4 @@ export const getCurrentWorkspace = cache(async () => {
   const workspace = await Workspace.findById(session.workspace_id);
 
   return workspace;
-}, "workspace");
+}, "current-workspace");

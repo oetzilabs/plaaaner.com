@@ -1,7 +1,6 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { action, cache, redirect, revalidate } from "@solidjs/router";
-import organization from "dist/server/chunks/build/organization.mjs";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
@@ -83,7 +82,7 @@ export const getUserOrganizations = cache(async () => {
   const orgs = await Organization.findManyByUserId(user.id);
 
   return orgs;
-}, "allOrganizations");
+}, "user-organizations");
 
 export const getOrganizationById = cache(async (id: string) => {
   "use server";
@@ -108,7 +107,7 @@ export const getOrganizationById = cache(async (id: string) => {
   if (!isUserInOrg) throw redirect("/403", 403);
 
   return organization;
-}, "organization");
+}, "organization-by-id");
 
 export const getOrganization = cache(async () => {
   "use server";
@@ -190,7 +189,7 @@ export const getAllOrganizations = cache(async () => {
   "use server";
   const orgs = await Organization.all();
   return orgs;
-}, "allOrganizations");
+}, "all-organizations");
 
 export const getNoneConnectedOrganizations = cache(async () => {
   "use server";
@@ -208,7 +207,7 @@ export const getNoneConnectedOrganizations = cache(async () => {
   }
   const orgs = await Organization.notConnectedToUserById(user.id);
   return orgs;
-}, "allOrganizations");
+}, "none-connected-organizations");
 
 export const getTicketTypes = cache(async () => {
   "use server";
@@ -233,7 +232,7 @@ export const getTicketTypes = cache(async () => {
   const org_ticket_types = await Organization.getTicketTypesByOrganization(session.organization_id);
 
   return org_ticket_types;
-}, "organization_ticket_types");
+}, "organization-ticket-types");
 
 export const fillDefaultTicketTypes = action(async () => {
   "use server";
@@ -285,4 +284,4 @@ export const getDefaultTicketTypeCount = cache(async () => {
   const org_ticket_types = await TicketTypes.getDefaultCount();
 
   return org_ticket_types;
-}, "organization_ticket_types_count");
+}, "organization-ticket-types-count");

@@ -6,7 +6,7 @@ import type { UserSession } from "@/lib/auth/util";
 
 export const [SessionProvider, useSession] = createContextProvider(() => {
   const authenticatedSession = createAsync(() => getAuthenticatedSession());
-  const [session, setSession] = createSignal<UserSession>({
+  const [session, setSession] = createSignal<UserSession & { isLoading: boolean }>({
     workspace: null,
     token: null,
     user: null,
@@ -14,6 +14,7 @@ export const [SessionProvider, useSession] = createContextProvider(() => {
     organization: null,
     id: null,
     createdAt: null,
+    isLoading: true,
   });
   createEffect(() => {
     const aS = authenticatedSession();
@@ -21,7 +22,8 @@ export const [SessionProvider, useSession] = createContextProvider(() => {
       console.error("no session");
       return;
     }
-    setSession(aS);
+    const merged = Object.assign({ isLoading: false }, aS);
+    setSession(merged);
   });
   return session;
 });

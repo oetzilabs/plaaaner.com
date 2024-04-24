@@ -6,6 +6,7 @@ import { Notify } from "./notifications";
 import { WebSocketApi } from "sst/node/websocket-api";
 import { ApiGatewayManagementApi, GoneException } from "@aws-sdk/client-apigatewaymanagementapi";
 import dayjs from "dayjs";
+import { Workspace } from "./workspaces";
 
 export * as WebsocketCore from "./websocket";
 
@@ -70,6 +71,25 @@ export const sendMessageToConnection = async (message: any, connectionId: string
     }
   }
 };
+
+export const sendMessageToUsersInWorkspace = z
+  .function(z.tuple([z.string(), z.string().uuid(), z.any()]))
+  .implement(async (workspaceId, userId, message) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+      throw new Error("Workspace not found");
+    }
+    const users = workspace.users.map((user) => user.user);
+    if (!users) {
+      throw new Error("No users in workspace");
+    }
+
+    for (let i = 0; i < users.length; i++) {
+      const connection = await getConnection(users[i].id);
+      await sendMessageToConnection(message, connection.connectionId);
+    }
+    return users;
+  });
 
 export const broadcast = z.function(z.tuple([z.any()])).implement(async (message) => {
   // get all connectionstrings

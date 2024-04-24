@@ -7,11 +7,13 @@ import { NearbyPlansList } from "@/components/dashboard/nearby-plans";
 import { NotificationList } from "@/components/dashboard/notifications";
 import { SmallFooter } from "@/components/dashboard/small-footer";
 import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { A } from "@solidjs/router";
+import { refreshActivities } from "@/lib/api/activity";
+import { Title } from "@solidjs/meta";
+import { A, useAction } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { Title } from "@solidjs/meta";
 import { Loader2 } from "lucide-solid";
 import { For, Match, Show, Suspense, Switch } from "solid-js";
 dayjs.extend(relativeTime);
@@ -21,10 +23,10 @@ export default function DashboardPage() {
   const isLoggedInLonger = (minutes: number) =>
     dayjs(session?.()?.createdAt).add(minutes, "minutes").isBefore(Date.now());
 
-
+  const refreshTheActivities = useAction(refreshActivities);
   return (
     <>
-    <Title>Dashboard | Plaaaner</Title>
+      <Title>Dashboard | Plaaaner</Title>
       <Switch
         fallback={
           <div class="flex p-4 w-full h-full items-center justify-center text-muted-foreground">
@@ -32,17 +34,17 @@ export default function DashboardPage() {
           </div>
         }
       >
+        <Match when={typeof session !== "undefined" && session().isLoading}>
+          <div class="flex p-4 w-full h-full items-center justify-center">
+            <div class="w-max h-max min-w-96 flex items-center justify-center text-muted-foreground">
+              <Loader2 class="size-4 animate-spin" />
+            </div>
+          </div>
+        </Match>
         <Match when={typeof session !== "undefined" && session().user === null}>
           <div class="flex p-4 w-full h-full items-center justify-center">
             <div class="w-max h-max min-w-96">
               <NotLoggedIn />
-            </div>
-          </div>
-        </Match>
-        <Match when={!session}>
-          <div class="flex p-4 w-full h-full items-center justify-center">
-            <div class="w-max h-max min-w-96">
-              <Loader2 class="size-4 animate-spin" />
             </div>
           </div>
         </Match>
@@ -62,17 +64,26 @@ export default function DashboardPage() {
                           </Show>
                           , {s().user?.name}
                         </span>
-                        <span class="text-sm">
-                          Here's what's going on at{" "}
-                          <A
-                            href={`/dashboard/o/${s().organization?.id}/w/${s().workspace?.id}`}
-                            class="hover:underline text-indigo-500 font-medium"
-                          >
-                            {(s().workspace?.name ?? "default") === "default"
-                              ? s().organization?.name
-                              : s().workspace?.name}
-                          </A>
-                        </span>
+                        <div class="w-full flex flex-row items-center gap-2 justify-between">
+                          <div class="flex flex-row items-center gap-2">
+                            <span class="text-sm">
+                              Here's what's going on at{" "}
+                              <A
+                                href={`/dashboard/o/${s().organization?.id}/w/${s().workspace?.id}`}
+                                class="hover:underline text-indigo-500 font-medium"
+                              >
+                                {(s().workspace?.name ?? "default") === "default"
+                                  ? s().organization?.name
+                                  : s().workspace?.name}
+                              </A>
+                            </span>
+                          </div>
+                          <div class="flex flex-row items-center gap-2">
+                            <Button size="sm" variant="outline" onClick={async () => await refreshTheActivities()}>
+                              Refresh
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                       <div class="col-span-4 hidden md:flex flex-col"></div>
                       <div class="col-span-8 w-full flex flex-col row-span-1 sticky top-0 z-10">

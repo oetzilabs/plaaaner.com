@@ -15,7 +15,7 @@ export function SolidStart({ stack, app }: StackContext) {
   const ws = use(Websocket);
 
   const solidStartApp = new SolidStartSite(stack, `${app.name}-app`, {
-    bind: [bucket, api, secrets.DATABASE_URL],
+    bind: [bucket, api, secrets.DATABASE_URL, ws],
     path: "packages/app",
     buildCommand: "pnpm build",
     environment: {
