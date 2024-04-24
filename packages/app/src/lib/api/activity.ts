@@ -88,18 +88,3 @@ export const getActivitiesByWorkspace = cache(async (workspaceId: string) => {
 
   return acs;
 }, "activities-by-workspace");
-
-export const refreshActivities = action(async () => {
-  "use server";
-  const event = getEvent()!;
-  const session = event.context.session;
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-  const user = event.context.user;
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
-  reload({ revalidate: [getActivities.key], status: 200 });
-});

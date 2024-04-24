@@ -9,9 +9,9 @@ import { SmallFooter } from "@/components/dashboard/small-footer";
 import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { refreshActivities } from "@/lib/api/activity";
+import { getActivities } from "@/lib/api/activity";
 import { Title } from "@solidjs/meta";
-import { A, useAction } from "@solidjs/router";
+import { A, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
@@ -23,7 +23,6 @@ export default function DashboardPage() {
   const isLoggedInLonger = (minutes: number) =>
     dayjs(session?.()?.createdAt).add(minutes, "minutes").isBefore(Date.now());
 
-  const refreshTheActivities = useAction(refreshActivities);
   return (
     <>
       <Title>Dashboard | Plaaaner</Title>
@@ -79,7 +78,11 @@ export default function DashboardPage() {
                             </span>
                           </div>
                           <div class="flex flex-row items-center gap-2">
-                            <Button size="sm" variant="outline" onClick={async () => await refreshTheActivities()}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => await revalidate(getActivities.key, true)}
+                            >
                               Refresh
                             </Button>
                           </div>

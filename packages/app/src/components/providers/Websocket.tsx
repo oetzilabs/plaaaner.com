@@ -1,12 +1,10 @@
-import { createContextProvider } from "@solid-primitives/context";
-import { createReconnectingWS } from "@solid-primitives/websocket";
-import { createEventSignal } from "@solid-primitives/event-listener";
-import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
-import { useSession } from "../SessionProvider";
 import type { Notify } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
+import { createContextProvider } from "@solid-primitives/context";
+import { createEventSignal } from "@solid-primitives/event-listener";
+import { createReconnectingWS } from "@solid-primitives/websocket";
+import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
 import { z } from "zod";
-import { auth } from "./Authentication";
-import { ActivityChange, setFreshActivities } from "../../lib/utils";
+import { useSession } from "../SessionProvider";
 
 export type WSStatus = "connected" | "disconnected" | "pinging" | "sending" | "connecting";
 
@@ -62,11 +60,6 @@ export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
         console.log("pong-message", pongMessage);
       } else {
         // updateFailed();
-      }
-      const activityMessage = z.custom<{ type: "activity"; value: ActivityChange[] }>().safeParse(data);
-      if (activityMessage.success && activityMessage.data.type === "activity") {
-        console.log("activity-message changed", activityMessage.data);
-        setFreshActivities(activityMessage.data.value);
       }
     },
     open: (e: any) => {
