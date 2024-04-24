@@ -9,12 +9,13 @@ import {
 } from "@/components/ui/command";
 import { getUserOrganizations } from "@/lib/api/organizations";
 import { setDashboard } from "@/lib/api/user";
-import { createAsync, useAction, useNavigate, useSubmission } from "@solidjs/router";
+import { createAsync, revalidate, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import { Building, Target } from "lucide-solid";
 import { createSignal, JSXElement, Show } from "solid-js";
 import { useSession } from "./SessionProvider";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { getAuthenticatedSession } from "../lib/auth/util";
 
 type OrgWorkspaceOption = {
   icon: JSXElement;
@@ -120,6 +121,8 @@ export const OrganizationWorkspaceSelection = () => {
                   onChange={async (value: OrgWorkspaceOption) => {
                     if (!value) return;
                     await setUserDashboard(value.organizationId, value.workspaceId);
+
+                    await revalidate(getAuthenticatedSession.key);
                     navigate("/dashboard");
                   }}
                 >

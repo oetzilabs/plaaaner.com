@@ -1,5 +1,5 @@
 import { ActivityChange, cn, refreshActivities, setFreshActivities } from "@/lib/utils";
-import { A, useAction, useSubmission } from "@solidjs/router";
+import { A, revalidate, useAction, useSubmission } from "@solidjs/router";
 import { CalendarFold, CircleAlert, Loader, Loader2, Newspaper, Pencil, Plus } from "lucide-solid";
 import { Switch, createSignal } from "solid-js";
 import { Button, buttonVariants } from "../ui/button";
@@ -7,9 +7,10 @@ import { TextFieldTextArea } from "../ui/textarea";
 import { TextField, TextFieldInput } from "../ui/textfield";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createNewPost } from "@/lib/api/posts";
-import { createPlanCreationForm } from "@/lib/api/plans";
+import { createPlanCreationForm, getPlans, getUpcomingThreePlans } from "@/lib/api/plans";
 import { ToggleButton } from "../ui/toggle";
 import { Match } from "solid-js";
+import { getActivities } from "../../lib/api/activity";
 
 export const EntryBox = () => {
   const [title, setTitle] = createSignal("");
@@ -112,6 +113,9 @@ export const EntryBox = () => {
                         title: t,
                         description: d,
                       });
+                      await revalidate(getActivities.key);
+                      await revalidate(getPlans.key);
+                      await revalidate(getUpcomingThreePlans.key);
                     }}
                   >
                     <span class="">Create Plan</span>
@@ -154,8 +158,7 @@ export const EntryBox = () => {
                       const post = await createPost(content);
                       if (post) {
                         setPostContent("");
-                        // const changed: ActivityChange[] = [{ change: "add", activity: { type: "post", value: post } }];
-                        // setFreshActivities(changed);
+                        await revalidate(getActivities.key, true);
                       }
                     }}
                   >

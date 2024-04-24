@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getWorkspace } from "@/lib/api/workspaces";
-import { setWorkspaceOwner } from "@/lib/api/workspaces";
-import { createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
+import { getWorkspace, setWorkspaceOwner } from "@/lib/api/workspaces";
+import { getAuthenticatedSession } from "@/lib/auth/util";
+import { createAsync, redirect, revalidate, useAction, useParams, useSubmission } from "@solidjs/router";
 import { Show } from "solid-js";
 
 export default function Workspace() {
@@ -16,6 +16,8 @@ export default function Workspace() {
 
   const handleWorkspaceOwnerChange = async () => {
     await ownWorkspace(wid);
+
+    await revalidate(getAuthenticatedSession.key);
   };
 
   return (

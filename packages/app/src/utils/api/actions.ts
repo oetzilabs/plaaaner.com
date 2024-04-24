@@ -33,28 +33,16 @@ export const revokeAllSessions = action(async () => {
   reload({ headers: { Location: "/auth/login" }, status: 303, revalidate: getAuthenticatedSession.key });
 });
 
-export const revokeSession = action(async (data: FormData) => {
+export const revokeSession = action(async (session_id: string) => {
   "use server";
   const event = getEvent()!;
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-  if (!event.context.user) {
-    console.log("Unauthorized");
-    return false;
+  const { session, user } = await lucia.validateSession(session_id);
+  if (!session || !user) {
+    throw redirect("/auth/login");
   }
 
-  const d = Object.fromEntries(data.entries());
-  const validation = z
-    .object({
-      session_id: z.string(),
-    })
-    .safeParse(d);
-
-  if (!validation.success) {
-    throw validation.error;
-  }
-  await lucia.invalidateSession(validation.data.session_id);
-  await revalidate(getAuthenticatedSession.key, true);
+  await lucia.invalidateSession(session_id);
 
   return true;
 });
@@ -66,7 +54,6 @@ export const changeNotificationSettings = action(async (type: string) => {
     return new Error("Unauthorized");
   }
 
-  await revalidate(getNotificationSettings.key, true);
   return { type };
 });
 
@@ -76,7 +63,6 @@ export const changeMessageSettings = action(async (type: string) => {
   if (!event.context.user) {
     return new Error("Unauthorized");
   }
-  await revalidate(getMessagingSettings.key, true);
   return { type };
 });
 
@@ -114,7 +100,6 @@ export const disconnectFromOrganization = action(async (data: string) => {
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = session;
-  await revalidate(getAuthenticatedSession.key, true);
   return o;
 });
 
@@ -152,7 +137,6 @@ export const deleteOrganization = action(async (id: string) => {
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = session;
-  await revalidate(getAuthenticatedSession.key, true);
 
   return o;
 });
@@ -169,7 +153,6 @@ export const setOrganizationOwner = action(async (id: string) => {
   }
   const organizationId = valid.data;
   const o = await Organization.setOwner(organizationId, event.context.user.id);
-  await revalidate(getAuthenticatedSession.key, true);
 
   return o;
 });

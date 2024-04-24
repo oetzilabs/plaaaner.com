@@ -9,10 +9,11 @@ import {
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 import { TextFieldTextArea } from "@/components/ui/textarea";
 import { TextField } from "@/components/ui/textfield";
-import { commentOnPost, deletePostComment, getPostComments } from "@/lib/api/posts";
+import { getActivities } from "@/lib/api/activity";
+import { commentOnPost, deletePostComment, getPostComments, getPosts } from "@/lib/api/posts";
 import { UserSession } from "@/lib/auth/util";
 import { cn, shortUsername } from "@/lib/utils";
-import { useAction, useSubmission } from "@solidjs/router";
+import { revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { CircleAlert, Ellipsis, Loader2, MessageSquareDiff, Trash } from "lucide-solid";
 import { For, Match, Show, Switch, createResource, createSignal } from "solid-js";
@@ -69,7 +70,11 @@ export const PostCommentsSection = (props: {
   };
 
   const removeComment = async (commentId: string) => {
-    await deleteComment(commentId);
+    const removed = await deleteComment(commentId);
+
+    await revalidate(getPostComments.keyFor(removed.postId));
+    await revalidate(getActivities.key);
+    await revalidate(getPosts.key);
   };
 
   return (
@@ -169,8 +174,10 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
   const postComment = async () => {
     const c = comment();
     if (c.trim().length === 0) return;
-    const a = addComment({ postId: props.postId, comment: c });
-    return a;
+    const commented = addComment({ postId: props.postId, comment: c });
+    await revalidate(getPostComments.keyFor(props.postId));
+    await revalidate(getActivities.key);
+    return commented;
   };
 
   return (

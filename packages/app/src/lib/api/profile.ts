@@ -21,7 +21,6 @@ export const updateProfile = action(async (form: FormData) => {
   if (!x) {
     throw new Error("Couldn't update user profile");
   }
-  await revalidate(getProfile.key, true);
   return redirect("/setup/organization");
 });
 

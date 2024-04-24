@@ -87,23 +87,7 @@ export const createNewPost = action(async (content: string) => {
 
   const post = await Posts.findById(createdPost.id);
 
-  const sendToUsersViaWebsocket = await WebsocketCore.sendMessageToUsersInWorkspace(workspace.id, user.id, {
-    type: "activity",
-    value: [
-      {
-        change: "add",
-        activity: { type: "post", value: post },
-      },
-    ],
-  });
-
-  // console.log("sent to users", sendToUsersViaWebsocket);
-
-  await revalidate(getActivities.key, true);
-  await revalidate(getPosts.key, true);
-
   return post;
-  // reload({ revalidate: [getActivities.key, getPosts.key], status: 200 });
 });
 
 export const commentOnPost = action(async (data: { postId: string; comment: string }) => {
@@ -124,8 +108,7 @@ export const commentOnPost = action(async (data: { postId: string; comment: stri
     throw redirect("/auth/login");
   }
   const commented = await Posts.addComment(data.postId, user.id, data.comment);
-  await revalidate(getPostComments.keyFor(commented.postId), true);
-  await revalidate(getActivities.key, true);
+
   return true;
 });
 
@@ -178,9 +161,6 @@ export const deletePostComment = action(async (comment_id) => {
   }
 
   const removed = await Posts.deleteComment(comment.id);
-  await revalidate(getPostComments.keyFor(removed.postId), true);
-  await revalidate(getActivities.key, true);
-  await revalidate(getPosts.key, true);
 
   return removed;
 });
@@ -220,7 +200,5 @@ export const deletePost = action(async (post_id: string) => {
   const removed = await Posts.update({ id: post.id, deletedAt: new Date() });
 
   const removedPost = await Posts.findById(removed.id);
-  await revalidate(getActivities.key, true);
-  await revalidate(getPosts.key, true);
   return removedPost;
 });

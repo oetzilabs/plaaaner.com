@@ -1,4 +1,4 @@
-import { createAsync, useAction, useSubmission } from "@solidjs/router";
+import { createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import { BellDot, BellOff, User } from "lucide-solid";
 import { For, createEffect } from "solid-js";
 import { getNotificationSettings } from "../../lib/api/notifications";
@@ -40,6 +40,8 @@ export const Messages = () => {
 
   const handleMessageSettingChange = async (type: string) => {
     await _changeMessageSetting(type);
+
+    await revalidate(getMessagingSettings.key);
   };
 
   return (

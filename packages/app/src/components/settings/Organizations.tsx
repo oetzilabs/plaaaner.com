@@ -13,13 +13,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fillDefaultTicketTypes, getDefaultTicketTypeCount, getUserOrganizations } from "@/lib/api/organizations";
+import {
+  fillDefaultTicketTypes,
+  getDefaultTicketTypeCount,
+  getTicketTypes,
+  getUserOrganizations,
+} from "@/lib/api/organizations";
 import { setCurrentOrganization } from "@/lib/api/user";
-import { getAuthenticatedUser } from "@/lib/auth/util";
+import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
 import type { UserSession } from "@/lib/auth/util";
 import { deleteOrganization, disconnectFromOrganization } from "@/utils/api/actions";
 import { As } from "@kobalte/core";
-import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
+import { A, createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { Loader2, Plus, Trash } from "lucide-solid";
 import { For, Show, Suspense } from "solid-js";
@@ -122,13 +127,15 @@ export const Organizations = (props: { session: UserSession }) => {
                               <AlertDialogClose>Cancel</AlertDialogClose>
                               <AlertDialogAction
                                 asChild
-                                onClick={() => {
+                                onClick={async () => {
                                   toast.promise(removeOrganization(organization.id), {
                                     loading: "Hold on a second, we're deleting the organization",
                                     icon: <Loader2 class="size-4 animate-spin" />,
                                     error: "There was an error deleting the organization",
                                     success: "Organization has been deleted, redirecting to home page!",
                                   });
+
+                                  await revalidate(getAuthenticatedSession.key);
                                 }}
                               >
                                 <As component={Button} variant="destructive">
@@ -178,6 +185,8 @@ export const Organizations = (props: { session: UserSession }) => {
                               <Button
                                 onClick={async () => {
                                   await fillInDefaultTicketTypes();
+                                  await revalidate(getDefaultTicketTypeCount.key);
+                                  await revalidate(getTicketTypes.key);
                                 }}
                                 class="w-max items-center justify-center gap-2"
                                 size="sm"
@@ -215,6 +224,8 @@ export const Organizations = (props: { session: UserSession }) => {
                               }
                               onClick={async () => {
                                 await setCurrentOrg(organization.id);
+
+                                await revalidate(getAuthenticatedSession.key);
                               }}
                             >
                               <span>Connect</span>
@@ -231,6 +242,8 @@ export const Organizations = (props: { session: UserSession }) => {
                               disabled={isDisconnectingFromOrganization.pending || organizations()!.length === 1}
                               onClick={async () => {
                                 await disconnectOrganization(organization.id);
+
+                                await revalidate(getAuthenticatedSession.key);
                               }}
                             >
                               <span>Disconnect</span>

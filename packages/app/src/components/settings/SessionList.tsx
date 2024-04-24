@@ -1,7 +1,7 @@
-import { getAuthenticatedSessions } from "@/lib/auth/util";
+import { getAuthenticatedSession, getAuthenticatedSessions } from "@/lib/auth/util";
 import type { UserSession } from "@/lib/auth/util";
 import { revokeAllSessions, revokeSession } from "@/utils/api/actions";
-import { createAsync, useSubmission } from "@solidjs/router";
+import { createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { Copy } from "lucide-solid";
 import { For, Show, Suspense } from "solid-js";
@@ -14,6 +14,8 @@ import { Badge } from "../ui/badge";
 export const SessionList = (props: { session: UserSession }) => {
   const sessions = createAsync(() => getAuthenticatedSessions());
   const isRevokingAllSessions = useSubmission(revokeAllSessions);
+  const allSessionRevoker = useAction(revokeAllSessions);
+  const sessionRevoker = useAction(revokeSession);
   const isRevokingSession = useSubmission(revokeSession);
 
   return (
@@ -75,10 +77,17 @@ export const SessionList = (props: { session: UserSession }) => {
                       </div>
                       <div class="flex flex-row gap-2 items-center justify-between">
                         <span class="text-sm text-muted-foreground">Expires {dayjs(s.expiresAt).fromNow()}</span>
-                        <form action={revokeSession} method="post">
-                          <input hidden value={s.id} name="session_id" />
-                          <Button size="sm" disabled={isRevokingSession.pending} variant="destructive">Revoke Session</Button>
-                        </form>
+                        <Button
+                          size="sm"
+                          disabled={isRevokingSession.pending}
+                          variant="destructive"
+                          onClick={async () => {
+                            await sessionRevoker(s.id);
+                            await revalidate(getAuthenticatedSession.key);
+                          }}
+                        >
+                          Revoke Session
+                        </Button>
                       </div>
                     </div>
                   );
@@ -86,7 +95,7 @@ export const SessionList = (props: { session: UserSession }) => {
               </For>
             </Suspense>
           </div>
-          <form class="flex flex-col gap-2 items-start w-full py-0" action={revokeAllSessions} method="post">
+          <div class="flex flex-col gap-2 items-start w-full py-0">
             <div class="bg-red-100 dark:bg-red-900/50 w-full p-4 rounded-md border border-red-300 dark:border-red-700">
               <span class="text-red-500 dark:text-white text-sm">
                 You can revoke all sessions to log out of all devices. This will also log you out of your{" "}
@@ -104,13 +113,17 @@ export const SessionList = (props: { session: UserSession }) => {
                     type="submit"
                     class="w-max"
                     disabled={isRevokingAllSessions.pending}
+                    onClick={async () => {
+                      await allSessionRevoker();
+                      await revalidate(getAuthenticatedSession.key);
+                    }}
                   >
                     Revoke All Sessions
                   </Button>
                 </div>
               </div>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </Show>

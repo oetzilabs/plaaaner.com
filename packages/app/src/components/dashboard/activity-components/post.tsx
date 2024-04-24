@@ -1,6 +1,6 @@
 import { UserSession } from "@/lib/auth/util";
 import { setFreshActivities, shortUsername } from "@/lib/utils";
-import { deletePost } from "@/lib/api/posts";
+import { deletePost, getPosts } from "@/lib/api/posts";
 import { Posts } from "@oetzilabs-plaaaner-com/core/src/entities/posts";
 import dayjs from "dayjs";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
@@ -16,11 +16,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAction, useSubmission } from "@solidjs/router";
+import { revalidate, useAction, useSubmission } from "@solidjs/router";
 import { Ellipsis, CircleAlert, Trash, EyeOff, Eye } from "lucide-solid";
 import { As } from "@kobalte/core";
 import { Button } from "../../ui/button";
 import { toast } from "solid-sonner";
+import { getActivities } from "../../../lib/api/activity";
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
@@ -88,8 +89,10 @@ export const PostActivity = (props: { session: UserSession; post: Posts.Frontend
                             toast.error("Could not delete post");
                             return;
                           }
+
+                          await revalidate(getActivities.key);
+                          await revalidate(getPosts.key);
                           toast.success("Post deleted, refreshing!");
-                          // setFreshActivities([{ change: "remove", activity: { type: "post", value: removed } }]);
                         }}
                       >
                         <Trash class="size-4" />

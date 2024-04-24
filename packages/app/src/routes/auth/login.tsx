@@ -4,10 +4,12 @@ import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textf
 import { loginViaEmail } from "@/lib/api/user";
 import { cn } from "@/lib/utils";
 import { As } from "@kobalte/core";
-import { A, useAction, useNavigate, useSubmission } from "@solidjs/router";
+import { A, revalidate, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import type { SVGAttributes } from "lucide-solid/dist/types/types";
 import { For, JSX, createSignal } from "solid-js";
 import { toast } from "solid-sonner";
+import { getProfile } from "../../lib/api/profile";
+import { getAuthenticatedSession, getAuthenticatedUser } from "../../lib/auth/util";
 
 const generateAuthUrl = (provider: string) => {
   const url = new URL("/authorize", import.meta.env.VITE_AUTH_URL);
@@ -56,6 +58,10 @@ export default function LoginPage() {
     const _email = email();
     toast.info("Login via Email is not implemented yet");
     // const result = await loginWithEmail(_email);
+
+    // await revalidate(getProfile.key);
+    // await revalidate(getAuthenticatedUser.key);
+    // await revalidate(getAuthenticatedSession.key);
   };
 
   return (
@@ -114,6 +120,7 @@ export default function LoginPage() {
                   aria-busy={isLogginInViaEmail.pending}
                   aria-label="Continue with Email"
                   disabled={isLogginInViaEmail.pending || true}
+                  onClick={handleSubmit}
                 >
                   <span>Continue with Email</span>
                 </Button>

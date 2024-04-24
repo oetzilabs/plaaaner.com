@@ -10,9 +10,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { getProfile } from "@/lib/api/profile";
 import { disableUser } from "@/lib/api/user";
+import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
 import { As } from "@kobalte/core";
-import { useAction, useSubmission } from "@solidjs/router";
+import { revalidate, useAction, useSubmission } from "@solidjs/router";
 import { AlertTriangleIcon, Loader2 } from "lucide-solid";
 import { Match, Switch } from "solid-js";
 import { toast } from "solid-sonner";
@@ -73,13 +75,17 @@ export const Dangerzone = () => {
                       <AlertDialogClose>Cancel</AlertDialogClose>
                       <AlertDialogAction
                         asChild
-                        onClick={() => {
+                        onClick={async () => {
                           toast.promise(disableUserAction, {
                             loading: "Hold on a second, we're disabling your account",
                             icon: <Loader2 class="size-4 animate-spin" />,
                             error: "There was an error disabling your Account",
                             success: "Account has been disabled, redirecting to home page!",
                           });
+
+                          await revalidate(getProfile.key);
+                          await revalidate(getAuthenticatedUser.key);
+                          await revalidate(getAuthenticatedSession.key);
                         }}
                       >
                         <As component={Button} variant="destructive">

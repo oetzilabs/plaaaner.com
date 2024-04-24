@@ -1,8 +1,9 @@
 import { TextField, TextFieldLabel, TextFieldInput } from "@/components/ui/textfield";
 import { Show, createDeferred, createEffect, createSignal } from "solid-js";
-import { createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
-import { getPlan, savePlanGeneral } from "../../../lib/api/plans";
+import { createAsync, redirect, revalidate, useAction, useParams, useSubmission } from "@solidjs/router";
+import { getPlan, getPlans, getUpcomingThreePlans, savePlanGeneral } from "../../../lib/api/plans";
 import { z } from "zod";
+import { getActivities } from "../../../lib/api/activity";
 
 export const General = () => {
   const params = useParams();
@@ -30,6 +31,10 @@ export const General = () => {
       const currentPlan = plan();
       if (!currentPlan) return;
       await savePlanAction({ plan_id: currentPlan.id, plan: { name: t, description: d } });
+
+      await revalidate(getActivities.key);
+      await revalidate(getUpcomingThreePlans.key);
+      await revalidate(getPlans.key);
     }
   });
 

@@ -9,10 +9,11 @@ import {
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 import { TextFieldTextArea } from "@/components/ui/textarea";
 import { TextField } from "@/components/ui/textfield";
+import { getActivities } from "@/lib/api/activity";
 import { commentOnPlan, deletePlanComment, getPlanComments } from "@/lib/api/plans";
 import { UserSession } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
-import { useAction, useSubmission } from "@solidjs/router";
+import { revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { CircleAlert, Ellipsis, Loader2, MessageSquareDiff, Trash } from "lucide-solid";
 import { For, Match, Show, Switch, createResource, createSignal } from "solid-js";
@@ -79,7 +80,9 @@ export const PlanCommentsSection = (props: {
   };
 
   const removeComment = async (commentId: string) => {
-    await deleteComment(commentId);
+    const removed = await deleteComment(commentId);
+    await revalidate(getPlanComments.keyFor(removed.planId));
+    await revalidate(getActivities.key);
   };
 
   return (
@@ -181,6 +184,9 @@ const PlanComment = (props: { planId: string; onPost: () => void }) => {
     const c = comment();
     if (c.trim().length === 0) return;
     const a = addComment({ planId: props.planId, comment: c });
+
+    await revalidate(getActivities.key);
+    await revalidate(getPlanComments.keyFor(props.planId));
     return a;
   };
 

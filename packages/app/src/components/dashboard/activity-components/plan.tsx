@@ -10,13 +10,14 @@ import { UserSession } from "@/lib/auth/util";
 import { setFreshActivities } from "@/lib/utils";
 import { As } from "@kobalte/core";
 import { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
-import { A, useAction, useSubmission } from "@solidjs/router";
+import { A, revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { CircleAlert, Ellipsis, Eye, EyeOff, Trash } from "lucide-solid";
 import { Match, Show, Switch } from "solid-js";
 import { toast } from "solid-sonner";
 import { PlanCommentsSection } from "./plan-comments";
-import { deletePlan } from "@/lib/api/plans";
+import { deletePlan, getPlans, getUpcomingThreePlans } from "@/lib/api/plans";
+import { getActivities } from "../../../lib/api/activity";
 
 export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend }) => {
   const removePlan = useAction(deletePlan);
@@ -63,11 +64,13 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
                     if (props.plan.owner.id !== props.session?.user?.id) return;
                     const removed = await removePlan(props.plan.id);
                     if (!removed) {
-                      toast.error("Could not delete post");
+                      toast.error("Could not delete plan");
                       return;
                     }
-                    toast.success("Post deleted, refreshing!");
-                    // setFreshActivities([{ change: "remove", activity: { type: "plan", value: removed } }]);
+                    await revalidate(getActivities.key);
+                    await revalidate(getUpcomingThreePlans.key);
+                    await revalidate(getPlans.key);
+                    toast.success("Plan deleted, refreshing!");
                   }}
                 >
                   <Trash class="size-4" />

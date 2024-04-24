@@ -111,8 +111,8 @@ importers:
         specifier: ^0.2.8
         version: 0.2.8(leaflet@1.9.4)
       lucia:
-        specifier: ^3.2.0
-        version: 3.2.0
+        specifier: 3.1.1
+        version: 3.1.1
       lucide-solid:
         specifier: 0.367.0
         version: 0.367.0(solid-js@1.8.17)
@@ -5066,9 +5066,6 @@ packages:
 
   lucia@3.1.1:
     resolution: {integrity: sha512-Ygvgnqq7Ha7lYVaZATPwkPD2s2Qlsm71Z2o0byx/abNBfFldCRow5sNii6RqMsuMpK957RAI3Gw4/aWoagkc7A==}
-
-  lucia@3.2.0:
-    resolution: {integrity: sha512-eXMxXwk6hqtjRTj4W/x3EnTUtAztLPm0p2N2TEBMDEbakDLXiYnDQ9z/qahjPdPdhPguQc+vwO0/88zIWxlpuw==}
 
   lucide-solid@0.367.0:
     resolution: {integrity: sha512-CDK58q2jmHcaV3UXJiOO3xCGyDwcXOeBQQ/ivIiyQn3BuAYHFpH77Ou5JYoMyHZuek7OA+FsV6nUmnnJv95mrQ==}
@@ -13584,10 +13581,6 @@ snapshots:
   lucia@3.1.1:
     dependencies:
       oslo: 1.0.1
-
-  lucia@3.2.0:
-    dependencies:
-      oslo: 1.2.0
 
   lucide-solid@0.367.0(solid-js@1.8.17):
     dependencies:

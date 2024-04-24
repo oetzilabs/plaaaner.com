@@ -26,10 +26,11 @@ import {
   DatePickerViewTrigger,
 } from "@/components/ui/date-picker";
 import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
-import { getPlan, savePlanTimeslots } from "@/lib/api/plans";
+import { getActivities } from "@/lib/api/activity";
+import { getPlan, getUpcomingThreePlans, savePlanTimeslots } from "@/lib/api/plans";
 import { today } from "@internationalized/date";
-import { update, remove } from "@solid-primitives/signal-builders";
-import { A, createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
+import { update } from "@solid-primitives/signal-builders";
+import { A, createAsync, redirect, revalidate, useAction, useParams, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -487,6 +488,9 @@ export default function PlanCreateGeneralPage() {
                         time_slots: time_slots(),
                       },
                     });
+
+                    await revalidate(getActivities.key);
+                    await revalidate(getUpcomingThreePlans.key);
                   }}
                 >
                   <Switch>

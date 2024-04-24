@@ -1,14 +1,15 @@
-import { useAction, useParams, useSubmission } from "@solidjs/router";
-import { User, Layout, Receipt } from "lucide-solid";
-import { Show, createSignal } from "solid-js";
-import { Badge } from "@/components/ui/badge";
-import { TabsList, TabsTrigger, TabsContent, Tabs } from "@/components/ui/tabs";
-import { TextFieldLabel, TextFieldInput, TextField } from "@/components/ui/textfield";
-import { createWorkspace } from "@/lib/api/workspaces";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
 import { useSession } from "@/components/SessionProvider";
+import { Alert } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox, CheckboxControl, CheckboxLabel } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { createWorkspace } from "@/lib/api/workspaces";
+import { getAuthenticatedSession } from "@/lib/auth/util";
+import { revalidate, useAction, useParams, useSubmission } from "@solidjs/router";
+import { Layout, Receipt, User } from "lucide-solid";
+import { Show, createSignal } from "solid-js";
 
 export default function NewWorkspace() {
   const session = useSession();
@@ -26,6 +27,7 @@ export default function NewWorkspace() {
     e.preventDefault();
     const nW = newWorkspace();
     await workspaceCreator(nW, organization_id);
+    await revalidate(getAuthenticatedSession.key);
   };
 
   return (

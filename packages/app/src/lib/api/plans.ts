@@ -202,8 +202,6 @@ export const commentOnPlan = action(async (data: { planId: string; comment: stri
     throw redirect("/auth/login");
   }
   const commented = await Plans.addComment(data.planId, user.id, data.comment);
-  await revalidate(getPlanComments.keyFor(commented.planId), true);
-  await revalidate(getActivities.key, true);
   return true;
 });
 
@@ -256,10 +254,6 @@ export const deletePlanComment = action(async (comment_id) => {
   }
 
   const removed = await Plans.deleteComment(comment.id);
-  if (removed) {
-    await revalidate(getPlanComments.keyFor(removed.planId), true);
-    await revalidate(getActivities.key, true);
-  }
 
   return removed;
 });
@@ -410,9 +404,6 @@ export const deletePlan = action(async (plan_id) => {
 
   const removed = await Plans.update({ id: plan.id, deletedAt: new Date() });
 
-  await revalidate(getActivities.key, true);
-  await revalidate(getUpcomingThreePlans.key, true);
-
   const removedPlan = await Plans.findById(removed.id);
 
   return removedPlan;
@@ -469,9 +460,6 @@ export const savePlanGeneral = action(
     if (!updatedPlan) {
       throw new Error("This plan does not exist anymore");
     }
-
-    await revalidate(getActivities.key, true);
-    await revalidate(getUpcomingThreePlans.key, true);
 
     return updatedPlan;
   }
@@ -557,9 +545,6 @@ export const savePlanTimeslots = action(
     if (!updatedPlan) {
       throw new Error("This plan does not exist anymore");
     }
-
-    await revalidate(getActivities.key, true);
-    await revalidate(getUpcomingThreePlans.key, true);
 
     return updatedPlan;
   }

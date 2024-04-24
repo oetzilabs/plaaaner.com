@@ -1,8 +1,8 @@
 import { Button, buttonVariants } from "@/components/ui/button";
-import { getAuthenticatedUser } from "@/lib/auth/util";
+import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
 import type { UserSession } from "@/lib/auth/util";
 import { deleteWorkspace, disconnectFromWorkspace, connectToWorkspace } from "@/lib/api/workspaces";
-import { A, createAsync, useAction, useSubmission } from "@solidjs/router";
+import { A, createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import { For, Show, Suspense } from "solid-js";
 import { getWorkspaces } from "../../lib/api/workspaces";
 import { Badge } from "../ui/badge";
@@ -18,16 +18,20 @@ export const Workspaces = (props: { session: UserSession }) => {
   const user = createAsync(() => getAuthenticatedUser());
   const workspaces = createAsync(() => getWorkspaces());
 
+  const disconnectFromWorkspaceAction = useAction(disconnectFromWorkspace);
   const isDisconnectingFromWorkspace = useSubmission(disconnectFromWorkspace);
-  const isConnectingToWorkspace = useSubmission(connectToWorkspace);
   const isDeletingWorkspace = useSubmission(deleteWorkspace);
   const removeWorkspace = useAction(deleteWorkspace);
+
+  const connectToWorkspaceAction = useAction(connectToWorkspace);
+  const isConnectingToWorkspace = useSubmission(connectToWorkspace);
 
   const handleWorkspaceDeletion = async (id: string) => {
     if (!confirm("Are you sure you want to delete this workspace?")) {
       return;
     }
     await removeWorkspace(id);
+    await revalidate(getAuthenticatedSession.key);
   };
 
   return (
@@ -118,12 +122,7 @@ export const Workspaces = (props: { session: UserSession }) => {
                               <span>Manage</span>
                             </As>
                           </Button>
-                          <form
-                            class="flex flex-col gap-2 items-end w-full py-0"
-                            action={connectToWorkspace}
-                            method="post"
-                          >
-                            <input type="hidden" name="workspace_id" value={workspace.id} />
+                          <div class="flex flex-col gap-2 items-end w-full py-0">
                             <Button
                               variant="secondary"
                               size="sm"
@@ -131,16 +130,15 @@ export const Workspaces = (props: { session: UserSession }) => {
                               class="w-max"
                               aria-label="Connect to Workspace"
                               disabled={isConnectingToWorkspace.pending || workspace.id === s().workspace?.id}
+                              onClick={async () => {
+                                await connectToWorkspaceAction(workspace.id);
+                                await revalidate(getAuthenticatedSession.key);
+                              }}
                             >
                               <span>Connect</span>
                             </Button>
-                          </form>
-                          <form
-                            class="flex flex-col gap-2 items-end w-full py-0"
-                            action={disconnectFromWorkspace}
-                            method="post"
-                          >
-                            <input type="hidden" name="workspace_id" value={workspace.id} />
+                          </div>
+                          <div class="flex flex-col gap-2 items-end w-full py-0">
                             <Button
                               variant="secondary"
                               size="sm"
@@ -148,10 +146,14 @@ export const Workspaces = (props: { session: UserSession }) => {
                               class="w-max"
                               aria-label="Disconnect from workspace"
                               disabled={isDisconnectingFromWorkspace.pending}
+                              onClick={async () => {
+                                await disconnectFromWorkspaceAction(workspace.id);
+                                await revalidate(getAuthenticatedSession.key);
+                              }}
                             >
                               <span>Disconnect</span>
                             </Button>
-                          </form>
+                          </div>
                         </div>
                       </div>
                     </div>

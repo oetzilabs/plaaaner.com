@@ -9,50 +9,51 @@ import { For, Match, Show, Switch, createEffect, createResource } from "solid-js
 import { Transition, TransitionGroup } from "solid-transition-group";
 import { PlanActivity } from "./activity-components/plan";
 import { PostActivity } from "./activity-components/post";
+import { createAsync } from "@solidjs/router";
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
 
 export const Activities = (props: { session: UserSession }) => {
-  // const activities = createAsync(() => getActivities());
+  const activities = createAsync(() => getActivities());
 
-  const [activities, actions] = createResource(() => getActivities());
+  // const [activities, actions] = createResource(() => getActivities());
 
-  createEffect(() => {
-    const rA = refreshActivities();
-    if (rA.length > 0) {
-      actions.mutate((oldActivities) => {
-        if (!oldActivities) {
-          const sortedActivities = rA
-            .map((a) => a.activity)
-            .sort((a, b) => {
-              return dayjs(a.value.updatedAt ?? a.value.createdAt).isBefore(b.value.updatedAt ?? b.value.createdAt)
-                ? 1
-                : -1;
-            });
-          return sortedActivities;
-        }
-        let acs = [...oldActivities];
-        // remove old activities
-        acs = acs.filter(
-          (a) => rA.findIndex((r) => r.change === "remove" && r.activity.value.id === a.value.id) === -1
-        );
-        // add new activities
-        rA.filter((A) => A.change === "add").forEach((a) => {
-          if (acs.findIndex((r) => r.value.id === a.activity.value.id) === -1) {
-            acs.push(a.activity);
-          }
-        });
-        const sortedActivities = acs.sort((a, b) => {
-          return dayjs(a.value.updatedAt ?? a.value.createdAt).isBefore(b.value.updatedAt ?? b.value.createdAt)
-            ? 1
-            : -1;
-        });
-        return sortedActivities;
-      });
-      setFreshActivities([]);
-    }
-  });
+  // createEffect(() => {
+  //   const rA = refreshActivities();
+  //   if (rA.length > 0) {
+  //     actions.mutate((oldActivities) => {
+  //       if (!oldActivities) {
+  //         const sortedActivities = rA
+  //           .map((a) => a.activity)
+  //           .sort((a, b) => {
+  //             return dayjs(a.value.updatedAt ?? a.value.createdAt).isBefore(b.value.updatedAt ?? b.value.createdAt)
+  //               ? 1
+  //               : -1;
+  //           });
+  //         return sortedActivities;
+  //       }
+  //       let acs = [...oldActivities];
+  //       // remove old activities
+  //       acs = acs.filter(
+  //         (a) => rA.findIndex((r) => r.change === "remove" && r.activity.value.id === a.value.id) === -1
+  //       );
+  //       // add new activities
+  //       rA.filter((A) => A.change === "add").forEach((a) => {
+  //         if (acs.findIndex((r) => r.value.id === a.activity.value.id) === -1) {
+  //           acs.push(a.activity);
+  //         }
+  //       });
+  //       const sortedActivities = acs.sort((a, b) => {
+  //         return dayjs(a.value.updatedAt ?? a.value.createdAt).isBefore(b.value.updatedAt ?? b.value.createdAt)
+  //           ? 1
+  //           : -1;
+  //       });
+  //       return sortedActivities;
+  //     });
+  //     setFreshActivities([]);
+  //   }
+  // });
 
   return (
     <div class="flex flex-col w-full gap-2">

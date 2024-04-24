@@ -255,8 +255,6 @@ export const fillDefaultTicketTypes = action(async () => {
   }
 
   const org_ticket_types = await Organization.fillDefaultTicketTypes(session.organization_id);
-  await revalidate(getDefaultTicketTypeCount.key, true);
-  await revalidate(getTicketTypes.key, true);
 
   return org_ticket_types;
 });

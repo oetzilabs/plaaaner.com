@@ -23,9 +23,6 @@ export const saveUser = action(async (data: FormData) => {
     return new Error("Invalid data");
   }
   const updatedUser = await User.update(valid.data);
-  await revalidate(getProfile.key, true);
-  await revalidate(getAuthenticatedUser.key, true);
-  await revalidate(getAuthenticatedSession.key, true);
   return updatedUser;
 });
 
@@ -50,9 +47,6 @@ export const loginViaEmail = action(async (email: string) => {
   });
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
-  await revalidate(getProfile.key, true);
-  await revalidate(getAuthenticatedUser.key, true);
-  await revalidate(getAuthenticatedSession.key, true);
   return user;
 });
 
@@ -76,9 +70,6 @@ export const disableUser = action(async () => {
   });
   await lucia.invalidateSession(sessionId);
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
-  await revalidate(getProfile.key, true);
-  await revalidate(getAuthenticatedUser.key, true);
-  await revalidate(getAuthenticatedSession.key, true);
   throw redirect("/");
 });
 
@@ -131,7 +122,6 @@ export const setDashboard = action(async (organization_id: string, workspace_id:
   // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
-  await revalidate(getAuthenticatedSession.key, true);
   return o;
 });
 
@@ -175,7 +165,6 @@ export const setCurrentOrganization = action(async (id: string) => {
   // console.log("new session with new workspace_id", session);
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
   event.context.session = session;
-  await revalidate(getAuthenticatedSession.key, true);
 
   return o;
 });
