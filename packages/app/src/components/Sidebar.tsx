@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { As } from "@kobalte/core";
 import { A, useLocation, useResolvedPath } from "@solidjs/router";
 import { Activity, Bell, Circle, HelpCircle, LayoutDashboard } from "lucide-solid";
 import { JSXElement, Show } from "solid-js";
@@ -25,25 +24,20 @@ export const SidebarLink = (props: {
   return (
     <A href={props.href} class="rounded-full">
       <Tooltip placement="right">
-        <TooltipTrigger asChild>
-          <As
-            component={Button}
-            variant={isActive() ? "default" : props.variant ?? "outline"}
-            class={cn(
-              "size-10 flex flex-col items-center justify-center rounded-full",
-              {
-                "dark:text-indigo-500 text-white": isActive(),
-              },
-              localClass
-            )}
-          >
-            <Show
-              when={props.icon !== undefined && props.icon}
-              fallback={<Circle class="size-4" fill="currentColor" />}
-            >
-              {(icon) => icon()}
-            </Show>
-          </As>
+        <TooltipTrigger
+          as={Button}
+          variant={isActive() ? "default" : props.variant ?? "outline"}
+          class={cn(
+            "size-10 flex flex-col items-center justify-center rounded-full",
+            {
+              "dark:text-indigo-500 text-white": isActive(),
+            },
+            localClass
+          )}
+        >
+          <Show when={props.icon !== undefined && props.icon} fallback={<Circle class="size-4" fill="currentColor" />}>
+            {(icon) => icon()}
+          </Show>
         </TooltipTrigger>
         <TooltipContent>{props.children}</TooltipContent>
       </Tooltip>

@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { getProfile } from "@/lib/api/profile";
 import { disableUser } from "@/lib/api/user";
 import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
-import { As } from "@kobalte/core";
 import { revalidate, useAction, useSubmission } from "@solidjs/router";
 import { AlertTriangleIcon, Loader2 } from "lucide-solid";
 import { Match, Switch } from "solid-js";
@@ -47,22 +46,20 @@ export const Dangerzone = () => {
               <div class="flex flex-row gap-2 w-full"></div>
               <div class="w-max">
                 <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <As
-                      component={Button}
-                      variant="destructive"
-                      size="sm"
-                      type="submit"
-                      class="w-max"
-                      disabled={isDisablingUser.pending}
-                    >
-                      <Switch fallback={<span>Disable Account</span>}>
-                        <Match when={isDisablingUser.pending}>
-                          <span>Disabling Account</span>
-                          <Loader2 class="size-4 animate-spin" />
-                        </Match>
-                      </Switch>
-                    </As>
+                  <AlertDialogTrigger
+                    as={Button}
+                    variant="destructive"
+                    size="sm"
+                    type="submit"
+                    class="w-max"
+                    disabled={isDisablingUser.pending}
+                  >
+                    <Switch fallback={<span>Disable Account</span>}>
+                      <Match when={isDisablingUser.pending}>
+                        <span>Disabling Account</span>
+                        <Loader2 class="size-4 animate-spin" />
+                      </Match>
+                    </Switch>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -74,7 +71,7 @@ export const Dangerzone = () => {
                     <AlertDialogFooter>
                       <AlertDialogClose>Cancel</AlertDialogClose>
                       <AlertDialogAction
-                        asChild
+                        variant="destructive"
                         onClick={async () => {
                           toast.promise(disableUserAction, {
                             loading: "Hold on a second, we're disabling your account",
@@ -88,9 +85,7 @@ export const Dangerzone = () => {
                           await revalidate(getAuthenticatedSession.key);
                         }}
                       >
-                        <As component={Button} variant="destructive">
-                          Continue
-                        </As>
+                        Continue
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

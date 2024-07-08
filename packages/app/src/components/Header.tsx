@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { AppSearch } from "./AppSearch";
+// import { AppSearch } from "./AppSearch";
 import { useSession } from "./SessionProvider";
 import UserMenu from "./UserMenu";
 import { Logo } from "./ui/custom/logo";
@@ -15,7 +15,7 @@ export function Header() {
           </A>
         </div>
         <div class="w-full items-center justify-end flex flex-row gap-2">
-          <AppSearch />
+          {/* <AppSearch /> */}
           <UserMenu user={userSession?.().user} />
         </div>
       </div>

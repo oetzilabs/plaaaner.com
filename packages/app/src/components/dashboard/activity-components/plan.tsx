@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserSession } from "@/lib/auth/util";
 import { setFreshActivities } from "@/lib/utils";
-import { As } from "@kobalte/core";
 import { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { A, revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
@@ -28,10 +27,8 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
       <div class="rounded-md bg-background relative">
         <div class="absolute top-4 right-4 z-[2]">
           <DropdownMenu>
-            <DropdownMenuTrigger class="p-2" asChild>
-              <As component={Button} variant="outline" size="sm" class="!p-2">
-                <Ellipsis class="size-4" />
-              </As>
+            <DropdownMenuTrigger as={Button} variant="outline" size="sm" class="!p-2">
+              <Ellipsis class="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem disabled>

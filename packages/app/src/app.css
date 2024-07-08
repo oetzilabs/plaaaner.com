@@ -1,24 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@tailwind variants;
 
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
 
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
 
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
 
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
@@ -26,13 +19,18 @@
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
 
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --ring: 0 0% 63.9%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
 
     --radius: 0.5rem;
   }
@@ -41,17 +39,11 @@
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
 
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
 
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
@@ -59,24 +51,19 @@
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
 
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+
     --accent: 0 0% 14.9%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
+    --destructive-foreground: 0 0% 98%;
 
-    --ring: 0 0% 14.9%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
   }
-}
-
-/* rubik-latin-wght-normal */
-@font-face {
-  font-family: 'Rubik Variable';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 300 900;
-  src: url(https://cdn.jsdelivr.net/fontsource/fonts/rubik:vf@latest/latin-wght-normal.woff2) format('woff2-variations');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
 @layer base {
@@ -84,54 +71,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground flex flex-col flex-grow min-h-screen antialiased;
-    font-synthesis-weight: none;
-    text-rendering: optimizeLegibility;
-    font-family: "Rubik Variable", "Inter", sans-serif;
+    @apply bg-background text-foreground;
   }
-  #app {
-    @apply flex flex-col flex-grow min-h-screen;
-  }
-
-  ::-webkit-scrollbar {
-    @apply bg-transparent;
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-neutral-400 dark:bg-neutral-600 rounded-sm cursor-pointer;
-  }
-}
-
-.slide-fade-up-enter-active,
-.slide-fade-up-exit-active {
-  transition:
-    opacity 0.1s,
-    transform 0.1s;
-}
-.slide-fade-up-enter,
-.slide-fade-up-exit-to {
-  transform: translateY(-10px);
-  opacity: 0;
-}
-.slide-fade-up-enter {
-  transform: translateY(10px);
-}
-.slide-fade-down-enter-active,
-.slide-fade-down-exit-active {
-  transition:
-    opacity 0.1s,
-    transform 0.1s;
-}
-.slide-fade-down-enter,
-.slide-fade-down-exit-to {
-  transform: translateY(10px);
-  opacity: 0;
-}
-.slide-fade-down-enter {
-  transform: translateY(-10px);
 }

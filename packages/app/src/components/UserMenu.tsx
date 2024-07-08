@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserSession } from "@/lib/auth/util";
 import { cn } from "@/lib/utils";
-import { As, useColorMode } from "@kobalte/core";
+import { useColorMode } from "@kobalte/core";
 import { A, useAction, useSubmission } from "@solidjs/router";
 import {
   Cloud,
@@ -62,44 +62,32 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
         <Match when={props.user !== null && props.user}>
           {(user) => (
             <DropdownMenu placement="bottom" gutter={8}>
-              <DropdownMenuTrigger asChild>
-                <As
-                  component={Button}
-                  variant="default"
-                  class="flex flex-row items-center justify-center size-8 p-0 rounded-full"
-                >
-                  <User class="size-4" />
-                </As>
+              <DropdownMenuTrigger
+                as={Button}
+                variant="default"
+                class="flex flex-row items-center justify-center size-8 p-0 rounded-full"
+              >
+                <User class="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent class="w-56">
                 <DropdownMenuGroup>
                   <DropdownMenuGroupLabel>My Account</DropdownMenuGroupLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild class="cursor-pointer">
-                    <As component={A} href="/profile">
-                      <User class="size-4" />
-                      <span>Profile</span>
-                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </As>
+                  <DropdownMenuItem as={A} class="cursor-pointer" href="/profile">
+                    <User class="size-4" />
+                    <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild class="cursor-pointer">
-                    <As component={A} href="/profile/settings#billing">
-                      <CreditCard class="size-4" />
-                      <span>Billing</span>
-                      <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                    </As>
+                  <DropdownMenuItem as={A} class="cursor-pointer" href="/profile/settings#billing">
+                    <CreditCard class="size-4" />
+                    <span>Billing</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild class="cursor-pointer">
-                    <As component={A} href="/profile/settings">
-                      <Settings class="size-4" />
-                      <span>Settings</span>
-                      <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                    </As>
+                  <DropdownMenuItem as={A} class="cursor-pointer" href="/profile/settings">
+                    <Settings class="size-4" />
+                    <span>Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Keyboard class="size-4" />
                     <span>Keyboard shortcuts</span>
-                    <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />

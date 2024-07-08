@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
 
@@ -44,15 +43,11 @@ export default function PlanCreateEventPage() {
                 <span class="text-lg font-medium">{plan.title}</span>
                 <CardDescription class="flex flex-grow !leading-4">{plan.description}</CardDescription>
                 <div class="flex flex-row items-center justify-between gap-2 w-full">
-                  <Button size="sm" variant="secondary" asChild>
-                    <As component={A} href={plan.learnMore}>
-                      Learn more
-                    </As>
+                  <Button size="sm" variant="secondary" as={A} href={plan.learnMore}>
+                    Learn more
                   </Button>
-                  <Button size="sm" asChild>
-                    <As component={A} href={plan.link}>
-                      Create {plan.title}
-                    </As>
+                  <Button size="sm" as={A} href={plan.link}>
+                    Create {plan.title}
                   </Button>
                 </div>
               </div>
@@ -64,10 +59,8 @@ export default function PlanCreateEventPage() {
           <div class="">
             <span class="text-neutral-500 dark:text-neutral-400 text-sm">Want to create a custom plan?</span>
           </div>
-          <Button size="sm" asChild>
-            <As component={A} href="/plan/create/custom-event">
-              Create custom plan
-            </As>
+          <Button size="sm" as={A} href="/plan/create/custom-event">
+            Create custom plan
           </Button>
         </div>
       </div>

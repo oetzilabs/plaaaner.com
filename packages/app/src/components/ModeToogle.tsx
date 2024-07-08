@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { As, useColorMode } from "@kobalte/core";
+import { useColorMode } from "@kobalte/core";
 import { Laptop, Moon, Sun } from "lucide-solid";
 
 const ModeToggle = () => {
@@ -14,17 +14,15 @@ const ModeToggle = () => {
 
   return (
     <DropdownMenu placement="bottom-end" sameWidth>
-      <DropdownMenuTrigger asChild>
-        <As
-          component={Button}
-          variant="outline"
-          class="size-10 flex flex-row items-center justify-center gap-4 rounded-full"
-        >
-          <div class="w-max flex">
-            <Sun class="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          </div>
-        </As>
+      <DropdownMenuTrigger
+        as={Button}
+        variant="outline"
+        class="size-10 flex flex-row items-center justify-center gap-4 rounded-full"
+      >
+        <div class="w-max flex">
+          <Sun class="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onSelect={() => setColorMode("light")}>

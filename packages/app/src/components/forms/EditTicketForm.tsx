@@ -1,4 +1,3 @@
-import { As } from "@kobalte/core";
 import { Pen } from "lucide-solid";
 import { Accessor, Show, createSignal } from "solid-js";
 import { toast } from "solid-sonner";
@@ -15,9 +14,10 @@ import {
   RadioGroupLabel,
 } from "../ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { TextField, TextFieldErrorMessage, TextFieldInput, TextFieldLabel, labelVariants } from "../ui/textfield";
+import { TextFieldRoot, TextFieldErrorMessage, TextField, TextFieldLabel } from "../ui/textfield";
 import { createAsync } from "@solidjs/router";
 import { getTicketTypes } from "../../lib/api/organizations";
+import { createStore } from "solid-js/store";
 
 export const EditTicketForm = (props: {
   ticket: z.infer<typeof BaseTicketSchema>;
@@ -25,30 +25,30 @@ export const EditTicketForm = (props: {
   tickets: Accessor<z.infer<typeof BaseTicketSchema>[]>;
   freeAllowedTickets: Accessor<number>;
 }) => {
-  const [ticket, setTicket] = createSignal(props.ticket);
+  const [ticket, setTicket] = createStore(props.ticket);
 
   const isDisabledTicket = (ticket_type_id: z.infer<typeof BaseTicketSchema>["ticket_type"]["id"]) => {
     return props.tickets().some((a) => a.ticket_type.id === ticket_type_id);
   };
 
   const stepsPerCurrency = (currency: z.infer<typeof BaseTicketSchema>["currency"]["currency_type"]) =>
-    (
-      ({
-        usd: 0.01,
-        eur: 0.01,
-        chf: 0.05,
-        other: 0.01,
-      }) as Record<z.infer<typeof BaseTicketSchema>["currency"]["currency_type"], number>
-    )[currency];
+    ((
+      {
+        USD: 0.01,
+        EUR: 0.01,
+        CHF: 0.05,
+        OTHER: 0.01,
+      } as Record<z.infer<typeof BaseTicketSchema>["currency"]["currency_type"], number>
+    )[currency]);
 
   const getTickets = createAsync(() => getTicketTypes(), { deferStream: true });
 
   const getCurrencies = () => {
     return [
-      { value: "usd", label: "USD" },
-      { value: "eur", label: "EUR" },
-      { value: "chf", label: "CHF" },
-      { value: "other", label: "Other" },
+      { value: "USD", label: "USD" },
+      { value: "EUR", label: "EUR" },
+      { value: "CHF", label: "CHF" },
+      { value: "OTHER", label: "Other" },
     ] as {
       value: z.infer<typeof BaseTicketSchema>["currency"]["currency_type"];
       label: string;
@@ -57,10 +57,8 @@ export const EditTicketForm = (props: {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <As component={Button} variant="secondary" size="icon" class="w-6 h-6">
-          <Pen class="w-3 h-3" />
-        </As>
+      <DialogTrigger as={Button} variant="secondary" size="icon" class="w-6 h-6">
+        <Pen class="w-3 h-3" />
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Edit Ticket</DialogTitle>
@@ -68,10 +66,10 @@ export const EditTicketForm = (props: {
           <div class="flex flex-col gap-2 w-full">
             <div class="flex flex-col gap-2 w-full">
               <RadioGroup
-                value={ticket().shape}
+                value={ticket.shape}
                 aria-label="What shape do you want the ticket to look like?"
                 onChange={(value) => {
-                  const v = value as ReturnType<typeof ticket>["shape"];
+                  const v = value as (typeof ticket)["shape"];
                   setTicket((ev) => {
                     return {
                       ...ev,
@@ -90,9 +88,9 @@ export const EditTicketForm = (props: {
                       class={cn(
                         "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default",
-                          "bg-secondary": ticket().shape === "default",
-                        },
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket.shape !== "default",
+                          "bg-secondary": ticket.shape === "default",
+                        }
                       )}
                     >
                       Default <RadioGroupItemControl class="hidden" />
@@ -103,9 +101,9 @@ export const EditTicketForm = (props: {
                       class={cn(
                         "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default-1",
-                          "bg-secondary": ticket().shape === "default-1",
-                        },
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket.shape !== "default-1",
+                          "bg-secondary": ticket.shape === "default-1",
+                        }
                       )}
                     >
                       Default 1 <RadioGroupItemControl class="hidden" />
@@ -116,9 +114,9 @@ export const EditTicketForm = (props: {
                       class={cn(
                         "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "default-2",
-                          "bg-secondary": ticket().shape === "default-2",
-                        },
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket.shape !== "default-2",
+                          "bg-secondary": ticket.shape === "default-2",
+                        }
                       )}
                     >
                       Default 2<RadioGroupItemControl class="hidden" />
@@ -129,9 +127,9 @@ export const EditTicketForm = (props: {
                       class={cn(
                         "flex flex-col items-center justify-between gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket().shape !== "custom",
-                          "bg-secondary": ticket().shape === "custom",
-                        },
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": ticket.shape !== "custom",
+                          "bg-secondary": ticket.shape === "custom",
+                        }
                       )}
                     >
                       Custom <RadioGroupItemControl class="hidden" />
@@ -162,7 +160,7 @@ export const EditTicketForm = (props: {
                     placeholder="Select a ticket type"
                     optionDisabled="disabled"
                     itemComponent={(props) => <SelectItem item={props.item}>{props.item.rawValue.label}</SelectItem>}
-                    value={tickets().find((t) => t.value === ticket().ticket_type.id)}
+                    value={tickets().find((t) => t.value === ticket.ticket_type.id)}
                     onChange={(value) => {
                       if (!value) {
                         return;
@@ -190,52 +188,43 @@ export const EditTicketForm = (props: {
                 )}
               </Show>
             </div>
-            <TextField class="w-full flex flex-col gap-2" aria-label="Ticket Name">
+            <TextFieldRoot
+              class="w-full flex flex-col gap-2"
+              aria-label="Ticket Name"
+              onChange={(name) => {
+                if (!name) return;
+                setTicket("name", name);
+              }}
+            >
               <TextFieldLabel class="flex flex-col gap-2 w-full">
                 <span>Name</span>
-                <TextFieldInput
-                  value={ticket().name}
-                  onChange={(e) => {
-                    const value = e.currentTarget.value;
-                    if (!value) return;
-                    setTicket((t) => {
-                      return {
-                        ...t,
-                        name: value,
-                      };
-                    });
-                  }}
-                />
+                <TextField value={ticket.name} />
               </TextFieldLabel>
-            </TextField>
-            <Show when={ticket().ticket_type.payment_type === "PAID"}>
+            </TextFieldRoot>
+            <Show when={ticket.ticket_type.payment_type === "PAID"}>
               <div class="flex flex-row items-center justify-between gap-2 w-full">
-                <TextField class="w-full flex flex-col gap-2" aria-label="Ticket Price">
+                <TextFieldRoot
+                  class="w-full flex flex-col gap-2"
+                  aria-label="Ticket Price"
+                  onChange={(p) => {
+                    if (!p) return;
+                    const price = parseFloat(p);
+                    if (isNaN(price)) return;
+                    setTicket("price", price);
+                  }}
+                >
                   <TextFieldLabel class="flex flex-col gap-2 w-full">
                     <span>Price</span>
-                    <TextFieldInput
+                    <TextField
                       type="number"
                       min={0}
-                      step={stepsPerCurrency(ticket().currency.currency_type)}
-                      value={ticket().price}
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        if (!value) return;
-                        const price = parseFloat(value);
-                        if (isNaN(price)) return;
-
-                        setTicket((t) => {
-                          return {
-                            ...t,
-                            price,
-                          };
-                        });
-                      }}
+                      step={stepsPerCurrency(ticket.currency.currency_type)}
+                      value={ticket.price}
                     />
                   </TextFieldLabel>
-                </TextField>
+                </TextFieldRoot>
                 <div class="flex flex-col gap-2 w-full">
-                  <span class={cn(labelVariants())}>Currency</span>
+                  <span>Currency</span>
                   <div class="flex flex-row items-center justify-between gap-2 w-full">
                     <Select
                       optionValue="value"
@@ -243,32 +232,13 @@ export const EditTicketForm = (props: {
                       options={getCurrencies()}
                       placeholder="Select a currency"
                       itemComponent={(props) => <SelectItem item={props.item}>{props.item.rawValue.label}</SelectItem>}
-                      value={getCurrencies().find((t) => t.value === ticket().currency.currency_type)}
+                      value={getCurrencies().find((t) => t.value === ticket.currency.currency_type)}
                       onChange={(value) => {
-                        if (!value) {
-                          return;
-                        }
-                        if (value.value === "other") {
-                          setTicket((t) => {
-                            return {
-                              ...t,
-                              currency: {
-                                currency_type: value.value,
-                                value: "",
-                              },
-                            };
-                          });
-                        } else {
-                          setTicket((t) => {
-                            return {
-                              ...t,
-                              currency: {
-                                currency_type: value.value,
-                                value: "",
-                              },
-                            };
-                          });
-                        }
+                        if (!value) return;
+                        setTicket("currency", {
+                          currency_type: value.value,
+                          value: "",
+                        });
                       }}
                       class="w-full"
                     >
@@ -279,83 +249,60 @@ export const EditTicketForm = (props: {
                       </SelectTrigger>
                       <SelectContent />
                     </Select>
-                    <Show
-                      when={
-                        ticket().currency.currency_type === "other" &&
-                        (ticket().currency as Exclude<
-                          z.infer<typeof BaseTicketSchema>["currency"],
-                          Exclude<z.infer<typeof BaseTicketSchema>["currency"], { currency_type: "other" }>
-                        >)
-                      }
-                    >
+                    <Show when={ticket.currency.currency_type === "OTHER" && ticket.currency} keyed>
                       {(c) => (
-                        <TextField class="w-full flex flex-col gap-2" aria-label="Ticket Currency">
-                          <TextFieldInput
-                            value={c().value ?? ""}
-                            class="uppercase"
-                            onChange={(e) => {
-                              const value = e.currentTarget.value;
-                              if (!value) return;
-                              setTicket((t) => {
-                                return {
-                                  ...t,
-                                  currency: {
-                                    ...t.currency,
-                                    value: value.toUpperCase(),
-                                  },
-                                };
-                              });
-                            }}
-                          />
-                        </TextField>
+                        <TextFieldRoot
+                          class="w-full flex flex-col gap-2"
+                          aria-label="Ticket Currency"
+                          value={c.value ?? ""}
+                          onChange={(curr) => {
+                            if (!curr) return;
+                            setTicket("currency", {
+                              currency_type: "OTHER",
+                              value: curr.toUpperCase(),
+                            });
+                          }}
+                        >
+                          <TextField class="uppercase" />
+                        </TextFieldRoot>
                       )}
                     </Show>
                   </div>
                 </div>
               </div>
             </Show>
-            <TextField class="w-full flex flex-col gap-2" aria-label="Ticket Quantity">
+            <TextFieldRoot
+              class="w-full flex flex-col gap-2"
+              aria-label="Ticket Quantity"
+              onChange={(value) => {
+                if (!value) return;
+                const quantity = parseInt(value);
+                if (isNaN(quantity)) return;
+                setTicket("quantity", quantity);
+              }}
+            >
               <TextFieldLabel class="flex flex-col gap-2 w-full">
                 <span>Quantity</span>
-                <TextFieldInput
-                  type="number"
-                  min={0}
-                  step="1"
-                  value={ticket().quantity}
-                  max={props.freeAllowedTickets()}
-                  onChange={(e) => {
-                    const value = e.currentTarget.value;
-                    if (!value) return;
-                    const quantity = parseInt(value);
-                    if (isNaN(quantity)) return;
-
-                    setTicket((t) => {
-                      return {
-                        ...t,
-                        quantity,
-                      };
-                    });
-                  }}
-                />
-                <Show when={ticket().quantity > props.freeAllowedTickets()}>
+                <TextField type="number" min={0} step="1" value={ticket.quantity} max={props.freeAllowedTickets()} />
+                <Show when={ticket.quantity > props.freeAllowedTickets()}>
                   <TextFieldErrorMessage>
                     Quantity can't be greater than {props.freeAllowedTickets()}
                   </TextFieldErrorMessage>
                 </Show>
               </TextFieldLabel>
-            </TextField>
+            </TextFieldRoot>
           </div>
         </DialogDescription>
         <DialogFooter>
           <Button
             variant="default"
             onClick={() => {
-              const quantity = ticket().quantity;
+              const quantity = ticket.quantity;
               if (quantity > props.freeAllowedTickets()) {
                 toast.info("Quantity can't be greater than available tickets");
                 return;
               }
-              props.onChange(ticket());
+              props.onChange(ticket);
             }}
           >
             Save

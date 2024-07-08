@@ -1,5 +1,9 @@
-import path from "node:path";
 import { defineConfig } from "@solidjs/start/config";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
   server: {
@@ -20,7 +24,7 @@ export default defineConfig({
     ssr: { noExternal: ["@kobalte/core", "@internationalized/message"] },
     resolve: {
       alias: {
-        "@": path.resolve(process.cwd(), "src"),
+        "@": resolve(__dirname, "./src"),
       },
     },
     optimizeDeps: {

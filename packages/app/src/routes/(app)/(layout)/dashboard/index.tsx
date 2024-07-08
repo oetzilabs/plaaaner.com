@@ -10,6 +10,7 @@ import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActivities } from "@/lib/api/activity";
+import { getAuthenticatedSession } from "@/lib/auth/util";
 import { Title } from "@solidjs/meta";
 import { A, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
@@ -17,6 +18,13 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
 import { For, Match, Show, Suspense, Switch } from "solid-js";
 dayjs.extend(relativeTime);
+
+const route = {
+  load: async () => {
+    const session = await getAuthenticatedSession();
+    return { session };
+  },
+};
 
 export default function DashboardPage() {
   const session = useSession();

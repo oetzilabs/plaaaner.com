@@ -204,17 +204,15 @@ export const Calendar = (props: { session: UserSession }) => {
                                 <Match when={d.type !== "plan" && d}>
                                   {(dd) => (
                                     <Popover>
-                                      <PopoverTrigger asChild>
-                                        <As
-                                          component={Button}
-                                          variant="ghost"
-                                          class="w-full h-full flex flex-col items-center justify-center group rounded-none"
-                                        >
-                                          <div class="text-muted-foreground group-hover:visible invisible flex flex-row items-center justify-center gap-2">
-                                            <Plus class="size-4" />
-                                            <span>Create</span>
-                                          </div>
-                                        </As>
+                                      <PopoverTrigger
+                                        as={Button}
+                                        variant="ghost"
+                                        class="w-full h-full flex flex-col items-center justify-center group rounded-none"
+                                      >
+                                        <div class="text-muted-foreground group-hover:visible invisible flex flex-row items-center justify-center gap-2">
+                                          <Plus class="size-4" />
+                                          <span>Create</span>
+                                        </div>
                                       </PopoverTrigger>
                                       <PopoverContent>
                                         <CreatePlanPopover timeslot={dd().timeslot} />
@@ -225,20 +223,15 @@ export const Calendar = (props: { session: UserSession }) => {
                                 <Match when={d.type === "plan" && d.value}>
                                   {(p) => (
                                     <Popover>
-                                      <PopoverTrigger asChild>
-                                        <As
-                                          component="div"
-                                          class="w-full h-full flex flex-col items-center justify-center group"
-                                        >
-                                          <div class="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 w-full h-full p-2 flex flex-row gap-2">
-                                            <div class="flex-1 truncate text-white text-sm font-bold py-1">
-                                              {p().name}
-                                            </div>
-                                            <div class="w-max truncate text-white text-xs py-1">
-                                              {dayjs(p().starts_at).format("LT")}
-                                            </div>
+                                      <PopoverTrigger class="w-full h-full flex flex-col items-center justify-center group">
+                                        <div class="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 w-full h-full p-2 flex flex-row gap-2">
+                                          <div class="flex-1 truncate text-white text-sm font-bold py-1">
+                                            {p().name}
                                           </div>
-                                        </As>
+                                          <div class="w-max truncate text-white text-xs py-1">
+                                            {dayjs(p().starts_at).format("LT")}
+                                          </div>
+                                        </div>
                                       </PopoverTrigger>
                                       <PopoverContent>
                                         <div class="w-full font-bold">{p().name}</div>

@@ -23,7 +23,6 @@ import { setCurrentOrganization } from "@/lib/api/user";
 import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
 import type { UserSession } from "@/lib/auth/util";
 import { deleteOrganization, disconnectFromOrganization } from "@/utils/api/actions";
-import { As } from "@kobalte/core";
 import { A, createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { Loader2, Plus, Trash } from "lucide-solid";
@@ -84,10 +83,8 @@ export const Organizations = (props: { session: UserSession }) => {
                   <Alert class="flex flex-col items-start gap-2 w-full bg-muted">
                     <span class="text-lg font-semibold">No organizations</span>
                     <span class="text-sm text-muted-foreground">Create a new Organization</span>
-                    <Button variant="default" size="sm" type="submit" class="w-max" asChild>
-                      <As component={A} href="/organization/new">
-                        <span>Create Organization</span>
-                      </As>
+                    <Button as={A} variant="default" size="sm" type="submit" class="w-max" href="/organization/new">
+                      <span>Create Organization</span>
                     </Button>
                   </Alert>
                 }
@@ -106,15 +103,13 @@ export const Organizations = (props: { session: UserSession }) => {
                           </Show>
                         </div>
                         <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <As
-                              component={Button}
-                              variant="destructive"
-                              size="icon"
-                              disabled={isDeletingOrganization.pending}
-                            >
-                              <Trash class="w-4 h-4" />
-                            </As>
+                          <AlertDialogTrigger
+                            as={Button}
+                            variant="destructive"
+                            size="icon"
+                            disabled={isDeletingOrganization.pending}
+                          >
+                            <Trash class="w-4 h-4" />
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
@@ -126,7 +121,6 @@ export const Organizations = (props: { session: UserSession }) => {
                             <AlertDialogFooter>
                               <AlertDialogClose>Cancel</AlertDialogClose>
                               <AlertDialogAction
-                                asChild
                                 onClick={async () => {
                                   toast.promise(removeOrganization(organization.id), {
                                     loading: "Hold on a second, we're deleting the organization",
@@ -137,10 +131,9 @@ export const Organizations = (props: { session: UserSession }) => {
 
                                   await revalidate(getAuthenticatedSession.key);
                                 }}
+                                variant="destructive"
                               >
-                                <As component={Button} variant="destructive">
-                                  Continue
-                                </As>
+                                Continue
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -207,10 +200,15 @@ export const Organizations = (props: { session: UserSession }) => {
                       <div class="w-full flex items-center justify-between gap-2">
                         <div class="w-full"></div>
                         <div class="w-max flex items-center justify-end gap-2">
-                          <Button variant="outline" size="sm" type="submit" class="w-max" asChild>
-                            <As component={A} href={`/dashboard/o/${organization.id}`}>
-                              <span>Manage</span>
-                            </As>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            type="submit"
+                            class="w-max"
+                            as={A}
+                            href={`/dashboard/o/${organization.id}`}
+                          >
+                            <span>Manage</span>
                           </Button>
                           <div class="flex flex-col gap-2 items-end w-full py-0">
                             <Button

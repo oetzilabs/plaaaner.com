@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { revalidate, useAction, useSubmission } from "@solidjs/router";
 import { Ellipsis, CircleAlert, Trash, EyeOff, Eye } from "lucide-solid";
-import { As } from "@kobalte/core";
 import { Button } from "../../ui/button";
 import { toast } from "solid-sonner";
 import { getActivities } from "../../../lib/api/activity";
@@ -50,10 +49,8 @@ export const PostActivity = (props: { session: UserSession; post: Posts.Frontend
               </div>
               <div class="w-max flex">
                 <DropdownMenu>
-                  <DropdownMenuTrigger class="p-2" asChild>
-                    <As component={Button} variant="outline" size="sm" class="!p-2">
-                      <Ellipsis class="size-4" />
-                    </As>
+                  <DropdownMenuTrigger as={Button} variant="outline" size="sm" class="!p-2">
+                    <Ellipsis class="size-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem disabled>

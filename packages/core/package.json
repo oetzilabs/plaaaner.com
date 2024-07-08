@@ -15,8 +15,8 @@
     "vitest": "1.4.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.525.0",
     "@aws-sdk/client-apigatewaymanagementapi": "3.525.0",
+    "@aws-sdk/client-s3": "3.525.0",
     "@aws-sdk/client-sns": "3.525.0",
     "@aws-sdk/s3-request-presigner": "3.525.0",
     "@lucia-auth/adapter-drizzle": "^1.0.7",
@@ -27,6 +27,6 @@
     "lucia": "^3.1.1",
     "node-fetch": "3.3.2",
     "oslo": "^1.2.0",
-    "zod": "^3.23.4"
+    "zod": "^3.23.8"
   }
 }

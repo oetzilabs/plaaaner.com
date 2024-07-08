@@ -1,11 +1,4 @@
-import {
-  CommandDialog,
-  CommandHeading,
-  CommandInput,
-  CommandItem,
-  CommandItemLabel,
-  CommandList,
-} from "@/components/ui/command";
+import { CommandDialog, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { getAuthenticatedUser } from "@/lib/auth/util";
 import { useColorMode } from "@kobalte/core";
 import { createAsync } from "@solidjs/router";
@@ -120,7 +113,22 @@ export const AppSearch = () => {
         <Search class="w-4 h-4" />
         <div class="sr-only md:min-w-[300px] md:not-sr-only max-w-full text-sm">Search plans...</div>
       </div>
-      <CommandDialog<Option, List>
+      <CommandDialog
+        open={openSearch()}
+        onOpenChange={setOpenSearch}
+        options={data}
+        optionValue="value"
+        optionTextValue="label"
+        optionLabel="label"
+        optionGroupChildren="options"
+        placeholder="Type a command or search..."
+      >
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+        </CommandList>
+      </CommandDialog>
+      {/* <CommandDialog
         open={openSearch()}
         onOpenChange={setOpenSearch}
         options={data}
@@ -146,7 +154,7 @@ export const AppSearch = () => {
       >
         <CommandInput />
         <CommandList />
-      </CommandDialog>
+      </CommandDialog> */}
     </div>
   );
 };

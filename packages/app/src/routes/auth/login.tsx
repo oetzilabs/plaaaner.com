@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/custom/logo";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { TextFieldRoot, TextField, TextFieldLabel } from "@/components/ui/textfield";
 import { loginViaEmail } from "@/lib/api/user";
 import { cn } from "@/lib/utils";
-import { As } from "@kobalte/core";
 import { A, revalidate, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import type { SVGAttributes } from "lucide-solid/dist/types/types";
 import { For, JSX, createSignal } from "solid-js";
@@ -90,7 +89,7 @@ export default function LoginPage() {
                 <p class="text-sm text-muted-foreground">Enter your email below to create your account</p>
               </div>
               <form class="flex flex-col gap-4 items-center w-full" onSubmit={handleSubmit}>
-                <TextField
+                <TextFieldRoot
                   class="w-full"
                   onChange={(v) => {
                     setEmail(v);
@@ -99,7 +98,7 @@ export default function LoginPage() {
                   disabled
                 >
                   <TextFieldLabel class="sr-only">Email</TextFieldLabel>
-                  <TextFieldInput
+                  <TextField
                     id="email"
                     placeholder="name@example.com"
                     type="email"
@@ -109,7 +108,7 @@ export default function LoginPage() {
                     class="w-full"
                     disabled={isLogginInViaEmail.pending}
                   />
-                </TextField>
+                </TextFieldRoot>
                 <Button
                   variant="default"
                   size="lg"
@@ -139,15 +138,15 @@ export default function LoginPage() {
                   {([provider, url]) => {
                     const L = logos[provider];
                     return (
-                      <Button asChild variant="default" size="lg" class="!w-full">
-                        <As
-                          component={A}
-                          href={url}
-                          class="flex items-center justify-center w-max text-sm font-medium gap-4 capitalize"
-                        >
-                          <L class="h-5 w-5" />
-                          <span>{provider}</span>
-                        </As>
+                      <Button
+                        variant="default"
+                        size="lg"
+                        class="flex items-center justify-center w-max text-sm font-medium gap-4 capitalize"
+                        as={A}
+                        href={url}
+                      >
+                        <L class="h-5 w-5" />
+                        <span>{provider}</span>
                       </Button>
                     );
                   }}

@@ -1,6 +1,5 @@
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { As } from "@kobalte/core";
 import { A } from "@solidjs/router";
 
 export default function IndexPage() {
@@ -33,15 +32,11 @@ export default function IndexPage() {
                   <p class="text-center">manage everything in one centralized hub.</p>
                 </div>
                 <div class="flex flex-row gap-2 items-center">
-                  <Button size="lg" asChild>
-                    <As component={A} href="/dashboard">
-                      Dashboard
-                    </As>
+                  <Button size="lg" as={A} href="/dashboard">
+                    Dashboard
                   </Button>
-                  <Button variant="secondary" size="lg" asChild>
-                    <As component={A} href="/learn-more">
-                      Learn more
-                    </As>
+                  <Button variant="secondary" size="lg" as={A} href="/learn-more">
+                    Learn more
                   </Button>
                 </div>
               </div>

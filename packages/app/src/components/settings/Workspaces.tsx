@@ -7,7 +7,6 @@ import { For, Show, Suspense } from "solid-js";
 import { getWorkspaces } from "../../lib/api/workspaces";
 import { Badge } from "../ui/badge";
 import { Plus, Trash } from "lucide-solid";
-import { As } from "@kobalte/core";
 import dayjs from "dayjs";
 import { Alert } from "../ui/alert";
 import { Skeleton } from "../ui/skeleton";
@@ -69,10 +68,8 @@ export const Workspaces = (props: { session: UserSession }) => {
                   <Alert class="flex flex-col items-start gap-2 w-full bg-muted">
                     <span class="text-lg font-semibold">No workspaces</span>
                     <span class="text-sm text-muted-foreground">Create a new workspace</span>
-                    <Button variant="default" size="sm" type="submit" class="w-max" asChild>
-                      <As component={A} href="/dashboard/w/new">
-                        <span>Create workspace</span>
-                      </As>
+                    <Button variant="default" size="sm" type="submit" class="w-max" as={A} href="/dashboard/w/new">
+                      <span>Create workspace</span>
                     </Button>
                   </Alert>
                 }
@@ -117,10 +114,15 @@ export const Workspaces = (props: { session: UserSession }) => {
                       <div class="w-full flex items-center justify-between gap-2">
                         <div class="w-full"></div>
                         <div class="w-max flex items-center justify-end gap-2">
-                          <Button variant="outline" size="sm" type="submit" class="w-max" asChild>
-                            <As component={A} href={`/dashboard/w/${workspace.id}`}>
-                              <span>Manage</span>
-                            </As>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            type="submit"
+                            class="w-max"
+                            as={A}
+                            href={`/dashboard/w/${workspace.id}`}
+                          >
+                            <span>Manage</span>
                           </Button>
                           <div class="flex flex-col gap-2 items-end w-full py-0">
                             <Button

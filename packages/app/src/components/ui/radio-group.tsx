@@ -1,6 +1,8 @@
-import { cn } from "@/lib/utils";
-import { RadioGroup as RadioGroupPrimitive } from "@kobalte/core";
-import type { VoidComponent } from "solid-js";
+import { cn } from "@/libs/cn";
+import type { PolymorphicProps } from "@kobalte/core/polymorphic";
+import type { RadioGroupItemControlProps } from "@kobalte/core/radio-group";
+import { RadioGroup as RadioGroupPrimitive } from "@kobalte/core/radio-group";
+import type { ValidComponent, VoidProps } from "solid-js";
 import { splitProps } from "solid-js";
 
 export const RadioGroupDescription = RadioGroupPrimitive.Description;
@@ -9,25 +11,29 @@ export const RadioGroupItemDescription = RadioGroupPrimitive.ItemDescription;
 export const RadioGroupItemInput = RadioGroupPrimitive.ItemInput;
 export const RadioGroupItemLabel = RadioGroupPrimitive.ItemLabel;
 export const RadioGroupLabel = RadioGroupPrimitive.Label;
-export const RadioGroup = RadioGroupPrimitive.Root;
+export const RadioGroup = RadioGroupPrimitive;
 export const RadioGroupItem = RadioGroupPrimitive.Item;
 
-export const RadioGroupItemControl: VoidComponent<RadioGroupPrimitive.RadioGroupItemControlProps> = (props) => {
-  const [local, rest] = splitProps(props, ["class"]);
+type radioGroupItemControlProps<T extends ValidComponent = "div"> = VoidProps<
+	RadioGroupItemControlProps<T> & { class?: string }
+>;
 
-  return (
-    <RadioGroupPrimitive.ItemControl
-      as="button"
-      // @ts-ignore
-      type="button"
-      role="radio"
-      class={cn(
-        "aspect-square h-4 w-4 rounded-full border border-primary text-primary shadow focus:outline-none focus-visible:ring focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 flex justify-center items-center data-[checked]:bg-foreground",
-        local.class,
-      )}
-      {...rest}
-    >
-      <RadioGroupPrimitive.ItemIndicator class="rounded-full h-2 w-2 data-[checked]:bg-background" />
-    </RadioGroupPrimitive.ItemControl>
-  );
+export const RadioGroupItemControl = <T extends ValidComponent = "div">(
+	props: PolymorphicProps<T, radioGroupItemControlProps<T>>,
+) => {
+	const [local, rest] = splitProps(props as radioGroupItemControlProps, [
+		"class",
+	]);
+
+	return (
+		<RadioGroupPrimitive.ItemControl
+			class={cn(
+				"flex aspect-square h-4 w-4 items-center justify-center rounded-full border border-primary text-primary shadow transition-shadow focus:outline-none focus-visible:ring-[1.5px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[checked]:bg-foreground",
+				local.class,
+			)}
+			{...rest}
+		>
+			<RadioGroupPrimitive.ItemIndicator class="h-2 w-2 rounded-full data-[checked]:bg-background" />
+		</RadioGroupPrimitive.ItemControl>
+	);
 };

@@ -2,7 +2,6 @@ import { CreatePlan } from "@/components/forms/CreatePlanProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { PlanType } from "@/utils/schemas/plan";
-import { As } from "@kobalte/core";
 import { A, useParams } from "@solidjs/router";
 
 export default function PlanCreateEventPage() {
@@ -16,10 +15,8 @@ export default function PlanCreateEventPage() {
           <CardContent>
             <div class="flex flex-col gap-4">
               <div class="text-lg">This event type does not exist</div>
-              <Button asChild size="sm">
-                <As component={A} href="/">
-                  Go back
-                </As>
+              <Button size="sm" as={A} href="/">
+                Go back
               </Button>
             </div>
           </CardContent>

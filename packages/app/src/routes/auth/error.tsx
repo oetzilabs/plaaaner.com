@@ -1,4 +1,3 @@
-import { As } from "@kobalte/core";
 import { A, useSearchParams } from "@solidjs/router";
 import { Button } from "../../components/ui/button";
 
@@ -22,10 +21,15 @@ export default function LoginErrorPage() {
                   {error === "unknown" && "An unknown error occured"}
                 </p>
               </div>
-              <Button variant="default" size="lg" type="submit" aria-label="Go to the login page" asChild>
-                <As component={A} href="/auth/login">
-                  <span>Login again</span>
-                </As>
+              <Button
+                variant="default"
+                size="lg"
+                type="submit"
+                aria-label="Go to the login page"
+                as={A}
+                href="/auth/login"
+              >
+                <span>Login again</span>
               </Button>
             </div>
           </div>

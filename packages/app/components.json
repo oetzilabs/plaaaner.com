@@ -1,14 +1,16 @@
 {
-  "$schema": "https://shadcn-solid.vercel.app/schema.json",
+  "$schema": "https://shadcn-solid.com/schema.json",
   "tailwind": {
     "config": "tailwind.config.cjs",
-    "css": "src/root.css",
-    "baseColor": "neutral",
-    "cssVariables": true,
+    "css": {
+      "path": "src/app.css",
+      "variable": true
+    },
+    "color": "neutral",
     "prefix": ""
   },
-  "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils"
+  "alias": {
+    "component": "@/components",
+    "cn": "@/libs/cn"
   }
 }
