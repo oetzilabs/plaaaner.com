@@ -8,10 +8,6 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   server: {
     preset: "aws-lambda",
-    output: {
-      dir: "dist",
-      publicDir: "dist/client",
-    },
     esbuild: {
       options: {
         target: "esnext",
