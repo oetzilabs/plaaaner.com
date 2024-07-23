@@ -1,21 +1,24 @@
 import { Badge } from "@/components/ui/badge";
 import {
+  Command,
   CommandDialog,
-  CommandHeading,
+  CommandEmpty,
+  CommandGroup,
   CommandInput,
   CommandItem,
-  CommandItemLabel,
   CommandList,
+  CommandSeparator,
+  CommandShortcut,
 } from "@/components/ui/command";
 import { getUserOrganizations } from "@/lib/api/organizations";
 import { setDashboard } from "@/lib/api/user";
 import { createAsync, revalidate, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import { Building, Target } from "lucide-solid";
-import { createSignal, JSXElement, Show } from "solid-js";
+import { createSignal, For, JSXElement, Show } from "solid-js";
+import { getAuthenticatedSession } from "../lib/auth/util";
 import { useSession } from "./SessionProvider";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { getAuthenticatedSession } from "../lib/auth/util";
 
 type OrgWorkspaceOption = {
   icon: JSXElement;
@@ -31,7 +34,7 @@ type List = {
 };
 
 export const OrganizationWorkspaceSelection = () => {
-  const userSession = useSession();
+  const session = createAsync(() => getAuthenticatedSession());
   const userOrganizations = createAsync(() => getUserOrganizations());
   const setUserDashboard = useAction(setDashboard);
   const isChangingDashboard = useSubmission(setDashboard);
@@ -41,7 +44,7 @@ export const OrganizationWorkspaceSelection = () => {
   const createList = (
     uO: OrgList,
     currentOrgId?: OrgList[number]["id"],
-    workspaceId?: OrgList[number]["workspaces"][number]["id"]
+    workspaceId?: OrgList[number]["workspaces"][number]["id"],
   ): List[] => {
     const x: List[] = [];
     for (const org of uO) {
@@ -62,13 +65,13 @@ export const OrganizationWorkspaceSelection = () => {
 
   return (
     <div class="flex flex-row items-center">
-      <Show when={userOrganizations() !== undefined && userOrganizations()}>
+      <Show when={userOrganizations() && userOrganizations()}>
         {(uO) => (
           <Show
-            when={typeof userSession !== "undefined" && userSession()}
+            when={session() && session()!.user !== null && session()}
             fallback={<Badge variant="outline">No Organization</Badge>}
           >
-            {(session) => (
+            {(s) => (
               <>
                 <div
                   class="flex flex-row items-center justify-between p-4 pb-0 gap-4 cursor-pointer text-muted-foreground w-full group"
@@ -87,8 +90,8 @@ export const OrganizationWorkspaceSelection = () => {
                       <TooltipContent>
                         <div class="w-full flex flex-col gap-1">
                           <div class="w-full font-bold text-xs">
-                            {session().organization?.name}{" "}
-                            <Show when={session().workspace?.name !== "default" && session().workspace?.name}>
+                            {s().organization?.name}{" "}
+                            <Show when={s().workspace?.name !== "default" && s().workspace?.name}>
                               {(name) => <>({name()})</>}
                             </Show>
                           </div>
@@ -97,37 +100,41 @@ export const OrganizationWorkspaceSelection = () => {
                     </Tooltip>
                   </div>
                 </div>
-                <CommandDialog<OrgWorkspaceOption, List>
+                <CommandDialog
                   open={openSelector()}
                   onOpenChange={setOpenSelector}
-                  options={createList(uO(), session().organization?.id, session().workspace?.id)}
-                  optionValue={(v) => `${v.organizationId}_${v.workspaceId}`}
-                  optionTextValue="label"
-                  optionLabel="label"
-                  optionGroupChildren="options"
-                  placeholder="Choose a Workspace"
-                  optionDisabled="disabled"
-                  itemComponent={(props) => (
-                    <CommandItem item={props.item} class="flex flex-row items-center gap-2">
-                      {props.item.rawValue.icon}
-                      <CommandItemLabel>
-                        {props.item.rawValue.label}
-                        {props.item.disabled ? " (selected)" : ""}
-                      </CommandItemLabel>
-                    </CommandItem>
-                  )}
-                  sectionComponent={(props) => <CommandHeading>{props.section.rawValue.label}</CommandHeading>}
                   class="md:rounded-lg md:border md:shadow-md"
-                  onChange={async (value: OrgWorkspaceOption) => {
-                    if (!value) return;
-                    await setUserDashboard(value.organizationId, value.workspaceId);
-
-                    await revalidate(getAuthenticatedSession.key);
-                    navigate("/dashboard");
-                  }}
                 >
                   <CommandInput />
-                  <CommandList />
+                  <CommandList>
+                    <CommandEmpty>No results found.</CommandEmpty>
+                    <For each={createList(uO(), s().organization?.id, s().workspace?.id)}>
+                      {(list) => (
+                        <CommandGroup heading={list.label}>
+                          <For each={list.options}>
+                            {(option) => (
+                              <CommandItem
+                                disabled={option.disabled}
+                                onClick={async () => {
+                                  if (!option.disabled) {
+                                    await setUserDashboard(option.organizationId, option.workspaceId);
+
+                                    await revalidate(getAuthenticatedSession.key);
+                                    navigate("/dashboard");
+                                  }
+                                }}
+                              >
+                                <div class="flex flex-row items-center gap-2">
+                                  {option.icon}
+                                  <span class="">{option.label}</span>
+                                </div>
+                              </CommandItem>
+                            )}
+                          </For>
+                        </CommandGroup>
+                      )}
+                    </For>
+                  </CommandList>
                 </CommandDialog>
               </>
             )}

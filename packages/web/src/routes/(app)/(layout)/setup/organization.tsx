@@ -1,19 +1,19 @@
+import { NotLoggedIn } from "@/components/NotLoggedIn";
+import { useSession } from "@/components/SessionProvider";
 import { Button } from "@/components/ui/button";
-import { TextField, TextFieldLabel, TextFieldInput } from "@/components/ui/textfield";
-import { createAsync, useSubmission } from "@solidjs/router";
-import { Show } from "solid-js";
-import { createOrganization, requestOrganizationJoin, getAllOrganizations } from "@/lib/api/organizations";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Combobox,
   ComboboxContent,
+  ComboboxHiddenSelect,
+  ComboboxInput,
   ComboboxItem,
   ComboboxTrigger,
-  ComboboxInput,
-  ComboboxHiddenSelect,
 } from "@/components/ui/combobox";
-import { useSession } from "@/components/SessionProvider";
-import { NotLoggedIn } from "@/components/NotLoggedIn";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
+import { createOrganization, getAllOrganizations, requestOrganizationJoin } from "@/lib/api/organizations";
+import { createAsync, useSubmission } from "@solidjs/router";
+import { Show } from "solid-js";
 
 export default function SetupProfilePage() {
   const session = useSession();
@@ -33,12 +33,12 @@ export default function SetupProfilePage() {
             <TabsContent value="create">
               <form class="flex flex-col gap-2 w-full" method="post" action={createOrganization}>
                 <Show when={!s().organization}>
-                  <TextField name="name" disabled={isCreatingOrganization.pending}>
+                  <TextFieldRoot name="name" disabled={isCreatingOrganization.pending}>
                     <TextFieldLabel class="flex flex-col gap-2">
                       Organization Name
-                      <TextFieldInput placeholder="Organization Name" />
+                      <TextField placeholder="Organization Name" />
                     </TextFieldLabel>
-                  </TextField>
+                  </TextFieldRoot>
                 </Show>
                 <div class="flex flex-row items-center justify-between">
                   <div></div>

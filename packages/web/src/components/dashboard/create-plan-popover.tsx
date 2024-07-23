@@ -4,7 +4,7 @@ import { Dayjs } from "dayjs";
 import { Loader2, Plus } from "lucide-solid";
 import { createSignal, Match, Switch } from "solid-js";
 import { Button } from "../ui/button";
-import { TextField, TextFieldLabel, TextFieldInput } from "../ui/textfield";
+import { TextField, TextFieldLabel, TextFieldRoot } from "../ui/textfield";
 
 export const CreatePlanPopover = (props: { timeslot: Dayjs }) => {
   const [name, setName] = createSignal("");
@@ -36,40 +36,40 @@ export const CreatePlanPopover = (props: { timeslot: Dayjs }) => {
     <div class="flex flex-col gap-6 w-full pt-1 px-0">
       <div class="font-bold text-lg">New Plan</div>
       <div class="">
-        <TextField
+        <TextFieldRoot
           onChange={(v) => {
             setName(v);
           }}
         >
           <TextFieldLabel class="gap-2 flex flex-col">
             <span class="font-bold">Name</span>
-            <TextFieldInput />
+            <TextField />
           </TextFieldLabel>
-        </TextField>
+        </TextFieldRoot>
       </div>
       <div class="">
-        <TextField
+        <TextFieldRoot
           onChange={(v) => {
             setDescription(v);
           }}
         >
           <TextFieldLabel class="gap-2 flex flex-col">
             <span class="font-bold">Description</span>
-            <TextFieldInput />
+            <TextField />
           </TextFieldLabel>
-        </TextField>
+        </TextFieldRoot>
       </div>
       <div class="">
-        <TextField
+        <TextFieldRoot
           onChange={(v) => {
             setPlanLocation(v);
           }}
         >
           <TextFieldLabel class="gap-2 flex flex-col">
             <span class="font-bold">Location</span>
-            <TextFieldInput />
+            <TextField />
           </TextFieldLabel>
-        </TextField>
+        </TextFieldRoot>
       </div>
       <div class="w-full flex flex-row items-center justify-between">
         <div></div>

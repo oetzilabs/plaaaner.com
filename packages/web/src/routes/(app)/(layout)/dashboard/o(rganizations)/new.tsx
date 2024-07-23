@@ -8,7 +8,7 @@ import {
   ComboboxTrigger,
 } from "@/components/ui/combobox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
 import { createOrganization, getNoneConnectedOrganizations, requestOrganizationJoin } from "@/lib/api/organizations";
 import { createAsync, useSubmission } from "@solidjs/router";
 import { Show } from "solid-js";
@@ -31,12 +31,12 @@ export default function SetupProfilePage() {
         </TabsList>
         <TabsContent value="create">
           <form class="flex flex-col gap-2 w-full" method="post" action={createOrganization}>
-            <TextField name="name" disabled={isCreatingOrganization.pending}>
+            <TextFieldRoot name="name" disabled={isCreatingOrganization.pending}>
               <TextFieldLabel class="flex flex-col gap-2">
                 Organization Name
-                <TextFieldInput placeholder="Organization Name" />
+                <TextField placeholder="Organization Name" />
               </TextFieldLabel>
-            </TextField>
+            </TextFieldRoot>
             <div class="flex flex-row items-center justify-between">
               <div></div>
               <div>

@@ -1,121 +1,102 @@
-import type { Notify } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
+import type { WebsocketMessage, WebsocketMessageProtocol } from "@/core/entities/websocket";
+import { getAuthenticatedSession } from "@/lib/auth/util";
 import { createContextProvider } from "@solid-primitives/context";
-import { createEventSignal } from "@solid-primitives/event-listener";
-import { createReconnectingWS } from "@solid-primitives/websocket";
-import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
-import { z } from "zod";
-import { useSession } from "../SessionProvider";
+import { Emitter } from "@solid-primitives/event-bus";
+import { ReconnectingWebSocket } from "@solid-primitives/websocket";
+import { createAsync } from "@solidjs/router";
+import { onCleanup, onMount } from "solid-js";
+import { toast } from "solid-sonner";
 
 export type WSStatus = "connected" | "disconnected" | "pinging" | "sending" | "connecting";
 
-type PongMessage = {
-  action: "pong";
-  recievedId: string;
-  sentAt: string;
-};
+export const [Websocket, useWebsocket] = createContextProvider(
+  (props: { websocket: ReconnectingWebSocket | null; emitter: Emitter<WebsocketMessageProtocol> }) => {
+    const session = createAsync(() => getAuthenticatedSession());
 
-type PingMessage = {
-  action: "ping";
-  userId: string;
-  id: string;
-};
-
-export const [Websocket, useWebsocketProvider] = createContextProvider(() => {
-  const auth = useSession();
-  const wsLink = import.meta.env.VITE_WS_LINK;
-  if (!wsLink) throw new Error("No Websocket Link in Environtment");
-
-  const ws = createReconnectingWS(wsLink);
-  const messageEvent = createEventSignal(ws, "message");
-  const message = () => messageEvent().data;
-
-  const [status, setStatus] = createSignal<WSStatus>("disconnected");
-  const [errors, setErrors] = createSignal<string[]>([]);
-  const [sentQueue, setSentQueue] = createSignal<any[]>([]);
-  const [recievedQueue, setRecievedQueue] = createSignal<Notify[]>([]);
-
-  const createPingMessage = (): PingMessage => {
-    const userId = auth?.()!.user?.id;
-    if (!userId) throw new Error("No user id");
-    const id = Math.random().toString(36).substring(2);
-
-    return {
-      action: "ping",
-      userId,
-      id,
-    };
-  };
-
-  const handlers = {
-    message: (e: any, ...a: any) => {
-      console.info("message", e);
-      const data = JSON.parse(e.data);
-      const n = z.custom<Notify>().safeParse(data);
-      if (n.success) {
-        setRecievedQueue([...recievedQueue(), n.data]);
-      }
-      // update downstream
-      const pongMessage = z.custom<PongMessage>().safeParse(data);
-      if (pongMessage.success) {
-        console.log("pong-message", pongMessage);
-      } else {
-        // updateFailed();
-      }
-    },
-    open: (e: any) => {
-      const userId = auth?.()!.user?.id;
-      if (!userId) {
-        // console.log("hey, no user");
+    const createPingMessage = () => {
+      const s = session();
+      if (!s) {
+        console.error("no session");
         return;
       }
-      try {
-        const pm = createPingMessage();
-        setSentQueue([...sentQueue(), pm]);
-        ws.send(JSON.stringify(pm));
-        console.log("Sent message:", pm);
-        setStatus("connected");
-      } catch (e) {
-        console.error("no user session", e);
+      if (!s.user) {
+        console.error("no user");
+        return;
       }
-    },
-    close: (e: any) => {
-      console.log("ws closed", e);
-      setStatus("disconnected");
-    },
-    error: (e: any) => {
-      console.log("ws errored", e);
-      setErrors([...errors(), e]);
-    },
-  };
+      const userId = s.user.id;
+      if (!userId) throw new Error("No user id");
+      const id = Math.random().toString(36).substring(2);
 
-  ws.addEventListener("message", handlers.message);
-  ws.addEventListener("open", handlers.open);
-  ws.addEventListener("close", handlers.close);
-  ws.addEventListener("error", handlers.error);
+      return {
+        action: "ping",
+        payload: {
+          userId,
+          id,
+        },
+      } as WebsocketMessage<
+        "ping",
+        {
+          userId: string;
+          id: string;
+        }
+      >;
+    };
 
-  onCleanup(() => {
-    ws.removeEventListener("message", handlers.message);
-    ws.removeEventListener("open", handlers.open);
-    ws.removeEventListener("close", handlers.close);
-    ws.removeEventListener("error", handlers.error);
-  });
+    const handlers = {
+      open: () => {
+        console.log("open");
+        const s = session();
+        if (!s) {
+          console.error("no session");
+          return;
+        }
+        if (!s.user) {
+          console.error("no user");
+          return;
+        }
+        const userId = s.user.id;
+        if (!userId) {
+          return;
+        }
+        try {
+          const pm = createPingMessage();
+          if (!pm) return;
+          props.emitter.emit("send", { action: "send", payload: pm });
+        } catch (e) {
+          console.error("unable to send ping message", e);
+          toast.error("Could not connect to server, check console for details");
+        }
+      },
+      close: (e: any) => {
+        console.log("ws closed", e);
+        toast.info("Disconnected from server");
+      },
+      error: (e: any) => {
+        console.log("ws errored", e);
+        toast.error("Could not connect to server");
+      },
+    };
+    onMount(() => {
+      if (props.websocket) {
+        props.websocket.addEventListener("open", handlers.open);
+        props.websocket.addEventListener("close", handlers.close);
+        props.websocket.addEventListener("error", handlers.error);
+      }
+    });
 
-  return {
-    ws,
-    status,
-    recievedQueue,
-    sentQueue,
-    errors,
-    message,
-  };
-});
+    onCleanup(() => {
+      if (props.websocket) {
+        // props.websocket.removeEventListener("message", handlers.message);
+        props.websocket.removeEventListener("open", handlers.open);
+        props.websocket.removeEventListener("close", handlers.close);
+        props.websocket.removeEventListener("error", handlers.error);
+      }
+    });
 
-export const WebsocketProvider = (props: { children: JSX.Element }) => {
-  const [mounted, setMounted] = createSignal(false);
-  onMount(() => setMounted(true));
-  return (
-    <Show when={mounted()} fallback={props.children}>
-      <Websocket>{props.children}</Websocket>
-    </Show>
-  );
-};
+    return {
+      ws: props.websocket,
+      send: props.emitter.emit.bind(props.emitter.emit, "send"),
+      subscribe: (type: Parameters<typeof props.emitter.on>[0]) => props.emitter.on.bind(props.emitter.on, type),
+    };
+  },
+);

@@ -1,14 +1,41 @@
+import { ApiGatewayManagementApi, GoneException } from "@aws-sdk/client-apigatewaymanagementapi";
+import dayjs from "dayjs";
+import { eq, gte, lte } from "drizzle-orm";
+import { WebSocketApi } from "sst/node/websocket-api";
 import { z } from "zod";
 import { db } from "../drizzle/sql/index";
 import { websockets } from "../drizzle/sql/schema";
-import { eq, gte, lte } from "drizzle-orm";
 import { Notify } from "./notifications";
-import { WebSocketApi } from "sst/node/websocket-api";
-import { ApiGatewayManagementApi, GoneException } from "@aws-sdk/client-apigatewaymanagementapi";
-import dayjs from "dayjs";
 import { Workspace } from "./workspaces";
 
 export * as WebsocketCore from "./websocket";
+
+export type WebsocketMessage<N extends string, P = unknown> = {
+  action: N;
+  payload: P;
+};
+
+export type WebsocketMessageProtocol = {
+  send: WebsocketMessage<"send", WebsocketMessage<string, unknown>>;
+  message: WebsocketMessage<"message", unknown>;
+  clear: WebsocketMessage<"clear", unknown>;
+  push: WebsocketMessage<"push", unknown>;
+  pull: WebsocketMessage<"pull", unknown>;
+  ping: WebsocketMessage<
+    "ping",
+    {
+      userId: string;
+      id: string;
+    }
+  >;
+  pong: WebsocketMessage<
+    "pong",
+    {
+      recievedId: string;
+      sentAt: number;
+    }
+  >;
+};
 
 export const connect = z.function(z.tuple([z.string()])).implement(async (connectionId) => {
   const [x] = await db.insert(websockets).values({ connectionId }).returning({

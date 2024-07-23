@@ -1,5 +1,3 @@
-import { NotLoggedIn } from "@/components/NotLoggedIn";
-import { useSession } from "@/components/SessionProvider";
 import { Activities } from "@/components/dashboard/activity-list";
 import { Disclaimers } from "@/components/dashboard/disclaimers";
 import { EntryBox } from "@/components/dashboard/entrybox";
@@ -7,29 +5,40 @@ import { NearbyPlansList } from "@/components/dashboard/nearby-plans";
 import { NotificationList } from "@/components/dashboard/notifications";
 import { SmallFooter } from "@/components/dashboard/small-footer";
 import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
+import { NotLoggedIn } from "@/components/NotLoggedIn";
+import { useSession } from "@/components/SessionProvider";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActivities } from "@/lib/api/activity";
-import { getAuthenticatedSession } from "@/lib/auth/util";
+import { getNotifications } from "@/lib/api/notifications";
+import { getUserOrganizations } from "@/lib/api/organizations";
+import { getNearbyPlans, getUpcomingThreePlans } from "@/lib/api/plans";
+import { getAuthenticatedSession, UserSession } from "@/lib/auth/util";
 import { Title } from "@solidjs/meta";
-import { A, revalidate } from "@solidjs/router";
+import { A, createAsync, revalidate, RouteProps } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
 import { For, Match, Show, Suspense, Switch } from "solid-js";
+
 dayjs.extend(relativeTime);
 
-const route = {
-  load: async () => {
+export const route = {
+  preload: async () => {
     const session = await getAuthenticatedSession();
-    return { session };
+    const userOrganizations = await getUserOrganizations();
+    const notifications = await getNotifications();
+    const upcomingPlans = await getUpcomingThreePlans();
+    const nearbyPlans = await getNearbyPlans();
+    return { session, notifications, upcomingPlans, nearbyPlans, userOrganizations };
   },
 };
 
 export default function DashboardPage() {
-  const session = useSession();
-  const isLoggedInLonger = (minutes: number) =>
-    dayjs(session?.()?.createdAt).add(minutes, "minutes").isBefore(Date.now());
+  const session = createAsync(() => getAuthenticatedSession());
+
+  const isLoggedInLonger = (session: UserSession, minutes: number) =>
+    dayjs(session.createdAt).add(minutes, "minutes").isBefore(Date.now());
 
   return (
     <>
@@ -41,21 +50,14 @@ export default function DashboardPage() {
           </div>
         }
       >
-        <Match when={typeof session !== "undefined" && session().isLoading}>
-          <div class="flex p-4 w-full h-full items-center justify-center">
-            <div class="w-max h-max min-w-96 flex items-center justify-center text-muted-foreground">
-              <Loader2 class="size-4 animate-spin" />
-            </div>
-          </div>
-        </Match>
-        <Match when={typeof session !== "undefined" && session().user === null}>
+        <Match when={session() && session()!.user === null}>
           <div class="flex p-4 w-full h-full items-center justify-center">
             <div class="w-max h-max min-w-96">
               <NotLoggedIn />
             </div>
           </div>
         </Match>
-        <Match when={typeof session !== "undefined" && session().user !== null && session()}>
+        <Match when={session() && session()!.user !== null && session()} keyed>
           {(s) => (
             <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
               <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)]">
@@ -65,23 +67,23 @@ export default function DashboardPage() {
                       <div class="col-span-8 flex w-full flex-col gap-2 pb-0 pt-4">
                         <span class="font-medium text-3xl">
                           Welcome
-                          <Show when={isLoggedInLonger(15)} fallback="">
+                          <Show when={isLoggedInLonger(s, 15)} fallback="">
                             {" "}
                             back
                           </Show>
-                          , {s().user?.name}
+                          , {s.user?.name}
                         </span>
                         <div class="w-full flex flex-row items-center gap-2 justify-between">
                           <div class="flex flex-row items-center gap-2">
                             <span class="text-sm">
                               Here's what's going on at{" "}
                               <A
-                                href={`/dashboard/o/${s().organization?.id}/w/${s().workspace?.id}`}
+                                href={`/dashboard/o/${s.organization?.id}/w/${s.workspace?.id}`}
                                 class="hover:underline text-indigo-500 font-medium"
                               >
-                                {(s().workspace?.name ?? "default") === "default"
-                                  ? s().organization?.name
-                                  : s().workspace?.name}
+                                {(s.workspace?.name ?? "default") === "default"
+                                  ? s.organization?.name
+                                  : s.workspace?.name}
                               </A>
                             </span>
                           </div>
@@ -102,7 +104,7 @@ export default function DashboardPage() {
                       </div>
                       <div class="col-span-4 hidden md:flex flex-col row-span-12">
                         <div class="flex flex-col w-full gap-4 sticky top-0 pt-4">
-                          <UpcomingPlans session={s()} />
+                          <UpcomingPlans session={s} />
                           <Suspense
                             fallback={
                               <div class="p-4 w-full flex flex-col items-center justify-center">
@@ -110,7 +112,7 @@ export default function DashboardPage() {
                               </div>
                             }
                           >
-                            <NotificationList session={s()} />
+                            <NotificationList session={s} />
                           </Suspense>
                           <Suspense
                             fallback={
@@ -119,7 +121,7 @@ export default function DashboardPage() {
                               </div>
                             }
                           >
-                            <NearbyPlansList session={s()} />
+                            <NearbyPlansList session={s} />
                           </Suspense>
                           <div class="flex flex-col w-full gap-2">
                             <SmallFooter />
@@ -142,7 +144,7 @@ export default function DashboardPage() {
                             </div>
                           }
                         >
-                          <Activities session={s()} />
+                          <Activities session={s} />
                         </Suspense>
                       </div>
                     </div>

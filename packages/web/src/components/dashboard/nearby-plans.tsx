@@ -1,12 +1,13 @@
 import { getNearbyPlans } from "@/lib/api/plans";
 import type { UserSession } from "@/lib/auth/util";
+import { cn } from "@/lib/utils";
 import { A, createAsync } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Lightbulb, Notebook } from "lucide-solid";
 import { For, JSXElement, Show } from "solid-js";
 import { buttonVariants } from "../ui/button";
-import { cn } from "@/lib/utils";
+
 dayjs.extend(relativeTime);
 
 const PlanTypeIcons: Record<string, JSXElement> = {
@@ -25,7 +26,7 @@ export const NearbyPlansList = (props: { session: UserSession }) => {
           Nearby Events
         </A>
         <div class="flex flex-col w-full gap-2">
-          <Show when={typeof nearbyPlans !== undefined && nearbyPlans()}>
+          <Show when={nearbyPlans()}>
             {(nearby) => (
               <For
                 each={nearby()}
@@ -43,7 +44,7 @@ export const NearbyPlansList = (props: { session: UserSession }) => {
                         variant: "outline",
                         size: "sm",
                       }),
-                      "flex flex-col w-full p-3 relative rounded-md h-auto gap-2"
+                      "flex flex-col w-full p-3 relative rounded-md h-auto gap-2",
                     )}
                   >
                     <div class="w-full flex flex-row items-center justify-between">

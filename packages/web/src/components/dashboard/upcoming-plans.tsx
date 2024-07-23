@@ -9,6 +9,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { For, Show } from "solid-js";
 import { Transition, TransitionGroup } from "solid-transition-group";
 import { buttonVariants } from "../ui/button";
+
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
@@ -26,7 +27,7 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
           Upcoming Plans
         </A>
         <div class="flex flex-col w-full gap-2">
-          <Show when={typeof upcomingPlans !== "undefined" && upcomingPlans()}>
+          <Show when={upcomingPlans()}>
             {(list) => (
               <TransitionGroup name="slide-fade-up">
                 <For
@@ -46,7 +47,7 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
                             variant: "ghost",
                             size: "sm",
                           }),
-                          "flex flex-col w-full p-3 border relative border-neutral-200 dark:border-neutral-800 rounded-md h-auto"
+                          "flex flex-col w-full p-3 border relative border-neutral-200 dark:border-neutral-800 rounded-md h-auto",
                         )}
                       >
                         <div class="w-full flex flex-col gap-2">

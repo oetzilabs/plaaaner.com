@@ -1,8 +1,18 @@
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { A } from "@solidjs/router";
+import { getAuthenticatedSession } from "@/lib/auth/util";
+import { A, createAsync } from "@solidjs/router";
+import { Match, Switch } from "solid-js";
+
+export const route = {
+  preload: async () => {
+    const session = await getAuthenticatedSession();
+    return { session };
+  },
+};
 
 export default function IndexPage() {
+  const session = createAsync(() => getAuthenticatedSession());
   return (
     <>
       <div class="container px-4 relative flex flex-col gap-2 items-center w-full">
@@ -18,27 +28,27 @@ export default function IndexPage() {
             <div class="flex flex-col gap-2 items-center">
               <p class="text-center">Ditch the spreadsheet struggle and elevate your experience.</p>
             </div>
-            <div class="relative flex flex-col items-center justify-center w-full rounded-lg overflow-clip md:overflow-visible">
-              <div class="flex flex-col items-center justify-center w-full">
-                <div class="w-full h-[400px] md:h-[700px] bg-transparent border border-indigo-200 dark:border-[#4F46E4]/50 rounded-lg relative p-[2px]">
-                  <div class="w-full h-full bg-background border border-indigo-200 dark:border-[#4F46E4] outline-none rounded-md relative overflow-clip shadow-none shadow-indigo-500 md:shadow-lg">
-                    <div class="z-10 absolute w-full h-full md:h-[50%] bg-gradient-to-t bottom-0 from-indigo-50 dark:from-black" />
-                  </div>
-                </div>
+            <div class="flex flex-col gap-4 md:gap-8 items-center text-xs md:text-lg bg-[#4F46E4] text-white dark:bg-[#4F46E4] shadow-none shadow-indigo-500 md:shadow-2xl rounded-none md:rounded-md w-full md:w-max py-6 px-10 md:border border-indigo-200 dark:border-[#4F46E4]">
+              <div class="w-max flex flex-col items-center justify-center gap-4">
+                <p class="text-center">From concerts and conferences to tournaments and workshops,</p>
+                <p class="text-center">manage everything in one centralized hub.</p>
               </div>
-              <div class="z-20 flex flex-col gap-4 md:gap-8 items-center text-xs md:text-lg bg-[#4F46E4] text-white dark:bg-[#4F46E4] shadow-none shadow-indigo-500 md:shadow-2xl rounded-none md:rounded-md absolute w-full md:w-max left-0 md:left-[50%] translate-x-0 md:translate-x-[-50%] bottom-0 md:-bottom-8 py-6 px-10 md:border border-indigo-200 dark:border-[#4F46E4]">
-                <div class="w-max flex flex-col items-center justify-center gap-4">
-                  <p class="text-center">From concerts and conferences to tournaments and workshops,</p>
-                  <p class="text-center">manage everything in one centralized hub.</p>
-                </div>
-                <div class="flex flex-row gap-2 items-center">
-                  <Button size="lg" as={A} href="/dashboard">
-                    Dashboard
-                  </Button>
-                  <Button variant="secondary" size="lg" as={A} href="/learn-more">
-                    Learn more
-                  </Button>
-                </div>
+              <div class="flex flex-row gap-2 items-center">
+                <Switch>
+                  <Match when={session() && session()?.user !== null}>
+                    <Button size="lg" as={A} href="/dashboard">
+                      Dashboard
+                    </Button>
+                  </Match>
+                  <Match when={session() && session()?.user === null}>
+                    <Button size="lg" as={A} href="/auth/login">
+                      Login
+                    </Button>
+                  </Match>
+                </Switch>
+                <Button variant="secondary" size="lg" as={A} href="/learn-more">
+                  Learn more
+                </Button>
               </div>
             </div>
           </div>

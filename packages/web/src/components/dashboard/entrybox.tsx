@@ -1,16 +1,15 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createPlanCreationForm, getPlans, getUpcomingThreePlans } from "@/lib/api/plans";
+import { createNewPost } from "@/lib/api/posts";
 import { ActivityChange, cn, refreshActivities, setFreshActivities } from "@/lib/utils";
 import { A, revalidate, useAction, useSubmission } from "@solidjs/router";
 import { CalendarFold, CircleAlert, Loader, Loader2, Newspaper, Pencil, Plus } from "lucide-solid";
-import { Switch, createSignal } from "solid-js";
-import { Button, buttonVariants } from "../ui/button";
-import { TextFieldTextArea } from "../ui/textarea";
-import { TextField, TextFieldInput } from "../ui/textfield";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createNewPost } from "@/lib/api/posts";
-import { createPlanCreationForm, getPlans, getUpcomingThreePlans } from "@/lib/api/plans";
-import { ToggleButton } from "../ui/toggle";
-import { Match } from "solid-js";
+import { createSignal, Match, Switch } from "solid-js";
 import { getActivities } from "../../lib/api/activity";
+import { Button, buttonVariants } from "../ui/button";
+import { TextArea } from "../ui/textarea";
+import { TextField, TextFieldRoot } from "../ui/textfield";
+import { ToggleButton } from "../ui/toggle";
 
 export const EntryBox = () => {
   const [title, setTitle] = createSignal("");
@@ -51,30 +50,30 @@ export const EntryBox = () => {
             </TabsList>
             <TabsContent value="plan" class="pt-0 gap-4 flex flex-col">
               <div class="flex flex-col w-full px-4 gap-2">
-                <TextField onChange={(v) => setTitle(v)} value={title()}>
-                  <TextFieldInput
+                <TextFieldRoot onChange={(v) => setTitle(v)} value={title()}>
+                  <TextField
                     autofocus
                     placeholder="Plan Name"
                     class="border-none shadow-none bg-transparent !ring-0 !outline-none text-xl rounded-md font-semibold px-0"
-                    onKeyDown={(e) => {
+                    onKeyDown={(e: KeyboardEvent) => {
                       if (e.key === "Escape") {
                         resetForm();
                       }
                     }}
                   />
-                </TextField>
-                <TextField onChange={(v) => setDescription(v)} value={description()}>
-                  <TextFieldTextArea
+                </TextFieldRoot>
+                <TextFieldRoot onChange={(v) => setDescription(v)} value={description()}>
+                  <TextArea
                     placeholder="Describe your new plan..."
                     class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none bg-muted"
                     autoResize
-                    onKeyDown={(e) => {
+                    onKeyDown={(e: KeyboardEvent) => {
                       if (e.key === "Escape") {
                         resetForm();
                       }
                     }}
                   />
-                </TextField>
+                </TextFieldRoot>
               </div>
               <div class="flex flex-row items-center justify-between px-4">
                 <div class="w-full">
@@ -125,19 +124,19 @@ export const EntryBox = () => {
             </TabsContent>
             <TabsContent value="post" class="pt-0 gap-4 flex flex-col">
               <div class="flex flex-col w-full px-4">
-                <TextField onChange={(v) => setPostContent(v)} value={postContent()}>
-                  <TextFieldTextArea
+                <TextFieldRoot onChange={(v) => setPostContent(v)} value={postContent()}>
+                  <TextArea
                     autofocus
                     placeholder="What's up?"
                     class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none min-h-[6.5rem] bg-muted"
                     autoResize
-                    onKeyDown={(e) => {
+                    onKeyDown={(e: KeyboardEvent) => {
                       if (e.key === "Escape") {
                         resetForm();
                       }
                     }}
                   />
-                </TextField>
+                </TextFieldRoot>
               </div>
               <div class="flex flex-row items-center justify-between px-4">
                 <div class="w-full"></div>

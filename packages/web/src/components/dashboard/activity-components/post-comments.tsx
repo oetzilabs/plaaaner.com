@@ -7,8 +7,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
-import { TextFieldTextArea } from "@/components/ui/textarea";
-import { TextField } from "@/components/ui/textfield";
+import { TextArea } from "@/components/ui/textarea";
+import { TextField, TextFieldRoot } from "@/components/ui/textfield";
 import { getActivities } from "@/lib/api/activity";
 import { commentOnPost, deletePostComment, getPostComments, getPosts } from "@/lib/api/posts";
 import { UserSession } from "@/lib/auth/util";
@@ -16,7 +16,7 @@ import { cn, shortUsername } from "@/lib/utils";
 import { revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { CircleAlert, Ellipsis, Loader2, MessageSquareDiff, Trash } from "lucide-solid";
-import { For, Match, Show, Switch, createResource, createSignal } from "solid-js";
+import { createResource, createSignal, For, Match, Show, Switch } from "solid-js";
 import { Transition } from "solid-transition-group";
 
 export const PostCommentsSection = (props: {
@@ -182,13 +182,8 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
 
   return (
     <div class="w-full h-auto flex flex-col gap-2">
-      <TextField
-        onChange={(v) => {
-          setComment(v);
-        }}
-        value={comment()}
-      >
-        <TextFieldTextArea
+      <TextFieldRoot onChange={setComment} value={comment()}>
+        <TextArea
           placeholder="Add a comment..."
           autoResize
           class={cn("shadow-none !ring-0 !outline-none rounded-md px-0 resize-none  p-2 min-h-10 transition-height", {
@@ -204,13 +199,13 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
             if (comment().length > 0) return;
             setIsFocused(false);
           }}
-          onKeyDown={(e) => {
+          onKeyDown={(e: KeyboardEvent) => {
             if (e.key === "Escape") {
               setComment("");
             }
           }}
-        ></TextFieldTextArea>
-      </TextField>
+        ></TextArea>
+      </TextFieldRoot>
       <Transition name="slide-fade-down">
         <Show when={isFocused()}>
           <div class="flex flex-row w-full items-center justify-between gap-2">

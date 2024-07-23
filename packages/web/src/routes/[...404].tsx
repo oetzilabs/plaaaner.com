@@ -1,4 +1,12 @@
 import { A } from "@solidjs/router";
+import { getAuthenticatedSession } from "../lib/auth/util";
+
+export const route = {
+  preload: async () => {
+    const session = await getAuthenticatedSession();
+    return { session };
+  },
+};
 
 export default function NotFound() {
   return (

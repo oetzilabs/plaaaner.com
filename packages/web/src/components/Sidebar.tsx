@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
-import { A, useLocation, useResolvedPath } from "@solidjs/router";
+import { A, createAsync, useLocation, useResolvedPath } from "@solidjs/router";
 import { Activity, Bell, Circle, HelpCircle, LayoutDashboard } from "lucide-solid";
 import { JSXElement, Show } from "solid-js";
+import { getAuthenticatedSession } from "../lib/auth/util";
 import { OrganizationWorkspaceSelection } from "./OrganizationWorkspaceSelection";
 import { useSession } from "./SessionProvider";
 import { Button } from "./ui/button";
@@ -26,13 +27,13 @@ export const SidebarLink = (props: {
       <Tooltip placement="right">
         <TooltipTrigger
           as={Button}
-          variant={isActive() ? "default" : props.variant ?? "outline"}
+          variant={isActive() ? "default" : (props.variant ?? "outline")}
           class={cn(
             "size-10 flex flex-col items-center justify-center rounded-full",
             {
               "dark:text-indigo-500 text-white": isActive(),
             },
-            localClass
+            localClass,
           )}
         >
           <Show when={props.icon !== undefined && props.icon} fallback={<Circle class="size-4" fill="currentColor" />}>
@@ -46,12 +47,12 @@ export const SidebarLink = (props: {
 };
 
 export const Sidebar = () => {
-  const userSession = useSession();
+  const session = createAsync(() => getAuthenticatedSession());
 
   return (
     <div class="relative w-max flex flex-col gap-0 border-r border-neutral-200 dark:border-neutral-800 grow min-h-0 max-h-screen">
       <Show
-        when={typeof userSession !== "undefined" && userSession().user !== null && userSession()}
+        when={session() && session()!.user !== null && session()}
         fallback={
           <div class="w-full p-4 flex flex-col gap-2">
             <div class="w-full flex flex-col gap-2">

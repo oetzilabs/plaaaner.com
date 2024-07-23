@@ -1,16 +1,13 @@
 // import { PostCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 import { Posts } from "@oetzilabs-plaaaner-com/core/src/entities/posts";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { action, cache, redirect, reload, revalidate } from "@solidjs/router";
+import { action, cache, redirect } from "@solidjs/router";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import updateLocale from "dayjs/plugin/updateLocale";
 import { getCookie, getEvent } from "vinxi/http";
 import { lucia } from "../auth";
-import { getActivities } from "./activity";
 import { getLocaleSettings } from "./locale";
-import { getUpcomingThreePlans } from "./plans";
-import { WebsocketCore } from "@oetzilabs-plaaaner-com/core/src/entities/websocket";
 
 dayjs.extend(isoWeek);
 dayjs.extend(updateLocale);
@@ -83,7 +80,6 @@ export const createNewPost = action(async (content: string) => {
   }
 
   const [createdPost] = await Posts.create({ content }, user.id, workspace.id);
-  console.log(`revalidating ${getActivities.key}`);
 
   const post = await Posts.findById(createdPost.id);
 

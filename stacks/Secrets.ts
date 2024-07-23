@@ -7,6 +7,8 @@ export function Secrets({ stack }: StackContext) {
     "DATABASE_URL",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
+    "WITH_EMAIL",
+    "EMAIL_FROM",
   );
   return secrets;
 }

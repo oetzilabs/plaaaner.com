@@ -1,9 +1,9 @@
-import { TextField, TextFieldLabel, TextFieldInput } from "@/components/ui/textfield";
-import { Show, createDeferred, createEffect, createSignal } from "solid-js";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
 import { createAsync, redirect, revalidate, useAction, useParams, useSubmission } from "@solidjs/router";
-import { getPlan, getPlans, getUpcomingThreePlans, savePlanGeneral } from "../../../lib/api/plans";
+import { createDeferred, createEffect, createSignal, Show } from "solid-js";
 import { z } from "zod";
 import { getActivities } from "../../../lib/api/activity";
+import { getPlan, getPlans, getUpcomingThreePlans, savePlanGeneral } from "../../../lib/api/plans";
 
 export const General = () => {
   const params = useParams();
@@ -42,31 +42,23 @@ export const General = () => {
     <Show when={typeof plan() !== "undefined" && plan()}>
       {(p) => (
         <>
-          <TextField class="w-full flex flex-col gap-2" aria-label={`What is the Plan Name?`}>
+          <TextFieldRoot
+            class="w-full flex flex-col gap-2"
+            aria-label={`What is the Plan Name?`}
+            value={title()}
+            onChange={setTitle}
+          >
             <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               What is the Plan Name?
             </TextFieldLabel>
-            <TextFieldInput
-              value={title()}
-              onChange={(e) => {
-                const value = e.currentTarget.value;
-                setTitle(value);
-              }}
-            />
-          </TextField>
-          <TextField class="w-full flex flex-col gap-2">
+            <TextField />
+          </TextFieldRoot>
+          <TextFieldRoot class="w-full flex flex-col gap-2" value={description()} onChange={setDescription}>
             <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               What is the Plan about? (optional)
             </TextFieldLabel>
-            <TextFieldInput
-              aria-label={`What is the Plan about? (optional)`}
-              value={description()}
-              onChange={(e) => {
-                const value = e.currentTarget.value;
-                setDescription(value);
-              }}
-            />
-          </TextField>
+            <TextField aria-label={`What is the Plan about? (optional)`} />
+          </TextFieldRoot>
         </>
       )}
     </Show>

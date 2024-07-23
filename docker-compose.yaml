@@ -1,0 +1,19 @@
+version: "3.7"
+
+services:
+  # db:
+  #   image: postgres:15.3-alpine3.18
+  #   volumes:
+  #     - data:/var/lib/postgresql/data
+  #   env_file: ./.env.local
+  #   ports:
+  #     - "25432:5432"
+  mailhog:
+    image: mailhog/mailhog
+    logging:
+      driver: 'none' # disable saving logs
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui
+volumes:
+  data:

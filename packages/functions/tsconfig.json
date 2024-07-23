@@ -3,6 +3,8 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "node",
+    "jsxImportSource": "react",
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@/core/*": ["../core/src/*"]

@@ -1,13 +1,13 @@
-import { createAsync, A } from "@solidjs/router";
-import { getNotifications } from "@/lib/api/notifications";
 import { buttonVariants } from "@/components/ui/button";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import localizedFormat from "dayjs/plugin/localizedFormat";
-import { cn } from "@/lib/utils";
+import { getNotifications } from "@/lib/api/notifications";
 import type { UserSession } from "@/lib/auth/util";
-import { Show } from "solid-js";
-import { For } from "solid-js";
+import { cn } from "@/lib/utils";
+import { A, createAsync } from "@solidjs/router";
+import dayjs from "dayjs";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { For, Show } from "solid-js";
+
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 
@@ -24,7 +24,7 @@ export const NotificationList = (props: { session: UserSession }) => {
           Notifications
         </A>
         <div class="flex flex-col w-full gap-2">
-          <Show when={typeof notifications !== undefined && notifications()}>
+          <Show when={notifications()}>
             {(notificationlist) => (
               <For
                 each={notificationlist()}
@@ -43,7 +43,7 @@ export const NotificationList = (props: { session: UserSession }) => {
                         variant: "ghost",
                         size: "sm",
                       }),
-                      "flex flex-col w-full p-2 border relative border-neutral-200 dark:border-neutral-800 rounded-md min-h-10 h-auto"
+                      "flex flex-col w-full p-2 border relative border-neutral-200 dark:border-neutral-800 rounded-md min-h-10 h-auto",
                     )}
                   >
                     <div class="w-full flex flex-row items-center justify-between">

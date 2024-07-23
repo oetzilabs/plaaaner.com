@@ -1,9 +1,9 @@
 import { SolidStartSite, StackContext, use } from "sst/constructs";
 import { Api } from "./Api";
-import { Storage } from "./Storage";
+import { Auth } from "./Auth";
 import { Domain } from "./Domain";
 import { Secrets } from "./Secrets";
-import { Auth } from "./Auth";
+import { Storage } from "./Storage";
 import { Websocket } from "./Websocket";
 
 export function SolidStart({ stack, app }: StackContext) {
@@ -14,12 +14,15 @@ export function SolidStart({ stack, app }: StackContext) {
   const secrets = use(Secrets);
   const ws = use(Websocket);
 
+  const main_app_url = app.local ? "http://localhost:3000" : dns.domain;
+
   const solidStartApp = new SolidStartSite(stack, `${app.name}-app`, {
-    bind: [bucket, api, secrets.DATABASE_URL, ws],
-    path: "packages/app",
+    bind: [bucket, api, secrets.DATABASE_URL, ws, secrets.WITH_EMAIL, auth, secrets.EMAIL_FROM],
+    path: "packages/web",
     buildCommand: "pnpm build",
     environment: {
       VITE_API_URL: api.customDomainUrl || api.url,
+      VITE_APP_URL: main_app_url,
       VITE_AUTH_URL: auth.url,
       VITE_WS_LINK: ws.customDomainUrl || ws.url,
     },

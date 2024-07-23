@@ -1,12 +1,9 @@
 import { lucia } from "@/lib/auth";
-import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
-import { action, redirect, reload, revalidate } from "@solidjs/router";
-import { appendHeader, getCookie } from "vinxi/http";
-import { z } from "zod";
-import { getEvent } from "vinxi/http";
 import { getAuthenticatedSession } from "@/lib/auth/util";
-import { getNotificationSettings } from "../../lib/api/notifications";
-import { getMessagingSettings } from "../../lib/api/messages";
+import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
+import { action, redirect, reload } from "@solidjs/router";
+import { appendHeader, getCookie, getEvent } from "vinxi/http";
+import { z } from "zod";
 
 export const logout = action(async () => {
   "use server";
@@ -18,7 +15,7 @@ export const logout = action(async () => {
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
   event.context.session = null;
 
-  reload({ headers: { Location: "/auth/login" }, status: 303, revalidate: getAuthenticatedSession.key });
+  throw reload({ headers: { Location: "/auth/login" }, status: 303, revalidate: getAuthenticatedSession.key });
 });
 
 export const revokeAllSessions = action(async () => {
@@ -96,7 +93,7 @@ export const disconnectFromOrganization = action(async (data: string) => {
     },
     {
       sessionId: sessionId,
-    }
+    },
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = session;
@@ -133,7 +130,7 @@ export const deleteOrganization = action(async (id: string) => {
     },
     {
       sessionId: sessionId,
-    }
+    },
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
   event.context.session = session;
