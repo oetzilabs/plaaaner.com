@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   server: {
     preset: "aws-lambda",
+    inlineDynamicImports: true,
     esbuild: {
       options: {
         target: "esnext",
@@ -24,7 +25,6 @@ export default defineConfig({
       },
     },
     optimizeDeps: {
-      exclude: ["lucide-solid", "@iconify/icons-lucide", "@kobalte/core"],
       esbuildOptions: {
         target: "esnext",
         treeShaking: true,

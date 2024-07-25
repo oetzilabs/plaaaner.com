@@ -25,7 +25,7 @@ importers:
         version: 0.6.5(@ianvs/prettier-plugin-sort-imports@4.3.1(prettier@3.3.3))(prettier@3.3.3)
       sst:
         specifier: 2.41.4
-        version: 2.41.4(@types/react@18.0.25)(aws-crt@1.21.2)
+        version: link:../../oezguerisbert/sst/packages/sst/dist
       typescript:
         specifier: ^5.5.3
         version: 5.5.3
