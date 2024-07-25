@@ -3,6 +3,7 @@ import { StackContext } from "sst/constructs";
 
 const PRODUCTION = "plaaaner.com";
 const DEV = "dev.plaaaner.com";
+// const STAGING = "dev.plaaaner.com";
 
 export function Domain(ctx: StackContext) {
   if (ctx.stack.stage === "production") {
