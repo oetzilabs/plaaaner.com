@@ -1,4 +1,3 @@
-import { today } from "@internationalized/date";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,15 +8,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { TextFieldInput, TextField, TextFieldLabel } from "@/components/ui/textfield";
-import { Skeleton } from "@/components/ui/skeleton";
-import dayjs from "dayjs";
-import advancedFormat from "dayjs/plugin/advancedFormat";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import tz from "dayjs/plugin/timezone";
-import { Calendar, Minus, Plus, Trash } from "lucide-solid";
-import { createSignal, For, onMount } from "solid-js";
-import { usePlanProvider } from "../CreatePlanProvider";
 import { Button } from "@/components/ui/button";
 import {
   DatePicker,
@@ -35,8 +25,19 @@ import {
   DatePickerViewControl,
   DatePickerViewTrigger,
 } from "@/components/ui/date-picker";
-import { toast } from "solid-sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
+import { today } from "@internationalized/date";
 import { update } from "@solid-primitives/signal-builders";
+import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import tz from "dayjs/plugin/timezone";
+import { Calendar, Minus, Plus, Trash } from "lucide-solid";
+import { createSignal, For, onMount } from "solid-js";
+import { toast } from "solid-sonner";
+import { usePlanProvider } from "../CreatePlanProvider";
+
 dayjs.extend(tz);
 dayjs.extend(advancedFormat);
 dayjs.extend(customParseFormat);
@@ -61,38 +62,36 @@ const TimeSlotChange = (props: {
 
   return (
     <div class="flex flex-col gap-4 w-full">
-      <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+      <TextFieldRoot
+        class="w-full flex flex-col gap-2"
+        aria-label="Start Time"
+        value={dayjs(start()).format("hh:mm")}
+        onChange={(value) => {
+          setStart(dayjs(value, dateFormat).toDate());
+        }}
+      >
         <div class="flex flex-row items-center justify-between w-full">
           <TextFieldLabel class="w-full flex flex-col gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Start Time
-            <TextFieldInput
-              class="w-full"
-              placeholder="Start time"
-              type="time"
-              value={dayjs(start()).format("hh:mm")}
-              onChange={(e) => {
-                setStart(dayjs(e.target.value, dateFormat).toDate());
-              }}
-            />
+            <TextField class="w-full" placeholder="Start time" type="time" />
           </TextFieldLabel>
         </div>
-      </TextField>
-      <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+      </TextFieldRoot>
+      <TextFieldRoot
+        class="w-full flex flex-col gap-2"
+        aria-label="Start Time"
+        value={dayjs(end()).format("hh:mm")}
+        onChange={(value) => {
+          setEnd(dayjs(value, dateFormat).toDate());
+        }}
+      >
         <div class="flex flex-row items-center justify-between w-full">
           <TextFieldLabel class="w-full flex flex-col gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             End Time
-            <TextFieldInput
-              class="w-full"
-              placeholder="End time"
-              type="time"
-              value={dayjs(end()).format("hh:mm")}
-              onChange={(e) => {
-                setEnd(dayjs(e.target.value, dateFormat).toDate());
-              }}
-            />
+            <TextField class="w-full" placeholder="End time" type="time" />
           </TextFieldLabel>
         </div>
-      </TextField>
+      </TextFieldRoot>
       <AlertDialogFooter>
         <AlertDialogClose>Cancel</AlertDialogClose>
         <AlertDialogAction
@@ -134,7 +133,7 @@ export const Time = () => {
   return (
     <>
       <div class="flex flex-col gap-2 w-full">
-        <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+        <TextFieldRoot class="w-full flex flex-col gap-2" aria-label="Start Time">
           <div class="flex flex-row items-center justify-between w-full">
             <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               When is the {plan?.newPlan().plan_type}?
@@ -157,7 +156,7 @@ export const Time = () => {
               Today
             </Button>
           </div>
-        </TextField>
+        </TextFieldRoot>
         <DatePicker
           numOfMonths={2}
           selectionMode="range"
@@ -366,7 +365,7 @@ export const Time = () => {
                               </AlertDialogHeader>
                               <TimeSlotChange
                                 onChange={(start, end) => {
-                                  if(!plan) return;
+                                  if (!plan) return;
                                   const time_slots_copy = time_slots();
 
                                   time_slots_copy[string_date][string_time_slot].start = dayjs(time_slot.start)
@@ -393,7 +392,7 @@ export const Time = () => {
                               size="icon"
                               class="w-max h-max p-3"
                               onClick={() => {
-                                if(!plan) return;
+                                if (!plan) return;
                                 const time_slots_copy = time_slots();
                                 const ts = time_slots_copy[string_date];
                                 delete ts[string_time_slot];
@@ -414,7 +413,7 @@ export const Time = () => {
                       class="flex gap-2 items-center"
                       size="sm"
                       onClick={() => {
-                        if(!plan) return;
+                        if (!plan) return;
                         const time_slots_copy = time_slots();
                         const the_day = time_slots_copy[string_date];
                         const sortedTimeSlots = Object.values(the_day).sort(
