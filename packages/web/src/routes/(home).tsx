@@ -54,6 +54,7 @@ export default function IndexPage() {
           </div>
         </div>
       </div>
+      <div class="flex grow w-full" />
       <Footer />
     </>
   );

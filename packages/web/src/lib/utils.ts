@@ -27,11 +27,11 @@ export const footer_links = {
   "Open Source": [
     {
       name: "GitHub",
-      href: "https://github.com/oetzilabs/plaaaner.com",
+      href: "#",
     },
     {
       name: "Issues",
-      href: "https://github.com/oetzilabs/plaaaner.com/issues",
+      href: "#",
     },
   ],
   Community: [
