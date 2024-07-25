@@ -2,5 +2,9 @@
   "hosted-zone:account=836832476545:domainName=dev.plaaaner.com:region=eu-central-1": {
     "Id": "/hostedzone/Z10101953SQ3Y6T06OMET",
     "Name": "dev.plaaaner.com."
+  },
+  "hosted-zone:account=836832476545:domainName=plaaaner.com:region=eu-central-1": {
+    "Id": "/hostedzone/Z10106891JFJBLWU5HE24",
+    "Name": "plaaaner.com."
   }
 }

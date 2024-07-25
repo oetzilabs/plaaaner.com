@@ -1,6 +1,6 @@
-import { defineConfig } from "@solidjs/start/config";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { defineConfig } from "@solidjs/start/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -8,7 +8,6 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   server: {
     preset: "aws-lambda",
-    inlineDynamicImports: true,
     esbuild: {
       options: {
         target: "esnext",
