@@ -7,7 +7,6 @@ import { createEmitter, createEventBus } from "@solid-primitives/event-bus";
 import { MetaProvider, Title } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { AlertCircleIcon, CheckCheck, Info, Loader2 } from "lucide-solid";
 import { createSignal, ErrorBoundary, onCleanup, onMount, Show, Suspense } from "solid-js";
 import { isServer } from "solid-js/web";
@@ -22,16 +21,6 @@ const [websocket, setWebsocket] = createSignal<ReconnectingWebSocket | null>(nul
 export default function App() {
   const wsLink = import.meta.env.VITE_WS_LINK;
   if (!wsLink) throw new Error("No Websocket Link in Environtment");
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        staleTime: 5000,
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
-
   const bus = createEventBus<WebsocketMessage<string, unknown>>();
   const emitter = createEmitter<WebsocketMessageProtocol>();
 
@@ -106,49 +95,46 @@ export default function App() {
         </div>
       )}
     >
-      <QueryClientProvider client={queryClient}>
-        {/*<SolidQueryDevtools initialIsOpen={false} />*/}
-        <Router
-          root={(props) => (
-            <>
-              <MetaProvider>
-                <Title>Plaaaner.com</Title>
-                <Suspense>
-                  <ColorModeScript storageType={storageManager.type} initialColorMode="system" />
-                  <ColorModeProvider storageManager={storageManager}>
-                    <Toaster
-                      position="bottom-right"
-                      duration={5000}
-                      theme="system"
-                      icons={{
-                        info: <Info class="w-6 h-6" />,
-                        success: <CheckCheck class="w-6 h-6" />,
-                        error: <AlertCircleIcon class="w-6 h-6" />,
-                        loading: <Loader2 class="w-6 h-6 animate-spin" />,
-                        warning: <AlertCircleIcon class="w-6 h-6" />,
-                      }}
-                    />
-                    <div
-                      class="w-full flex flex-col"
-                      style={{
-                        "flex-grow": "1",
-                        "min-height": "100vh",
-                      }}
-                    >
-                      <Websocket websocket={websocket()} emitter={emitter}>
-                        <Header />
-                        {props.children}
-                      </Websocket>
-                    </div>
-                  </ColorModeProvider>
-                </Suspense>
-              </MetaProvider>
-            </>
-          )}
-        >
-          <FileRoutes />
-        </Router>
-      </QueryClientProvider>
+      <Router
+        root={(props) => (
+          <>
+            <MetaProvider>
+              <Title>Plaaaner.com</Title>
+              <Suspense>
+                <ColorModeScript storageType={storageManager.type} initialColorMode="system" />
+                <ColorModeProvider storageManager={storageManager}>
+                  <Toaster
+                    position="bottom-right"
+                    duration={5000}
+                    theme="system"
+                    icons={{
+                      info: <Info class="w-6 h-6" />,
+                      success: <CheckCheck class="w-6 h-6" />,
+                      error: <AlertCircleIcon class="w-6 h-6" />,
+                      loading: <Loader2 class="w-6 h-6 animate-spin" />,
+                      warning: <AlertCircleIcon class="w-6 h-6" />,
+                    }}
+                  />
+                  <div
+                    class="w-full flex flex-col"
+                    style={{
+                      "flex-grow": "1",
+                      "min-height": "100vh",
+                    }}
+                  >
+                    <Websocket websocket={websocket()} emitter={emitter}>
+                      <Header />
+                      {props.children}
+                    </Websocket>
+                  </div>
+                </ColorModeProvider>
+              </Suspense>
+            </MetaProvider>
+          </>
+        )}
+      >
+        <FileRoutes />
+      </Router>
     </ErrorBoundary>
   );
 }

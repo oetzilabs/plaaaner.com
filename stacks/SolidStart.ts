@@ -20,6 +20,7 @@ export function SolidStart({ stack, app }: StackContext) {
     bind: [bucket, api, secrets.DATABASE_URL, ws, secrets.WITH_EMAIL, auth, secrets.EMAIL_FROM, secrets.LOGIN_ENABLED],
     path: "packages/web",
     buildCommand: "pnpm build",
+    runtime: "nodejs20.x",
     environment: {
       VITE_API_URL: api.customDomainUrl || api.url,
       VITE_APP_URL: main_app_url,
@@ -29,6 +30,10 @@ export function SolidStart({ stack, app }: StackContext) {
     customDomain: {
       domainName: dns.domain,
       hostedZone: dns.zone.zoneName,
+    },
+    invalidation: {
+      paths: "all",
+      wait: true,
     },
   });
 
