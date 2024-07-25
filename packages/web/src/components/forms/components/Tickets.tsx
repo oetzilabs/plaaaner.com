@@ -1,4 +1,4 @@
-import { Transition } from "solid-transition-group";
+import { Button } from "@/components/ui/button";
 import {
   RadioGroup,
   RadioGroupItem,
@@ -6,21 +6,20 @@ import {
   RadioGroupItemLabel,
   RadioGroupLabel,
 } from "@/components/ui/radio-group";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
-import { getDefaultFreeTicketType } from "@/lib/api/plans";
-import { cn } from "@/lib/utils";
-import { createAsync } from "@solidjs/router";
-import { For, Show, Switch } from "solid-js";
-import { toast } from "solid-sonner";
-import { usePlanProvider } from "../CreatePlanProvider";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCaption, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { Match } from "solid-js";
-import { EditTicketForm } from "../EditTicketForm";
-import { z } from "zod";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
+import { getDefaultFreeTicketType } from "@/lib/api/plans";
+import { cn } from "@/lib/utils";
 import { BaseTicketSchema, CreatePlanFormSchema } from "@/utils/schemas/plan";
-import { Button } from "@/components/ui/button";
+import { createAsync } from "@solidjs/router";
 import { Minus, Plus } from "lucide-solid";
+import { For, Match, Show, Switch } from "solid-js";
+import { toast } from "solid-sonner";
+import { Transition } from "solid-transition-group";
+import { z } from "zod";
+import { usePlanProvider } from "../CreatePlanProvider";
+import { EditTicketForm } from "../EditTicketForm";
 
 export const Tickets = () => {
   const plan = usePlanProvider();
@@ -40,7 +39,7 @@ export const Tickets = () => {
             plan.newPlan().capacity.value as Exclude<
               z.infer<typeof CreatePlanFormSchema>["capacity"]["value"],
               "none" | number
-            >
+            >,
           ) - totalTickets;
     if (ticket.ticket_type.payment_type === "FREE") {
       return remainingTickets;
@@ -145,7 +144,7 @@ export const Tickets = () => {
                           plan.newPlan().capacity.value === String(value)) ||
                         (plan.newPlan().capacity.capacity_type === "custom" && value === "custom") ||
                         (plan.newPlan().capacity.capacity_type === "none" && value === "none"),
-                    }
+                    },
                   )}
                 >
                   {value} <RadioGroupItemControl class="hidden" />
@@ -156,31 +155,29 @@ export const Tickets = () => {
         </div>
       </RadioGroup>
       <Show when={plan.newPlan().capacity.capacity_type === "custom"}>
-        <TextField class="w-full flex flex-col gap-2" aria-label="Tickets">
+        <TextFieldRoot
+          class="w-full flex flex-col gap-2"
+          aria-label="Tickets"
+          value={String(plan.newPlan().capacity.value === "none" ? 0 : plan.newPlan().capacity.value)}
+          onChange={(value) => {
+            if (!value) return;
+            const capacity = parseInt(value);
+            if (isNaN(capacity)) return;
+
+            plan.setNewPlan((ev) => ({
+              ...ev,
+              capacity: {
+                capacity_type: "custom",
+                value: capacity,
+              },
+            }));
+          }}
+        >
           <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Or choose a custom capacity
           </TextFieldLabel>
-          <TextFieldInput
-            type="number"
-            min={0}
-            step="1"
-            value={plan.newPlan().capacity.value}
-            onChange={(e) => {
-              const value = e.currentTarget.value;
-              if (!value) return;
-              const capacity = parseInt(value);
-              if (isNaN(capacity)) return;
-
-              plan.setNewPlan((ev) => ({
-                ...ev,
-                capacity: {
-                  capacity_type: "custom",
-                  value: capacity,
-                },
-              }));
-            }}
-          />
-        </TextField>
+          <TextField type="number" min={0} step="1" />
+        </TextFieldRoot>
       </Show>
       <Transition name="slide-fade-down">
         <Show when={["recommended", "custom"].includes(plan.newPlan().capacity.capacity_type)}>

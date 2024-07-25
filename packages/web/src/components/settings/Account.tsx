@@ -1,6 +1,6 @@
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { TextField, TextFieldRoot, TextFieldLabel } from "@/components/ui/textfield";
 import { getLocale, changeLocaleCookie } from "@/lib/api/locale";
 import { saveUser } from "@/lib/api/user";
 import type { UserSession } from "@/lib/auth/util";
@@ -38,7 +38,7 @@ export const Account = (props: { session: UserSession }) => {
             <Show when={props.session.user}>
               {(u) => (
                 <>
-                  <TextField
+                  <TextFieldRoot
                     class="w-max flex flex-col gap-2"
                     name="name"
                     disabled={isSavingUser.pending}
@@ -46,17 +46,17 @@ export const Account = (props: { session: UserSession }) => {
                   >
                     <TextFieldLabel class="flex flex-col gap-2">
                       User
-                      <TextFieldInput
+                      <TextField
                         placeholder="Username"
                         class="w-max min-w-[600px] max-w-[600px]"
                         disabled={isSavingUser.pending}
                       />
                     </TextFieldLabel>
-                  </TextField>
-                  <TextField class="w-max flex flex-col gap-2" defaultValue={u().email}>
+                  </TextFieldRoot>
+                  <TextFieldRoot class="w-max flex flex-col gap-2" defaultValue={u().email}>
                     <TextFieldLabel class="flex flex-col gap-2">
                       Email
-                      <TextFieldInput
+                      <TextField
                         id="email"
                         placeholder="Email"
                         type="email"
@@ -68,7 +68,7 @@ export const Account = (props: { session: UserSession }) => {
                         readOnly
                       />
                     </TextFieldLabel>
-                  </TextField>
+                  </TextFieldRoot>
                 </>
               )}
             </Show>

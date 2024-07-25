@@ -4,12 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox, CheckboxControl, CheckboxLabel } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
 import { createWorkspace } from "@/lib/api/workspaces";
 import { getAuthenticatedSession } from "@/lib/auth/util";
 import { revalidate, useAction, useParams, useSubmission } from "@solidjs/router";
 import { Layout, Receipt, User } from "lucide-solid";
-import { Show, createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 
 export default function NewWorkspace() {
   const session = useSession();
@@ -59,20 +59,24 @@ export default function NewWorkspace() {
               <span class="text-muted-foreground text-xs">Setup your general information about the workspace.</span>
               <div class="flex flex-col items-start gap-2 w-full">
                 <span class="text-lg font-semibold">Account</span>
-                <TextField class="w-max flex flex-col gap-2" name="name" disabled={isCreatingWorkspace.pending}>
+                <TextFieldRoot
+                  class="w-max flex flex-col gap-2"
+                  name="name"
+                  disabled={isCreatingWorkspace.pending}
+                  value={newWorkspace().name}
+                  onChange={(value) => {
+                    setNewWorkspace({ ...newWorkspace(), name: value });
+                  }}
+                >
                   <TextFieldLabel class="flex flex-col gap-2">
                     Workspace Name
-                    <TextFieldInput
+                    <TextField
                       placeholder="Username"
                       class="w-max min-w-[600px] max-w-[600px]"
-                      value={newWorkspace().name}
-                      onChange={(e) => {
-                        setNewWorkspace({ ...newWorkspace(), name: e.target.value });
-                      }}
                       disabled={isCreatingWorkspace.pending}
                     />
                   </TextFieldLabel>
-                </TextField>
+                </TextFieldRoot>
                 <Checkbox onChange={(b) => setNewWorkspace((nw) => ({ ...nw, connect: b }))} class="flex flex-row">
                   <CheckboxLabel class="text-sm font-bold flex flex-row items-center justify-start gap-2">
                     <CheckboxControl />

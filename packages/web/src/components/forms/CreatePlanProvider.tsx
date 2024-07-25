@@ -1,16 +1,16 @@
-import { ArrowLeft } from "lucide-solid";
-import { createNewPlan, getPlanTypeId, getPreviousPlans, getRecommendedPlans } from "@/lib/api/plans";
-import { CreatePlanFormSchema } from "@/utils/schemas/plan";
 import { Button } from "@/components/ui/button";
+import { createPlanCreationForm, getPlanTypeId, getPreviousPlans, getRecommendedPlans } from "@/lib/api/plans";
+import { CreatePlanFormSchema } from "@/utils/schemas/plan";
 import { createContextProvider } from "@solid-primitives/context";
 import { createUndoHistory } from "@solid-primitives/history";
 import { createAsync, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
+import { ArrowLeft } from "lucide-solid";
 import { createMemo, createSignal } from "solid-js";
 import { z } from "zod";
 import { Skeleton } from "../ui/skeleton";
-import { Sidebar } from "./components/Sidebar";
 import { Form } from "./components/Form";
+import { Sidebar } from "./components/Sidebar";
 
 type PlanFormSchema = z.infer<typeof CreatePlanFormSchema>;
 
@@ -65,8 +65,8 @@ export const [CreatePlanProvider, usePlanProvider] = createContextProvider((prop
   const previousPlans = createAsync(() => getPreviousPlans(), { deferStream: true });
   const recommendedPlans = createAsync(() => getRecommendedPlans(), { deferStream: true });
   const plan_type_id = createAsync(() => getPlanTypeId(props.plan_type), { deferStream: true });
-  const createPlan = useAction(createNewPlan);
-  const isCreating = useSubmission(createNewPlan);
+  const createPlan = useAction(createPlanCreationForm);
+  const isCreating = useSubmission(createPlanCreationForm);
 
   const [newPlan, setNewPlan] = createSignal<z.infer<typeof CreatePlanFormSchema>>(DEFAULT_PLAN(props.plan_type));
   const [trackClearPlan, clearPlanHistory] = createSignal(undefined, { equals: false });
@@ -82,7 +82,7 @@ export const [CreatePlanProvider, usePlanProvider] = createContextProvider((prop
       },
       {
         limit: 1000,
-      }
+      },
     );
   });
 

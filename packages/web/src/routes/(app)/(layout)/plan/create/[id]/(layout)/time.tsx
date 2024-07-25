@@ -25,7 +25,7 @@ import {
   DatePickerViewControl,
   DatePickerViewTrigger,
 } from "@/components/ui/date-picker";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
 import { getActivities } from "@/lib/api/activity";
 import { getPlan, getUpcomingThreePlans, savePlanTimeslots } from "@/lib/api/plans";
 import { today } from "@internationalized/date";
@@ -36,9 +36,10 @@ import advancedFormat from "dayjs/plugin/advancedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import tz from "dayjs/plugin/timezone";
 import { Calendar, Loader2, Minus, Plus, Trash } from "lucide-solid";
-import { For, Match, Show, Switch, createSignal, onMount } from "solid-js";
+import { createSignal, For, Match, onMount, Show, Switch } from "solid-js";
 import { toast } from "solid-sonner";
 import { z } from "zod";
+
 dayjs.extend(tz);
 dayjs.extend(advancedFormat);
 dayjs.extend(customParseFormat);
@@ -63,38 +64,36 @@ const TimeSlotChange = (props: {
 
   return (
     <div class="flex flex-col gap-4 w-full">
-      <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+      <TextFieldRoot
+        class="w-full flex flex-col gap-2"
+        aria-label="Start Time"
+        value={dayjs(start()).format("hh:mm")}
+        onChange={(value) => {
+          setStart(dayjs(value, dateFormat).toDate());
+        }}
+      >
         <div class="flex flex-row items-center justify-between w-full">
           <TextFieldLabel class="w-full flex flex-col gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Start Time
-            <TextFieldInput
-              class="w-full"
-              placeholder="Start time"
-              type="time"
-              value={dayjs(start()).format("hh:mm")}
-              onChange={(e) => {
-                setStart(dayjs(e.target.value, dateFormat).toDate());
-              }}
-            />
+            <TextField class="w-full" placeholder="Start time" type="time" />
           </TextFieldLabel>
         </div>
-      </TextField>
-      <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+      </TextFieldRoot>
+      <TextFieldRoot
+        class="w-full flex flex-col gap-2"
+        aria-label="Start Time"
+        value={dayjs(end()).format("hh:mm")}
+        onChange={(value) => {
+          setEnd(dayjs(value, dateFormat).toDate());
+        }}
+      >
         <div class="flex flex-row items-center justify-between w-full">
           <TextFieldLabel class="w-full flex flex-col gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             End Time
-            <TextFieldInput
-              class="w-full"
-              placeholder="End time"
-              type="time"
-              value={dayjs(end()).format("hh:mm")}
-              onChange={(e) => {
-                setEnd(dayjs(e.target.value, dateFormat).toDate());
-              }}
-            />
+            <TextField class="w-full" placeholder="End time" type="time" />
           </TextFieldLabel>
         </div>
-      </TextField>
+      </TextFieldRoot>
       <AlertDialogFooter>
         <AlertDialogClose>Cancel</AlertDialogClose>
         <AlertDialogAction
@@ -171,7 +170,7 @@ export default function PlanCreateGeneralPage() {
         return (
           <>
             <div class="flex flex-col gap-2 w-full">
-              <TextField class="w-full flex flex-col gap-2" aria-label="Start Time">
+              <TextFieldRoot class="w-full flex flex-col gap-2" aria-label="Start Time">
                 <div class="flex flex-row items-center justify-between w-full">
                   <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     When is the Plan?
@@ -189,7 +188,7 @@ export default function PlanCreateGeneralPage() {
                     Today
                   </Button>
                 </div>
-              </TextField>
+              </TextFieldRoot>
               <DatePicker
                 numOfMonths={2}
                 selectionMode="range"
@@ -210,8 +209,8 @@ export default function PlanCreateGeneralPage() {
                               end: dayjs(days[0]).add(i, "days").endOf("day").toDate(),
                             },
                           },
-                        ])
-                      )
+                        ]),
+                      ),
                     );
                   }
                 }}
@@ -440,7 +439,7 @@ export default function PlanCreateGeneralPage() {
                               const time_slots_copy = time_slots();
                               const the_day = time_slots_copy[string_date];
                               const sortedTimeSlots = Object.values(the_day).sort(
-                                (a, b) => b.start.getTime() - a.start.getTime()
+                                (a, b) => b.start.getTime() - a.start.getTime(),
                               );
                               if (sortedTimeSlots.length === 0) {
                                 const newStartTime = dayjs(string_date).startOf("day");

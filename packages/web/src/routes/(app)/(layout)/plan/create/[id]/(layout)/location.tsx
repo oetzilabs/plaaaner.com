@@ -1,4 +1,3 @@
-import URLPreview from "@/components/URLPreview";
 import { Button } from "@/components/ui/button";
 import {
   RadioGroup,
@@ -7,15 +6,16 @@ import {
   RadioGroupItemLabel,
   RadioGroupLabel,
 } from "@/components/ui/radio-group";
-import { TextFieldTextArea } from "@/components/ui/textarea";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { TextArea } from "@/components/ui/textarea";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
+import URLPreview from "@/components/URLPreview";
 import { getPlan, getPlanLocation, savePlanLocation } from "@/lib/api/plans";
 import { cn } from "@/lib/utils";
 import type { ConcertLocation } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { A, createAsync, redirect, useAction, useParams, useSubmission } from "@solidjs/router";
 import { clientOnly } from "@solidjs/start";
 import { Clover, Container, Globe, Loader2, PartyPopper } from "lucide-solid";
-import { Match, Show, Switch, createSignal } from "solid-js";
+import { createSignal, Match, Show, Switch } from "solid-js";
 import { z } from "zod";
 
 const ClientMap = clientOnly(() => import("@/components/ClientMap"));
@@ -127,9 +127,10 @@ export default function PlanCreateLocationPage() {
                       class={cn(
                         "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": location().location_type !== "venue",
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
+                            location().location_type !== "venue",
                           "bg-secondary": location().location_type === "venue",
-                        }
+                        },
                       )}
                     >
                       <Container class="size-4" />
@@ -144,7 +145,7 @@ export default function PlanCreateLocationPage() {
                           "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
                             location().location_type !== "festival",
                           "bg-secondary": location().location_type === "festival",
-                        }
+                        },
                       )}
                     >
                       <PartyPopper class="size-4" />
@@ -156,9 +157,10 @@ export default function PlanCreateLocationPage() {
                       class={cn(
                         "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": location().location_type !== "online",
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
+                            location().location_type !== "online",
                           "bg-secondary": location().location_type === "online",
-                        }
+                        },
                       )}
                     >
                       <Globe class="size-4" />
@@ -170,9 +172,10 @@ export default function PlanCreateLocationPage() {
                       class={cn(
                         "flex flex-row items-center justify-center  gap-2 w-full bg-transparent border border-neutral-200 dark:border-neutral-800 rounded p-4 text-sm font-medium leading-none cursor-pointer",
                         {
-                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70": location().location_type !== "other",
+                          "peer-disabled:cursor-not-allowed peer-disabled:opacity-70":
+                            location().location_type !== "other",
                           "bg-secondary": location().location_type === "other",
-                        }
+                        },
                       )}
                     >
                       <Clover class="size-4" />
@@ -185,134 +188,107 @@ export default function PlanCreateLocationPage() {
             <div class="flex flex-col items-start justify-between gap-2 w-full">
               <Switch>
                 <Match when={location().location_type === "online"}>
-                  <TextField class="w-full flex flex-col gap-2" aria-label="Location">
+                  <TextFieldRoot
+                    class="w-full flex flex-col gap-2"
+                    aria-label="Location"
+                    value={
+                      // @ts-ignore
+                      location().location_type === "online" && pL().url
+                        ? // @ts-ignore
+                          pL().url
+                        : urlQuery()
+                    }
+                    onChange={(value) => {
+                      setURLQuery(value);
+                      setLocation({
+                        location_type: "online",
+                        url: value,
+                      });
+                    }}
+                  >
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       What is the URL of the plan?
                     </TextFieldLabel>
-                    <TextFieldInput
-                      value={
-                        // @ts-ignore
-                        location().location_type === "online" && pL().url
-                          ? // @ts-ignore
-                            pL().url
-                          : urlQuery()
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          const value = e.currentTarget.value;
-                          setLocationQuery(value);
-                          setLocation({
-                            location_type: "online",
-                            url: value,
-                          });
-                        }
-                      }}
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        setURLQuery(value);
-                        setLocation({
-                          location_type: "online",
-                          url: value,
-                        });
-                      }}
-                    />
-                  </TextField>
+                    <TextField />
+                  </TextFieldRoot>
                   <URLPreview query={urlQuery} />
                 </Match>
                 <Match when={location().location_type === "venue"}>
-                  <TextField class="w-full flex flex-col gap-2" aria-label="Location">
+                  <TextFieldRoot
+                    class="w-full flex flex-col gap-2"
+                    aria-label="Location"
+                    value={
+                      // @ts-ignore
+                      location().location_type === "venue" && pL().address
+                        ? // @ts-ignore
+                          pL().address
+                        : locationQuery()
+                    }
+                    onChange={(value) => {
+                      setLocationQuery(value);
+                      setLocation({
+                        location_type: "venue",
+                        address: value,
+                      });
+                    }}
+                  >
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       Where is the plan going to take place?
                     </TextFieldLabel>
-                    <TextFieldInput
-                      value={
-                        // @ts-ignore
-                        location().location_type === "venue" && pL().address
-                          ? // @ts-ignore
-                            pL().address
-                          : locationQuery()
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          const value = e.currentTarget.value;
-                          setLocationQuery(value);
-                          setLocation({
-                            location_type: "venue",
-                            address: value,
-                          });
-                        }
-                      }}
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        setLocationQuery(value);
-                        setLocation({
-                          location_type: "venue",
-                          address: value,
-                        });
-                      }}
-                    />
-                  </TextField>
+                    <TextField />
+                  </TextFieldRoot>
                   <ClientMap query={locationQuery} />
                 </Match>
                 <Match when={location().location_type === "festival"}>
-                  <TextField class="w-full flex flex-col gap-2" aria-label="Location">
+                  <TextFieldRoot
+                    class="w-full flex flex-col gap-2"
+                    aria-label="Location"
+                    value={
+                      // @ts-ignore
+                      location().location_type === "festival" && pL().address
+                        ? // @ts-ignore
+                          pL().address
+                        : locationQuery()
+                    }
+                    onChange={(value) => {
+                      setLocationQuery(value);
+                      setLocation({
+                        location_type: "festival",
+                        address: value,
+                      });
+                    }}
+                  >
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       Where is the plan going to take place?
                     </TextFieldLabel>
-                    <TextFieldInput
-                      value={
-                        // @ts-ignore
-                        location().location_type === "festival" && pL().address
-                          ? // @ts-ignore
-                            pL().address
-                          : locationQuery()
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          const value = e.currentTarget.value;
-                          setLocationQuery(value);
-                          setLocation({
-                            location_type: "festival",
-                            address: value,
-                          });
-                        }
-                      }}
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        setLocationQuery(value);
-                        setLocation({
-                          location_type: "festival",
-                          address: value,
-                        });
-                      }}
-                    />
-                  </TextField>
+                    <TextField />
+                  </TextFieldRoot>
                   <ClientMap query={locationQuery} />
                 </Match>
                 <Match when={location().location_type === "other"}>
-                  <TextField class="w-full flex flex-col gap-2" aria-label="Other Location">
+                  <TextFieldRoot
+                    class="w-full flex flex-col gap-2"
+                    aria-label="Other Location"
+                    value={
+                      // @ts-ignore
+                      location().location_type === "other" && pL().details
+                        ? // @ts-ignore
+                          pL().details
+                        : locationQuery()
+                    }
+                    onChange={(value) => {
+                      setLocationQuery(value);
+                      setLocation({
+                        location_type: "other",
+                        details: value,
+                      });
+                    }}
+                  >
                     <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       Where is the plan going to take place?
                     </TextFieldLabel>
-                    <TextFieldTextArea
-                      autoResize
-                      value={
-                        // @ts-ignore
-                        location().location_type === "other" && pL().details
-                          ? // @ts-ignore
-                            pL().details
-                          : locationQuery()
-                      }
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        setLocationQuery(value);
-                        setLocation({
-                          location_type: "other",
-                          details: value,
-                        });
-                      }}
-                    />
-                  </TextField>
+                    <TextArea autoResize />
+                  </TextFieldRoot>
                 </Match>
               </Switch>
             </div>

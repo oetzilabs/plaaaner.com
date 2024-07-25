@@ -5,14 +5,13 @@ import {
   RadioGroupItemLabel,
   RadioGroupLabel,
 } from "@/components/ui/radio-group";
-import { TextFieldTextArea } from "@/components/ui/textarea";
-import { TextField, TextFieldInput, TextFieldLabel } from "@/components/ui/textfield";
+import { TextArea } from "@/components/ui/textarea";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
 import URLPreview from "@/components/URLPreview";
 import { cn } from "@/lib/utils";
 import { clientOnly } from "@solidjs/start";
 import { Clover, Container, Globe, PartyPopper } from "lucide-solid";
-import { Match } from "solid-js";
-import { createSignal, Switch } from "solid-js";
+import { createSignal, Match, Switch } from "solid-js";
 import { usePlanProvider } from "../CreatePlanProvider";
 
 const ClientMap = clientOnly(() => import("@/components/ClientMap"));
@@ -154,163 +153,127 @@ export const LocationTab = () => {
       <div class="flex flex-col items-start justify-between gap-2 w-full">
         <Switch>
           <Match when={plan.newPlan().location.location_type === "online"}>
-            <TextField class="w-full flex flex-col gap-2" aria-label="Location">
+            <TextFieldRoot
+              class="w-full flex flex-col gap-2"
+              aria-label="Location"
+              value={
+                // @ts-ignore
+                plan.newPlan().location.location_type === "online" && plan.newPlan().location.url
+                  ? // @ts-ignore
+                    plan.newPlan().location.url
+                  : urlQuery()
+              }
+              onChange={(value) => {
+                setURLQuery(value);
+                plan.setNewPlan((ev) => {
+                  return {
+                    ...ev,
+                    location: {
+                      ...ev.location,
+                      url: value,
+                    },
+                  };
+                });
+              }}
+            >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 What is the URL of the {plan.newPlan().plan_type}?
               </TextFieldLabel>
-              <TextFieldInput
-                value={
-                  // @ts-ignore
-                  plan.newPlan().location.location_type === "online" && plan.newPlan().location.url
-                    ? // @ts-ignore
-                      plan.newPlan().location.url
-                    : urlQuery()
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const value = e.currentTarget.value;
-                    setLocationQuery(value);
-                    plan.setNewPlan((ev) => ({
-                      ...ev,
-                      location: {
-                        ...ev.location,
-                        address: value,
-                      },
-                    }));
-                  }
-                }}
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  setURLQuery(value);
-                  plan.setNewPlan((ev) => {
-                    return {
-                      ...ev,
-                      location: {
-                        ...ev.location,
-                        url: value,
-                      },
-                    };
-                  });
-                }}
-              />
-            </TextField>
+              <TextField />
+            </TextFieldRoot>
             <URLPreview query={urlQuery} />
           </Match>
           <Match when={plan.newPlan().location.location_type === "venue"}>
-            <TextField class="w-full flex flex-col gap-2" aria-label="Location">
+            <TextFieldRoot
+              class="w-full flex flex-col gap-2"
+              aria-label="Location"
+              value={
+                // @ts-ignore
+                plan.newPlan().location.location_type === "venue" && plan.newPlan().location.address
+                  ? // @ts-ignore
+                    plan.newPlan().location.address
+                  : locationQuery()
+              }
+              onChange={(value) => {
+                setLocationQuery(value);
+                plan.setNewPlan((ev) => {
+                  return {
+                    ...ev,
+                    location: {
+                      ...ev.location,
+                      address: value,
+                    },
+                  };
+                });
+              }}
+            >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Where is the {plan.newPlan().plan_type} going to take place?
               </TextFieldLabel>
-              <TextFieldInput
-                value={
-                  // @ts-ignore
-                  plan.newPlan().location.location_type === "venue" && plan.newPlan().location.address
-                    ? // @ts-ignore
-                      plan.newPlan().location.address
-                    : locationQuery()
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const value = e.currentTarget.value;
-                    setLocationQuery(value);
-                    plan.setNewPlan((ev) => ({
-                      ...ev,
-                      location: {
-                        ...ev.location,
-                        address: value,
-                      },
-                    }));
-                  }
-                }}
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  setLocationQuery(value);
-                  plan.setNewPlan((ev) => {
-                    return {
-                      ...ev,
-                      location: {
-                        ...ev.location,
-                        address: value,
-                      },
-                    };
-                  });
-                }}
-              />
-            </TextField>
+              <TextField />
+            </TextFieldRoot>
             <ClientMap query={locationQuery} />
           </Match>
           <Match when={plan.newPlan().location.location_type === "festival"}>
-            <TextField class="w-full flex flex-col gap-2" aria-label="Location">
+            <TextFieldRoot
+              class="w-full flex flex-col gap-2"
+              aria-label="Location"
+              value={
+                // @ts-ignore
+                plan.newPlan().location.location_type === "festival" && plan.newPlan().location.address
+                  ? // @ts-ignore
+                    plan.newPlan().location.address
+                  : locationQuery()
+              }
+              onChange={(value) => {
+                setLocationQuery(value);
+                plan.setNewPlan((ev) => {
+                  return {
+                    ...ev,
+                    location: {
+                      ...ev.location,
+                      address: value,
+                    },
+                  };
+                });
+              }}
+            >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Where is the {plan.newPlan().plan_type} going to take place?
               </TextFieldLabel>
-              <TextFieldInput
-                value={
-                  // @ts-ignore
-                  plan.newPlan().location.location_type === "festival" && plan.newPlan().location.address
-                    ? // @ts-ignore
-                      plan.newPlan().location.address
-                    : locationQuery()
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const value = e.currentTarget.value;
-                    setLocationQuery(value);
-                    plan.setNewPlan((ev) => ({
-                      ...ev,
-                      location: {
-                        ...ev.location,
-                        address: value,
-                      },
-                    }));
-                  }
-                }}
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  setLocationQuery(value);
-                  plan.setNewPlan((ev) => {
-                    return {
-                      ...ev,
-                      location: {
-                        ...ev.location,
-                        address: value,
-                      },
-                    };
-                  });
-                }}
-              />
-            </TextField>
+              <TextField />
+            </TextFieldRoot>
             <ClientMap query={locationQuery} />
           </Match>
           <Match when={plan.newPlan().location.location_type === "other"}>
-            <TextField class="w-full flex flex-col gap-2" aria-label="Other Location">
+            <TextFieldRoot
+              class="w-full flex flex-col gap-2"
+              aria-label="Other Location"
+              value={
+                // @ts-ignore
+                plan.newPlan().location.location_type === "other" && plan.newPlan().location.details
+                  ? // @ts-ignore
+                    plan.newPlan().location.details
+                  : locationQuery()
+              }
+              onChange={(value) => {
+                setLocationQuery(value);
+                plan.setNewPlan((ev) => {
+                  return {
+                    ...ev,
+                    location: {
+                      ...ev.location,
+                      details: value,
+                    },
+                  };
+                });
+              }}
+            >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Where is the {plan.newPlan().plan_type} going to take place?
               </TextFieldLabel>
-              <TextFieldTextArea
-                autoResize
-                value={
-                  // @ts-ignore
-                  plan.newPlan().location.location_type === "other" && plan.newPlan().location.details
-                    ? // @ts-ignore
-                      plan.newPlan().location.details
-                    : locationQuery()
-                }
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  setLocationQuery(value);
-                  plan.setNewPlan((ev) => {
-                    return {
-                      ...ev,
-                      location: {
-                        ...ev.location,
-                        details: value,
-                      },
-                    };
-                  });
-                }}
-              />
-            </TextField>
+              <TextArea autoResize />
+            </TextFieldRoot>
           </Match>
         </Switch>
       </div>
