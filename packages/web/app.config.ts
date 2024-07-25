@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import path from "node:path";
 import { defineConfig } from "@solidjs/start/config";
 
 export default defineConfig({
@@ -11,12 +11,11 @@ export default defineConfig({
       },
     },
   },
-  middleware: "./src/middleware.ts",
   vite: {
-    ssr: { noExternal: ["@kobalte/core", "@internationalized/message"] },
+    ssr: { noExternal: ["@kobalte/core", "lucide-solid"] },
     resolve: {
       alias: {
-        "@": resolve(process.cwd(), "src"),
+        "@": path.resolve(process.cwd(), "src"),
       },
     },
     optimizeDeps: {
