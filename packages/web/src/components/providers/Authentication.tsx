@@ -1,6 +1,4 @@
 import { createSignal } from "solid-js";
-import { isServer } from "solid-js/web";
-// import { setCookie, getCookie } from "vinxi/http";
 import { z } from "zod";
 
 export const UserSchema = z.object({

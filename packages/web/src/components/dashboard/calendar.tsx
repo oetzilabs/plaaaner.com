@@ -33,7 +33,7 @@ export const Calendar = (props: { session: UserSession }) => {
     console.log("updated locale to:", l);
     dayjs.updateLocale(l.language, { weekStart: l.startOfWeek });
   });
-  const plans = createAsync(() => getPlans({ fromDate: null }));
+  const plans = createAsync(() => getPlans());
   const [currentDate, setCurrentDate] = createSignal(dayjs());
 
   const createCalendar = () => {
