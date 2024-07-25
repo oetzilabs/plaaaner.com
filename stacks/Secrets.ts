@@ -9,6 +9,7 @@ export function Secrets({ stack }: StackContext) {
     "GOOGLE_CLIENT_SECRET",
     "WITH_EMAIL",
     "EMAIL_FROM",
+    "LOGIN_ENABLED",
   );
   return secrets;
 }

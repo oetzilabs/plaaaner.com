@@ -17,7 +17,7 @@ export function SolidStart({ stack, app }: StackContext) {
   const main_app_url = app.local ? "http://localhost:3000" : dns.domain;
 
   const solidStartApp = new SolidStartSite(stack, `${app.name}-app`, {
-    bind: [bucket, api, secrets.DATABASE_URL, ws, secrets.WITH_EMAIL, auth, secrets.EMAIL_FROM],
+    bind: [bucket, api, secrets.DATABASE_URL, ws, secrets.WITH_EMAIL, auth, secrets.EMAIL_FROM, secrets.LOGIN_ENABLED],
     path: "packages/web",
     buildCommand: "pnpm build",
     environment: {

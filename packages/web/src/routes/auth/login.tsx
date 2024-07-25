@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { TextField, TextFieldRoot } from "@/components/ui/textfield";
-import { getWithEmail } from "@/lib/auth/features";
+import { getWithEmail, getIsLoginEnabled } from "@/lib/auth/features";
 import { cn } from "@/lib/utils";
 import { A, createAsync } from "@solidjs/router";
 import type { SVGAttributes } from "lucide-solid";
@@ -10,7 +10,8 @@ import { getAuthenticatedSession } from "../../lib/auth/util";
 export const route = {
   preload: async () => {
     const session = await getAuthenticatedSession();
-    return { session };
+    const isLoginEnabled = await getIsLoginEnabled();
+    return { session, isLoginEnabled };
   },
 };
 
@@ -22,7 +23,7 @@ const generateAuthUrl = (provider: string) => {
   url.searchParams.set(
     "redirect_uri",
     (import.meta.env.NODE_ENV === "production" ? "https://plaaaner.com" : "http://localhost:3000") +
-      "/api/auth/callback",
+      "/api/auth/callback"
   );
   return url.toString();
 };
@@ -51,6 +52,7 @@ const randomPersonTesimonial = {
 export default function LoginPage() {
   const [email, setEmail] = createSignal<string>("");
   const withEmail = createAsync(() => getWithEmail());
+  const isLoginEnabled = createAsync(() => getIsLoginEnabled());
 
   const [submitting, setSubmitting] = createSignal<boolean>();
 
@@ -59,61 +61,66 @@ export default function LoginPage() {
   return (
     <div class="md:container h-[calc(100vh-49px)] flex flex-col items-center justify-center md:px-10">
       <div class="w-full h-[650px] md:border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-clip">
-        <div class="w-full relative flex h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-          <div class="relative hidden h-full flex-col bg-muted p-10 dark:border-r lg:flex">
-            <div class="absolute inset-0 bg-neutral-100 dark:bg-neutral-900" />
-            <div class="relative z-20 flex items-center text-lg gap-2 font-black">Plaaaner.</div>
-            <div class="relative z-20 mt-auto">
-              <blockquote class="space-y-2">
-                <p class="">&ldquo;{randomPersonTesimonial.testimonial}&rdquo;</p>
-                <p class="text-sm">
-                  {randomPersonTesimonial.name} - {randomPersonTesimonial.title}
-                </p>
-              </blockquote>
+        <Show
+          when={isLoginEnabled() && isLoginEnabled()}
+          fallback={<div class="text-muted-foreground w-full h-full items-center justify-center flex flex-col">Login is currently disabled</div>}
+        >
+          <div class="w-full relative flex h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+            <div class="relative hidden h-full flex-col bg-muted p-10 dark:border-r lg:flex">
+              <div class="absolute inset-0 bg-neutral-100 dark:bg-neutral-900" />
+              <div class="relative z-20 flex items-center text-lg gap-2 font-black">Plaaaner.</div>
+              <div class="relative z-20 mt-auto">
+                <blockquote class="space-y-2">
+                  <p class="">&ldquo;{randomPersonTesimonial.testimonial}&rdquo;</p>
+                  <p class="text-sm">
+                    {randomPersonTesimonial.name} - {randomPersonTesimonial.title}
+                  </p>
+                </blockquote>
+              </div>
             </div>
-          </div>
-          <div class="p-8 w-full">
-            <div class="mx-auto flex w-full flex-col justify-center space-y-6 max-w-[300px]">
-              <div class="relative z-20 flex lg:hidden items-center text-lg font-black gap-2 justify-center">
-                Plaaaner.
-              </div>
-              <div class="flex flex-col space-y-4 text-center">
-                <h1 class="text-2xl font-semibold tracking-tight">Plaaaner.</h1>
-                <p class="text-sm text-muted-foreground">Login via your preferred method</p>
-              </div>
-              <div class="flex flex-col gap-4 items-center w-full">
-                <For each={Object.entries(logins) as [Logins, string][]}>
-                  {([provider, url]) => {
-                    const L = logos[provider];
-                    return (
-                      <Button
-                        as={A}
-                        class="w-full flex items-center justify-center text-sm font-medium gap-4 capitalize !py-5"
-                        href={url}
-                      >
-                        <L class="h-5 w-5" />
-                        <span>{provider}</span>
-                      </Button>
-                    );
-                  }}
-                </For>
-              </div>
-              <div class="px-8 text-center text-sm text-muted-foreground gap-4 flex flex-col">
-                <span>By continuing, you agree to our</span>
-                <div class="">
-                  <A href="/terms-of-service" class="underline underline-offset-4 hover:text-primary">
-                    Terms of Service
-                  </A>{" "}
-                  and{" "}
-                  <A href="/privacy" class="underline underline-offset-4 hover:text-primary">
-                    Privacy Policy
-                  </A>
-                  .
+            <div class="p-8 w-full">
+              <div class="mx-auto flex w-full flex-col justify-center space-y-6 max-w-[300px]">
+                <div class="relative z-20 flex lg:hidden items-center text-lg font-black gap-2 justify-center">
+                  Plaaaner.
+                </div>
+                <div class="flex flex-col space-y-4 text-center">
+                  <h1 class="text-2xl font-semibold tracking-tight">Plaaaner.</h1>
+                  <p class="text-sm text-muted-foreground">Login via your preferred method</p>
+                </div>
+                <div class="flex flex-col gap-4 items-center w-full">
+                  <For each={Object.entries(logins) as [Logins, string][]}>
+                    {([provider, url]) => {
+                      const L = logos[provider];
+                      return (
+                        <Button
+                          as={A}
+                          class="w-full flex items-center justify-center text-sm font-medium gap-4 capitalize !py-5"
+                          href={url}
+                        >
+                          <L class="h-5 w-5" />
+                          <span>{provider}</span>
+                        </Button>
+                      );
+                    }}
+                  </For>
+                </div>
+                <div class="px-8 text-center text-sm text-muted-foreground gap-4 flex flex-col">
+                  <span>By continuing, you agree to our</span>
+                  <div class="">
+                    <A href="/terms-of-service" class="underline underline-offset-4 hover:text-primary">
+                      Terms of Service
+                    </A>{" "}
+                    and{" "}
+                    <A href="/privacy" class="underline underline-offset-4 hover:text-primary">
+                      Privacy Policy
+                    </A>
+                    .
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </Show>
       </div>
     </div>
   );

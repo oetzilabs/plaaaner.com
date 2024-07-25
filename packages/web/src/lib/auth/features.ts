@@ -8,3 +8,12 @@ export const getWithEmail = cache(async () => {
 
   return z.coerce.boolean().parse(withEmail);
 }, "with-email");
+
+export const getIsLoginEnabled = cache(async () => {
+  "use server";
+  const withLogin = Config.LOGIN_ENABLED;
+
+
+  return withLogin === "true";
+}, "with-login");
+
