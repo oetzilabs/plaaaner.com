@@ -1,12 +1,12 @@
 import { SSTConfig } from "sst";
 import { Api } from "./stacks/Api";
-import { Storage } from "./stacks/Storage";
-import { Domain } from "./stacks/Domain";
-import { SolidStart } from "./stacks/SolidStart";
-import { Secrets } from "./stacks/Secrets";
 import { Auth } from "./stacks/Auth";
-import { Websocket } from "./stacks/Websocket";
+import { Domain } from "./stacks/Domain";
 import { Notification } from "./stacks/Notification";
+import { Secrets } from "./stacks/Secrets";
+import { SolidStart } from "./stacks/SolidStart";
+import { Storage } from "./stacks/Storage";
+import { Websocket } from "./stacks/Websocket";
 
 export default {
   config(_input) {
@@ -16,7 +16,9 @@ export default {
     };
   },
   stacks(app) {
-    app.setDefaultRemovalPolicy("destroy");
+    if (app.stage !== "production") {
+      app.setDefaultRemovalPolicy("destroy");
+    }
     app
       //
       .stack(Domain)
