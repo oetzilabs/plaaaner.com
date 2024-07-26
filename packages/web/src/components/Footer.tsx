@@ -1,19 +1,16 @@
 import { footer_links } from "@/lib/utils";
-import { createMediaQuery } from "@solid-primitives/media";
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import { Logo } from "./ui/custom/logo";
 
 export function Footer() {
-  const isSmall = createMediaQuery("(max-width: 768px)", true);
-
   return (
     <footer class="bg-neutral-50 dark:bg-black flex flex-col border-t border-neutral-200 dark:border-neutral-800 w-full px-4 py-10 items-center">
       <div class="container flex flex-row w-full items-center justify-between px-4 ">
         <div class="flex flex-row justify-between w-full gap-10">
           <div class="w-max">
             <A href="/" class="flex flex-row gap-4 items-center justify-center">
-              <Logo small={isSmall()} />
+              <Logo />
               <span class="font-semibold leading-none text-lg -mt-1 sr-only md:not-sr-only">plaaaner.com</span>
             </A>
           </div>

@@ -30,10 +30,12 @@ export const getNotifications = cache(async () => {
   const { session } = await lucia.validateSession(event.context.session.id);
 
   if (!session) {
+    console.error("Unauthorized");
     throw redirect("/auth/login");
   }
 
   if (!session.organization_id) {
+    console.error("Unauthorized");
     throw redirect("/setup/organization");
   }
 

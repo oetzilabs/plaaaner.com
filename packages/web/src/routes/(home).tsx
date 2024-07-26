@@ -36,7 +36,11 @@ export default function IndexPage() {
               <div class="flex flex-row gap-2 items-center">
                 <Switch>
                   <Match when={session() && session()?.user !== null}>
-                    <Button size="lg" as={A} href="/dashboard">
+                    <Button
+                      size="lg"
+                      as={A}
+                      href={`/dashboard/o/${session()?.organization?.id}/w/${session()?.workspace?.id}`}
+                    >
                       Dashboard
                     </Button>
                   </Match>

@@ -7,14 +7,8 @@ import { getPlan, getPlans, getUpcomingThreePlans, savePlanGeneral } from "../..
 
 export const General = () => {
   const params = useParams();
-  const v = params.id;
-  const isUUID = z.string().uuid().safeParse(v);
 
-  if (!v || !isUUID.success) {
-    return redirect("/404", { status: 404 });
-  }
-
-  const plan = createAsync(() => getPlan(isUUID.data), { deferStream: true });
+  const plan = createAsync(() => getPlan(params.id), { deferStream: true });
   const savePlanAction = useAction(savePlanGeneral);
   const isSaving = useSubmission(savePlanGeneral);
 
@@ -39,28 +33,30 @@ export const General = () => {
   });
 
   return (
-    <Show when={typeof plan() !== "undefined" && plan()}>
-      {(p) => (
-        <>
-          <TextFieldRoot
-            class="w-full flex flex-col gap-2"
-            aria-label={`What is the Plan Name?`}
-            value={title()}
-            onChange={setTitle}
-          >
-            <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              What is the Plan Name?
-            </TextFieldLabel>
-            <TextField />
-          </TextFieldRoot>
-          <TextFieldRoot class="w-full flex flex-col gap-2" value={description()} onChange={setDescription}>
-            <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              What is the Plan about? (optional)
-            </TextFieldLabel>
-            <TextField aria-label={`What is the Plan about? (optional)`} />
-          </TextFieldRoot>
-        </>
-      )}
-    </Show>
+    <>
+      <Show when={typeof plan() !== "undefined" && plan()}>
+        {(p) => (
+          <>
+            <TextFieldRoot
+              class="w-full flex flex-col gap-2"
+              aria-label={`What is the Plan Name?`}
+              value={title()}
+              onChange={setTitle}
+            >
+              <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                What is the Plan Name?
+              </TextFieldLabel>
+              <TextField />
+            </TextFieldRoot>
+            <TextFieldRoot class="w-full flex flex-col gap-2" value={description()} onChange={setDescription}>
+              <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                What is the Plan about? (optional)
+              </TextFieldLabel>
+              <TextField aria-label={`What is the Plan about? (optional)`} />
+            </TextFieldRoot>
+          </>
+        )}
+      </Show>
+    </>
   );
 };

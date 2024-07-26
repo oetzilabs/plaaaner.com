@@ -61,7 +61,7 @@ export const createOrganization = action(async (form: FormData) => {
     },
     {
       sessionId: sessionId,
-    }
+    },
   );
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
@@ -73,9 +73,21 @@ export const createOrganization = action(async (form: FormData) => {
 export const getUserOrganizations = cache(async () => {
   "use server";
   const event = getEvent()!;
-  const user = event.context.user;
+
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    console.error("Unauthorized");
+    return [];
+    throw redirect("/auth/login");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
 
   if (!user) {
+    console.error("Unauthorized");
+    return [];
+
     throw redirect("/auth/login");
   }
 
@@ -101,10 +113,16 @@ export const getOrganizationById = cache(async (id: string) => {
   }
 
   const organization = await Organization.findById(id);
-  if (!organization) throw redirect("/404", 404);
+  if (!organization) {
+    console.error("Organization not found");
+    throw redirect("/404", 404);
+  }
 
   const isUserInOrg = await Organization.hasUser(organization.id, user.id);
-  if (!isUserInOrg) throw redirect("/403", 403);
+  if (!isUserInOrg) {
+    console.error("User is not in organization");
+    throw redirect("/403", 403);
+  }
 
   return organization;
 }, "organization-by-id");

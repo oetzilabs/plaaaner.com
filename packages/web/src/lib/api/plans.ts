@@ -8,6 +8,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import updateLocale from "dayjs/plugin/updateLocale";
 import { getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
+import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import { lucia } from "../auth";
 import { getActivities } from "./activity";
 import { getLocaleSettings } from "./locale";
@@ -77,7 +78,14 @@ export const getPlan = cache(async (id: string) => {
     throw redirect("/auth/login");
   }
 
-  const plan = await Plans.findById(id);
+  const schema = z.string().uuid().safeParse(id);
+  if (schema.success === false) {
+    throw redirect(`/404`, {
+      status: 404,
+    });
+  }
+
+  const plan = await Plans.findById(schema.data);
 
   if (!plan) {
     throw new Error("This plan does not exist");
@@ -119,6 +127,7 @@ export const getNearbyPlans = cache(async () => {
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
   if (!sessionId) {
+    console.error("Unauthorized");
     throw redirect("/auth/login");
   }
 
@@ -161,7 +170,7 @@ export const getNearbyPlans = cache(async () => {
           lat: z.number(),
           lng: z.number(),
         })
-        .parse(data)
+        .parse(data),
     );
 
   console.log({ location });
@@ -264,15 +273,22 @@ export const getUpcomingThreePlans = cache(async () => {
   const locale = getLocaleSettings(event);
   dayjs.updateLocale(locale.language, {});
 
-  const user = event.context.user;
+  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+
+  if (!sessionId) {
+    return new Error("Unauthorized");
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId);
+
+  if (!session) {
+    throw redirect("/auth/login");
+  }
+
   if (!user) {
     throw redirect("/auth/login");
   }
 
-  const session = event.context.session;
-  if (!session) {
-    throw redirect("/auth/login");
-  }
   const fromDate = dayjs().startOf("day").toDate();
   const plans = await Plans.findByOptions({
     user_id: user.id,
@@ -280,7 +296,7 @@ export const getUpcomingThreePlans = cache(async () => {
     organization_id: session.organization_id,
   });
   const filtered = plans.filter(
-    (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day")
+    (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day"),
   );
   const sorted = filtered.sort((a, b) => {
     return dayjs(a.starts_at).isBefore(dayjs(b.starts_at)) ? -1 : 1;
@@ -367,7 +383,7 @@ export const savePlanLocation = action(
     }
 
     return updatedPlan;
-  }
+  },
 );
 
 export const deletePlan = action(async (plan_id) => {
@@ -462,7 +478,7 @@ export const savePlanGeneral = action(
     }
 
     return updatedPlan;
-  }
+  },
 );
 
 export const savePlanTimeslots = action(
@@ -533,8 +549,8 @@ export const savePlanTimeslots = action(
             starts_at: ts.start,
             ends_at: ts.end,
             plan_id: savedPlan.id,
-          } as TS)
-      )
+          }) as TS,
+      ),
     );
 
     const timeSlots = tss.flat();
@@ -547,10 +563,10 @@ export const savePlanTimeslots = action(
     }
 
     return updatedPlan;
-  }
+  },
 );
 
-export const createPlanCreationForm = action(async (data: { title: string; description: string }) => {
+export const createPlanCreationForm = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
   "use server";
   const event = getEvent()!;
   const locale = getLocaleSettings(event);
@@ -576,7 +592,7 @@ export const createPlanCreationForm = action(async (data: { title: string; descr
 
   const [plan] = await Plans.create(
     {
-      name: data.title,
+      name: data.name,
       description: data.description,
       plan_type_id: null,
       starts_at: dayjs().startOf("day").toDate(),
@@ -584,8 +600,8 @@ export const createPlanCreationForm = action(async (data: { title: string; descr
       status: "draft",
     },
     user.id,
-    workspaceId
+    workspaceId,
   );
 
-  throw redirect(`/plan/create/${plan.id}/time`);
+  return plan;
 });

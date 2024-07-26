@@ -4,6 +4,6 @@ export default {
   out: "./src/drizzle/migrations",
   schema: "./src/drizzle/sql/schema.ts",
   verbose: true,
-  driver: "pg",
+  dialect: "postgresql",
   strict: true,
 } satisfies DrizzleConfig;

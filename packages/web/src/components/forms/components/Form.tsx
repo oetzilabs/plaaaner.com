@@ -1,18 +1,18 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { CreatePlanFormSchema } from "@/utils/schemas/plan";
 import { createMediaQuery } from "@solid-primitives/media";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import { ArrowLeft, CheckCheck, Clock, Eraser, Library, Loader2, MapPin, Plus, Redo, Ticket, Undo } from "lucide-solid";
-import { Accessor, Match, Setter, Show, Switch, onMount } from "solid-js";
+import { Accessor, Match, onMount, Setter, Show, Switch } from "solid-js";
+import { z } from "zod";
 import { DEFAULT_PLAN, isFormEmpty, TabMovement, TabValue, usePlanProvider } from "../CreatePlanProvider";
 import { General } from "./General";
 import { LocationTab } from "./Location";
-import { Time } from "./Time";
 import { Tickets } from "./Tickets";
-import { z } from "zod";
+import { Time } from "./Time";
 
 export const FormControls = (props: {
   formRef: HTMLFormElement;
@@ -150,12 +150,12 @@ export const FormControls = (props: {
             </Match>
           </Switch>
         </Button>
-        <Show when={!plan.isCreating.pending && plan.isCreating.result}>
+        <Show when={!plan.isCreating.pending && plan.isCreating.result} keyed>
           {(data) => (
             <Button
               variant="secondary"
               onClick={() => {
-                navigate(`/plans/${data().id}`);
+                navigate(`/plans/${data.id}`);
               }}
             >
               <span class="text-sm font-medium leading-none capitalize">View {plan.newPlan().plan_type}</span>
@@ -184,7 +184,7 @@ const TicketsTabTrigger = () => {
         plan.newPlan().capacity.value as Exclude<
           z.infer<typeof CreatePlanFormSchema>["capacity"]["value"],
           "none"
-        > as string
+        > as string,
       ) > 0
         ? plan.newPlan().capacity.value
         : ""}{" "}
@@ -194,7 +194,7 @@ const TicketsTabTrigger = () => {
         plan.newPlan().capacity.value as Exclude<
           z.infer<typeof CreatePlanFormSchema>["capacity"]["value"],
           "none"
-        > as string
+        > as string,
       ) === 1
         ? ""
         : "s"}
