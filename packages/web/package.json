@@ -1,5 +1,5 @@
 {
-  "name": "@oetzilabs-plaaaner-com/app",
+  "name": "@oetzilabs-plaaaner-com/web",
   "version": "0.0.0",
   "scripts": {
     "local": "vinxi dev",
