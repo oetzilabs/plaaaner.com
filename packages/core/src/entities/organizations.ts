@@ -1,18 +1,18 @@
+import dayjs from "dayjs";
 import { and, eq, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
 import {
   OrganizationCreateSchema,
-  OrganizationUpdateSchema,
-  users_organizations,
   organizations,
   organizations_ticket_types,
+  OrganizationUpdateSchema,
+  users_organizations,
 } from "../drizzle/sql/schema";
-import { User } from "./users";
 import { OrganizationJoin } from "./organizations_joins";
-import dayjs from "dayjs";
 import { TicketTypes } from "./ticket_types";
+import { User } from "./users";
 
 export * as Organization from "./organizations";
 
@@ -154,7 +154,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ])
+    ]),
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
@@ -205,6 +205,11 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
         with: {
           owner: true,
           users: true,
+          workspaces: {
+            with: {
+              workspace: true,
+            },
+          },
         },
       },
     },
@@ -240,7 +245,7 @@ export const requestJoin = z
         expiresAt: dayjs().add(1, "week").toDate(),
         organization_id: org.id,
       },
-      user.id
+      user.id,
     );
 
     return organizationJoin;
@@ -253,7 +258,7 @@ export const hasUser = z
       where: (fields, operators) => {
         return operators.and(
           operators.eq(fields.organization_id, organization_id),
-          operators.eq(fields.user_id, user_id)
+          operators.eq(fields.user_id, user_id),
         );
       },
     });
@@ -322,7 +327,7 @@ export const fillDefaultTicketTypes = z.function(z.tuple([z.string().uuid()])).i
     where(fields, operators) {
       return operators.inArray(
         fields.name,
-        TicketTypes.DEFAULT_TICKET_TYPES.map((t) => t.name)
+        TicketTypes.DEFAULT_TICKET_TYPES.map((t) => t.name),
       );
     },
     columns: {

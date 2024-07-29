@@ -10,6 +10,7 @@ import { getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import { lucia } from "../auth";
+import { getContext } from "../auth/util";
 import { getActivities } from "./activity";
 import { getLocaleSettings } from "./locale";
 
@@ -100,39 +101,40 @@ export const getPlan = cache(async (id: string) => {
 
 export const getRecommendedPlans = cache(async () => {
   "use server";
-  const event = getEvent()!;
-
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
+  const [ctx, event] = await getContext();
+  if (!ctx) {
     throw redirect("/auth/login");
   }
 
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session) {
+  if (!ctx.session) {
+    console.error("Unauthorized");
     throw redirect("/auth/login");
   }
 
-  if (!session.organization_id) {
+  if (!ctx.user) {
+    throw redirect("/auth/login");
+  }
+
+  if (!ctx.session.organization_id) {
     throw redirect("/setup/organization");
   }
-  const plans = await Plans.recommendNewPlans(session.organization_id);
+  const plans = await Plans.recommendNewPlans(ctx.session.organization_id);
   return plans;
 }, "recommendNewPlans");
 
 export const getNearbyPlans = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) {
+    throw redirect("/auth/login");
+  }
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
+  if (!ctx.session) {
     console.error("Unauthorized");
     throw redirect("/auth/login");
   }
 
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session) {
+  if (!ctx.user) {
     throw redirect("/auth/login");
   }
 
@@ -276,7 +278,7 @@ export const getUpcomingThreePlans = cache(async () => {
   const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
 
   if (!sessionId) {
-    return new Error("Unauthorized");
+    throw redirect("/auth/login");
   }
 
   const { session, user } = await lucia.validateSession(sessionId);

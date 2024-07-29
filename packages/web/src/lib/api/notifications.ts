@@ -2,6 +2,7 @@ import { Notifications } from "@oetzilabs-plaaaner-com/core/src/entities/notific
 import { cache, redirect } from "@solidjs/router";
 import { getEvent } from "vinxi/http";
 import { lucia } from "../auth";
+import { getContext } from "../auth/util";
 
 export const getNotificationSettings = cache(async () => {
   "use server";
@@ -21,29 +22,27 @@ export const getNotificationSettings = cache(async () => {
 
 export const getNotifications = cache(async () => {
   "use server";
-  const event = getEvent()!;
 
-  if (!event.context.session) {
+  const [ctx, event] = await getContext();
+  if (!ctx) {
     throw redirect("/auth/login");
   }
 
-  const { session } = await lucia.validateSession(event.context.session.id);
-
-  if (!session) {
+  if (!ctx.session) {
     console.error("Unauthorized");
     throw redirect("/auth/login");
   }
 
-  if (!session.organization_id) {
+  if (!ctx.user) {
+    throw redirect("/auth/login");
+  }
+
+  if (!ctx.session.organization_id) {
     console.error("Unauthorized");
     throw redirect("/setup/organization");
   }
 
-  if (!event.context.user) {
-    throw redirect("/auth/login");
-  }
-
-  const orgNotifications = await Notifications.findByOrganizationId(session.organization_id);
+  const orgNotifications = await Notifications.findByOrganizationId(ctx.session.organization_id);
 
   return orgNotifications;
   // const n = await Notifications.findManyByUserId(user.id);

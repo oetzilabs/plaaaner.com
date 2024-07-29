@@ -1,3 +1,4 @@
+import { setTimeout } from "node:timers/promises";
 import { lucia } from "@/lib/auth";
 import type { APIEvent } from "@solidjs/start/server";
 import { appendHeader, sendRedirect } from "vinxi/http";
@@ -48,7 +49,10 @@ export async function GET(e: APIEvent) {
   });
 
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());
+
   event.context.session = session;
+  event.context.user = null;
+  await setTimeout(1000);
 
   return sendRedirect(event, "/", 303);
 }

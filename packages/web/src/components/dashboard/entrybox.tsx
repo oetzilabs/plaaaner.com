@@ -108,10 +108,11 @@ export const EntryBox = () => {
                       if (t.length === 0 || d.length === 0) {
                         return;
                       }
-                      await createAndRedirectToPlanCreation({
-                        title: t,
-                        description: d,
-                      });
+                      // TODO: Create Plan
+                      // await createAndRedirectToPlanCreation({
+                      //   title: t,
+                      //   description: d,
+                      // });
                       await revalidate(getActivities.key);
                       await revalidate(getPlans.key);
                       await revalidate(getUpcomingThreePlans.key);

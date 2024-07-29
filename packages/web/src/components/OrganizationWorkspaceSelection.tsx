@@ -35,26 +35,25 @@ type List = {
 
 export const OrganizationWorkspaceSelection = () => {
   const session = createAsync(() => getAuthenticatedSession());
-  const userOrganizations = createAsync(() => getUserOrganizations());
   const setUserDashboard = useAction(setDashboard);
   const isChangingDashboard = useSubmission(setDashboard);
-  type OrgList = NonNullable<Awaited<ReturnType<typeof userOrganizations>>>;
+  type OrgList = NonNullable<Awaited<ReturnType<typeof session>>>["organizations"];
 
   const [openSelector, setOpenSelector] = createSignal(false);
   const createList = (
     uO: OrgList,
     currentOrgId?: OrgList[number]["id"],
-    workspaceId?: OrgList[number]["workspaces"][number]["id"],
+    workspaceId?: OrgList[number]["workspaces"][number]["workspace"]["id"],
   ): List[] => {
     const x: List[] = [];
     for (const org of uO) {
       x.push({
         label: org.name,
         options: org.workspaces.map((ws) => ({
-          label: ws.name,
+          label: ws.workspace.name,
           icon: <Target class="size-3" />,
-          disabled: org.id === currentOrgId && ws.id === workspaceId,
-          workspaceId: ws.id,
+          disabled: org.id === currentOrgId && ws.workspace.id === workspaceId,
+          workspaceId: ws.workspace.id,
           organizationId: org.id,
         })),
       });
@@ -65,7 +64,7 @@ export const OrganizationWorkspaceSelection = () => {
 
   return (
     <div class="flex flex-row items-center">
-      <Show when={userOrganizations() && userOrganizations()}>
+      <Show when={session() && session()!.user !== null && session()?.organizations}>
         {(uO) => (
           <Show
             when={session() && session()!.user !== null && session()}
