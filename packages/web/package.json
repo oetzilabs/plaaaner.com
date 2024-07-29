@@ -13,6 +13,7 @@
   "type": "module",
   "devDependencies": {
     "@oetzilabs-plaaaner-com/core": "workspace:*",
+    "@tsconfig/node20": "^20.1.4",
     "@types/aws-lambda": "8.10.136",
     "@types/leaflet": "^1.9.12",
     "@types/node": "^20.14.10",

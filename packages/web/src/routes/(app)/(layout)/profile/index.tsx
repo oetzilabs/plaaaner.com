@@ -1,6 +1,6 @@
-import { getAuthenticatedSession, getContext } from "@/lib/auth/util";
+import { getAuthenticatedSession } from "@/lib/auth/util";
 import { createAsync } from "@solidjs/router";
-import { Match, Show, Switch } from "solid-js";
+import { Match, Switch } from "solid-js";
 
 export const route = {
   preload: async () => {
