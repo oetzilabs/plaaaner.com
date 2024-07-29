@@ -1,26 +1,25 @@
-import { StatusCodes } from "http-status-codes";
+import { WebsocketCore } from "@oetzilabs-plaaaner-com/core/src/entities/websocket";
+import { APIGatewayProxyWebsocketHandlerV2, Handler } from "aws-lambda";
+import { StatusCodes } from "http-status-codes"; // import { Resource } from "sst";
 import { error, json } from "./utils";
 
-import { WebsocketCore } from "@oetzilabs-plaaaner-com/core/src/entities/websocket";
-import { WebSocketApiHandler } from "sst/node/websocket-api";
-import { ApiHandler } from "sst/node/api";
-
-export const connect = WebSocketApiHandler(async (event) => {
+export const connect: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   const connectionId = event.requestContext.connectionId;
   if (!connectionId) return error("No connectionId", StatusCodes.BAD_REQUEST);
   const x = await WebsocketCore.connect(connectionId);
   return json(x);
-});
+};
 
-export const disconnect = WebSocketApiHandler(async (event) => {
+export const disconnect: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   const connectionId = event.requestContext.connectionId;
   if (!connectionId) return error("No connectionId", StatusCodes.BAD_REQUEST);
   const x = await WebsocketCore.disconnect(connectionId);
   return json(x);
-});
+};
 
-export const ping = WebSocketApiHandler(async (event) => {
+export const ping: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   const connectionId = event.requestContext.connectionId;
+  console.log("ping", connectionId);
   if (!connectionId) return error("No connectionId", StatusCodes.BAD_REQUEST);
   const payload = JSON.parse(event.body || "{}");
   if (!payload.userId) return error("No userId", StatusCodes.BAD_REQUEST);
@@ -36,7 +35,7 @@ export const ping = WebSocketApiHandler(async (event) => {
       recievedId: id,
       sentAt: Date.now(),
     },
-    connectionId
+    connectionId,
   );
 
   // const missingNotifications = await Notifications.sendMissingNotifications(userId);
@@ -46,9 +45,9 @@ export const ping = WebSocketApiHandler(async (event) => {
     recievedId: id,
     sentAt,
   });
-});
+};
 
-export const main = WebSocketApiHandler(async (event) => {
+export const main: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   const connectionId = event.requestContext.connectionId;
   if (!connectionId) return error("No connectionId", StatusCodes.BAD_REQUEST);
   const payload = JSON.parse(event.body || "{}");
@@ -56,9 +55,9 @@ export const main = WebSocketApiHandler(async (event) => {
   const userId = payload.userId;
   const x = await WebsocketCore.update(connectionId, userId);
   return json(x);
-});
+};
 
-export const sendnotification = WebSocketApiHandler(async (event) => {
+export const sendnotification: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   const connectionId = event.requestContext.requestId;
   if (!connectionId) return error("No connectionId", StatusCodes.BAD_REQUEST);
 
@@ -71,13 +70,13 @@ export const sendnotification = WebSocketApiHandler(async (event) => {
   });
 
   return json(x);
-});
+};
 
-export const revokeWebsocketConnections = ApiHandler(async (event, context) => {
+export const revokeWebsocketConnections: Handler = async (event, context) => {
   const revoked = await WebsocketCore.revokeAll();
   const revokedConnections = [];
   for (const connection of revoked) {
     revokedConnections.push({ id: connection.id, userId: connection.userId });
   }
   return json({ revoked: revokedConnections });
-});
+};

@@ -1,31 +1,28 @@
-import { StackContext, use } from "sst/constructs";
-import { Auth as AUTH } from "sst/constructs/future";
-import { Domain } from "./Domain";
-import { Secrets } from "./Secrets";
+import { domain, subdomain } from "./Domain";
+import {
+  SECRET_DATABASE_URL,
+  SECRET_EMAIL_FROM,
+  SECRET_GOOGLE_CLIENT_ID,
+  SECRET_GOOGLE_CLIENT_SECRET,
+} from "./Secrets";
 
-export function Auth({ stack, app }: StackContext) {
-  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DATABASE_URL, EMAIL_FROM } = use(Secrets);
-  const dns = use(Domain);
-  const auth = new AUTH(stack, "auth", {
-    authenticator: {
-      handler: "packages/functions/src/auth.handler",
-      bind: [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DATABASE_URL, EMAIL_FROM],
-      environment: {
-        AUTH_FRONTEND_URL: app.mode === "dev" ? "http://localhost:3000" : "https://" + dns.domain,
-        EMAIL_DOMAIN: dns.domain,
-      },
-      permissions: ["ses"],
-      runtime: "nodejs20.x",
+const copyFiles = [
+  {
+    from: "packages/core/src/drizzle",
+    to: "drizzle",
+  },
+];
+
+export const auth = new sst.aws.Auth(`Auth`, {
+  authenticator: {
+    handler: "packages/functions/src/auth.handler",
+    link: [SECRET_GOOGLE_CLIENT_ID, SECRET_GOOGLE_CLIENT_SECRET, SECRET_DATABASE_URL, SECRET_EMAIL_FROM],
+    environment: {
+      AUTH_FRONTEND_URL: $dev ? "http://localhost:3000" : "https://" + subdomain + domain,
+      EMAIL_DOMAIN: domain,
     },
-    customDomain: {
-      domainName: "auth." + dns.domain,
-      hostedZone: dns.zone.zoneName,
-    },
-  });
-
-  stack.addOutputs({
-    AuthEndpoint: auth.url,
-  });
-
-  return auth;
-}
+    runtime: "nodejs20.x",
+    copyFiles,
+    url: true,
+  },
+});

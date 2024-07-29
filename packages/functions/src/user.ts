@@ -1,20 +1,28 @@
-import { StatusCodes } from "http-status-codes";
-import { ApiHandler } from "sst/node/api";
-import { error, getUser, json } from "./utils";
-import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
+import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
+import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
+import { Handler } from "aws-lambda";
+import { StatusCodes } from "http-status-codes";
+import { error, getUser, json } from "./utils";
 
-export const get = ApiHandler(async (_event) => {
-  const user = await getUser();
+export const get: Handler = async (_event) => {
+  const authtoken = _event.headers["Authorization"] || _event.headers["authorization"];
+  if (!authtoken) {
+    return error("No Authorization header", StatusCodes.UNAUTHORIZED);
+  }
+  const user = await getUser(authtoken.split(" ")[1]);
   if (!user) {
     return error("User not found", StatusCodes.NOT_FOUND);
   }
   return json(user);
-});
+};
 
-export const session = ApiHandler(async (_event) => {
-  const user = await getUser();
+export const session: Handler = async (_event) => {
+  const authtoken = _event.headers["Authorization"] || _event.headers["authorization"];
+  if (!authtoken) {
+    return error("No Authorization header", StatusCodes.UNAUTHORIZED);
+  }
+  const user = await getUser(authtoken.split(" ")[1]);
 
   if (!user) {
     return error("User not found", StatusCodes.NOT_FOUND);
@@ -39,9 +47,9 @@ export const session = ApiHandler(async (_event) => {
   }
 
   return json({ email: user.email, id: user.id, workspace_id: workspace?.id, organization_id: organization.id });
-});
+};
 
-export const all = ApiHandler(async (_event) => {
+export const all: Handler = async (_event) => {
   const users = await User.all();
   return json(users);
-});
+};

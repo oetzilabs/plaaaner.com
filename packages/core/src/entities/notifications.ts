@@ -1,16 +1,16 @@
+import { SNS } from "@aws-sdk/client-sns";
 import { and, count, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
+import { Resource } from "sst";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
 import {
-  SystemNotificationCreateSchema,
-  SystemNotificationUpdateSchema,
   organizations_notifications,
   system_notifications,
+  SystemNotificationCreateSchema,
+  SystemNotificationUpdateSchema,
   user_dismissed_system_notifications,
 } from "../drizzle/sql/schema";
-import { Topic } from "sst/node/topic";
-import { SNS } from "@aws-sdk/client-sns";
 
 export * as Notifications from "./notifications";
 
@@ -105,7 +105,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ])
+    ]),
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
@@ -129,12 +129,12 @@ export const sendMissingSystemNotifications = z.function(z.tuple([z.string().uui
     .where(
       and(
         eq(user_dismissed_system_notifications.userId, userId),
-        inArray(user_dismissed_system_notifications.notificationId, notificationsIds)
-      )
+        inArray(user_dismissed_system_notifications.notificationId, notificationsIds),
+      ),
     );
 
   const notificationsToSend = _notifications.filter(
-    (x) => !dismissedNotifications.find((y) => y.notificationId === x.id)
+    (x) => !dismissedNotifications.find((y) => y.notificationId === x.id),
   );
   return notificationsToSend;
 });
@@ -143,7 +143,7 @@ export const publish = z.function(z.tuple([z.custom<Notify>()])).implement(async
   const sns = new SNS();
   const notificationString = JSON.stringify(n);
   const x = await sns.publish({
-    TopicArn: Topic["notifications"].topicArn,
+    TopicArn: Resource.Notifications.arn,
     Message: notificationString,
     MessageStructure: "string",
   });

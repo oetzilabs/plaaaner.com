@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { TextField, TextFieldRoot } from "@/components/ui/textfield";
-import { getWithEmail, getIsLoginEnabled } from "@/lib/auth/features";
+import { getIsLoginEnabled, getWithEmail } from "@/lib/auth/features";
 import { cn } from "@/lib/utils";
 import { A, createAsync } from "@solidjs/router";
 import type { SVGAttributes } from "lucide-solid";
@@ -16,14 +16,14 @@ export const route = {
 };
 
 const generateAuthUrl = (provider: string) => {
-  const url = new URL("/authorize", import.meta.env.VITE_AUTH_URL);
+  const url = new URL(`/${provider}/authorize`, import.meta.env.VITE_AUTH_URL);
   url.searchParams.set("provider", provider);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", provider);
   url.searchParams.set(
     "redirect_uri",
     (import.meta.env.NODE_ENV === "production" ? "https://plaaaner.com" : "http://localhost:3000") +
-      "/api/auth/callback"
+      "/api/auth/callback",
   );
   return url.toString();
 };
@@ -63,7 +63,11 @@ export default function LoginPage() {
       <div class="w-full h-[650px] md:border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-clip">
         <Show
           when={isLoginEnabled() && isLoginEnabled()}
-          fallback={<div class="text-muted-foreground w-full h-full items-center justify-center flex flex-col">Login is currently disabled</div>}
+          fallback={
+            <div class="text-muted-foreground w-full h-full items-center justify-center flex flex-col">
+              Login is currently disabled
+            </div>
+          }
         >
           <div class="w-full relative flex h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div class="relative hidden h-full flex-col bg-muted p-10 dark:border-r lg:flex">

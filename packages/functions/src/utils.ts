@@ -1,9 +1,9 @@
 import { User } from "@/core/entities/users";
 import { StatusCodes } from "http-status-codes";
-import { createSessionBuilder } from "sst/node/future/auth";
+import { createSessionBuilder } from "sst/auth";
 
-export const getUser = async () => {
-  const session = sessions.use();
+export const getUser = async (token: string) => {
+  const session = await sessions.verify(token);
   if (!session) throw new Error("No session found");
   if (session.type !== "user") {
     throw new Error("Invalid session type");

@@ -1,2 +1,4 @@
-/// <reference path="../../.sst/types/index.ts" />
-import 'vite/client'
+/* tslint:disable */
+/* eslint-disable */
+/// <reference path="../../sst-env.d.ts" />
+export {}

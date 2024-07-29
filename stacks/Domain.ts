@@ -1,36 +1,10 @@
-import { HostedZone } from "aws-cdk-lib/aws-route53";
-import { StackContext } from "sst/constructs";
+import { Record } from "../.sst/platform/src/components/dns";
 
-const PRODUCTION = "plaaaner.com";
-const DEV = "dev.plaaaner.com";
-// const STAGING = "dev.plaaaner.com";
+export const domain = "plaaaner.com";
 
-export function Domain(ctx: StackContext) {
-  if (ctx.stack.stage === "production") {
-    const zone = HostedZone.fromLookup(ctx.stack, "zone", {
-      domainName: PRODUCTION,
-    });
-    return {
-      zone,
-      domain: PRODUCTION,
-    };
-  }
+export const subdomain = !$dev ? "" : `${$app.stage}.dev.`;
 
-  if (ctx.stack.stage === "dev") {
-    return {
-      zone: HostedZone.fromLookup(ctx.stack, "zone", {
-        domainName: DEV,
-      }),
-      domain: DEV,
-    };
-  }
-
-  const zone = HostedZone.fromLookup(ctx.stack, "zone", {
-    domainName: DEV,
-  });
-  return {
-    zone,
-    domain: `${ctx.stack.stage}.${DEV}`,
-  };
-  // return null;
-}
+export const cloudflare = sst.cloudflare.dns({
+  zone: "9fedcb4302b75990b8564afba355440b",
+  override: true,
+});

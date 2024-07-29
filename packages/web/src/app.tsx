@@ -21,7 +21,9 @@ const [websocket, setWebsocket] = createSignal<ReconnectingWebSocket | null>(nul
 
 export default function App() {
   const wsLink = import.meta.env.VITE_WS_LINK;
+  const authLink = import.meta.env.VITE_AUTH_URL;
   if (!wsLink) throw new Error("No Websocket Link in Environtment");
+  if (!authLink) throw new Error("No Auth Link in Environtment");
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {

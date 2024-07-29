@@ -1,7 +1,7 @@
 import { ApiGatewayManagementApi, GoneException } from "@aws-sdk/client-apigatewaymanagementapi";
 import dayjs from "dayjs";
 import { eq, gte, lte } from "drizzle-orm";
-import { WebSocketApi } from "sst/node/websocket-api";
+import { Resource } from "sst";
 import { z } from "zod";
 import { db } from "../drizzle/sql/index";
 import { websockets } from "../drizzle/sql/schema";
@@ -75,7 +75,7 @@ export const disconnect = z.function(z.tuple([z.string()])).implement(async (con
 
 export const sendMessageToConnection = async (message: any, connectionId: string) => {
   const apiG = new ApiGatewayManagementApi({
-    endpoint: WebSocketApi.ws.httpsUrl,
+    endpoint: Resource.Websocket.url,
   });
   try {
     // Send the message to the given client

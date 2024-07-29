@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "scripts": {
     "local": "vinxi dev",
-    "dev": "sst bind 'vinxi dev'",
-    "build": "sst bind 'vinxi build --preset aws-lambda'",
-    "build:local": "sst bind 'vinxi build --preset node-server'",
+    "dev": "vinxi dev",
+    "build": "vinxi build --preset aws-lambda",
+    "build:local": "vinxi build --preset node-server",
     "start": "vinxi start --preset aws-lambda",
-    "start:local": "sst bind 'vinxi start'",
-    "serve": "sst bind 'vinxi serve'"
+    "start:local": "vinxi start",
+    "serve": "vinxi serve"
   },
   "type": "module",
   "devDependencies": {
