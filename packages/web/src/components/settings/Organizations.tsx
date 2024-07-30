@@ -20,21 +20,17 @@ import {
   getUserOrganizations,
 } from "@/lib/api/organizations";
 import { setCurrentOrganization } from "@/lib/api/user";
-import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
-import type { UserSession } from "@/lib/auth/util";
+import { getAuthenticatedSession, getAuthenticatedUser, type UserSession } from "@/lib/auth/util";
 import { deleteOrganization, disconnectFromOrganization } from "@/utils/api/actions";
 import { A, createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
 import { Loader2, Plus, Trash } from "lucide-solid";
-import { For, Show, Suspense } from "solid-js";
+import { For, Match, Show, Suspense, Switch } from "solid-js";
 import { toast } from "solid-sonner";
 import { cn } from "../../lib/utils";
-import { Switch } from "solid-js";
-import { Match } from "solid-js";
 import { NotLoggedIn } from "../NotLoggedIn";
 
 export const Organizations = (props: { session: UserSession }) => {
-  const user = createAsync(() => getAuthenticatedUser());
   const organizations = createAsync(() => getUserOrganizations());
   const defaultTicketTypeCount = createAsync(() => getDefaultTicketTypeCount(), { deferStream: true });
 
@@ -65,7 +61,7 @@ export const Organizations = (props: { session: UserSession }) => {
                       variant: "default",
                       size: "sm",
                     }),
-                    "w-max gap-2 items-center"
+                    "w-max gap-2 items-center",
                   )}
                 >
                   <Plus class="size-4" />
@@ -95,7 +91,7 @@ export const Organizations = (props: { session: UserSession }) => {
                       <div class="flex flex-row items-center gap-2 w-full">
                         <div class="w-full flex flex-row gap-2 items-center">
                           <span class="font-bold">{organization.name}</span>
-                          <Show when={organization.owner && organization.owner.id === user()?.id}>
+                          <Show when={organization.owner && organization.owner.id === props.session.user?.id}>
                             <Badge variant="default">Owner: {organization.owner?.name}</Badge>
                           </Show>
                           <Show when={organization.id === s().organization?.id}>

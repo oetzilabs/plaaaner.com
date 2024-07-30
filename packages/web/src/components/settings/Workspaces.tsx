@@ -1,20 +1,18 @@
 import { Button, buttonVariants } from "@/components/ui/button";
-import { getAuthenticatedSession, getAuthenticatedUser } from "@/lib/auth/util";
-import type { UserSession } from "@/lib/auth/util";
-import { deleteWorkspace, disconnectFromWorkspace, connectToWorkspace } from "@/lib/api/workspaces";
+import { connectToWorkspace, deleteWorkspace, disconnectFromWorkspace } from "@/lib/api/workspaces";
+import { getAuthenticatedSession, getAuthenticatedUser, type UserSession } from "@/lib/auth/util";
+import { cn } from "@/lib/utils";
 import { A, createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
+import dayjs from "dayjs";
+import { Plus, Trash } from "lucide-solid";
 import { For, Show, Suspense } from "solid-js";
 import { getWorkspaces } from "../../lib/api/workspaces";
-import { Badge } from "../ui/badge";
-import { Plus, Trash } from "lucide-solid";
-import dayjs from "dayjs";
-import { Alert } from "../ui/alert";
-import { Skeleton } from "../ui/skeleton";
-import { cn } from "@/lib/utils";
 import { NotLoggedIn } from "../NotLoggedIn";
+import { Alert } from "../ui/alert";
+import { Badge } from "../ui/badge";
+import { Skeleton } from "../ui/skeleton";
 
 export const Workspaces = (props: { session: UserSession }) => {
-  const user = createAsync(() => getAuthenticatedUser());
   const workspaces = createAsync(() => getWorkspaces());
 
   const disconnectFromWorkspaceAction = useAction(disconnectFromWorkspace);
@@ -50,7 +48,7 @@ export const Workspaces = (props: { session: UserSession }) => {
                       variant: "default",
                       size: "sm",
                     }),
-                    "w-max gap-2 items-center"
+                    "w-max gap-2 items-center",
                   )}
                 >
                   <Plus class="size-4" />
@@ -80,7 +78,7 @@ export const Workspaces = (props: { session: UserSession }) => {
                       <div class="flex flex-row items-center gap-2 w-full">
                         <div class="w-full flex flex-row gap-2 items-center">
                           <span class="font-bold">{workspace.name}</span>
-                          <Show when={workspace.owner && workspace.owner_id === user()?.id}>
+                          <Show when={workspace.owner && workspace.owner_id === props.session.user?.id}>
                             <Badge variant="default">Owner: {workspace.owner?.name}</Badge>
                           </Show>
                           <Show when={workspace.id === s().workspace?.id}>
@@ -170,7 +168,7 @@ export const Workspaces = (props: { session: UserSession }) => {
                   "flex flex-row items-center gap-2 justify-center",
                   buttonVariants({
                     variant: "default",
-                  })
+                  }),
                 )}
               >
                 <Plus class="w-4 h-4" />

@@ -15,7 +15,7 @@ import { setDashboard } from "@/lib/api/user";
 import { createAsync, revalidate, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import { Building, Target } from "lucide-solid";
 import { createSignal, For, JSXElement, Show } from "solid-js";
-import { getAuthenticatedSession } from "../lib/auth/util";
+import { getAuthenticatedSession, UserSession } from "../lib/auth/util";
 import { useSession } from "./SessionProvider";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -33,11 +33,10 @@ type List = {
   options: OrgWorkspaceOption[];
 };
 
-export const OrganizationWorkspaceSelection = () => {
-  const session = createAsync(() => getAuthenticatedSession());
+export const OrganizationWorkspaceSelection = (props: { session: UserSession }) => {
   const setUserDashboard = useAction(setDashboard);
   const isChangingDashboard = useSubmission(setDashboard);
-  type OrgList = NonNullable<Awaited<ReturnType<typeof session>>>["organizations"];
+  type OrgList = NonNullable<(typeof props)["session"]>["organizations"];
 
   const [openSelector, setOpenSelector] = createSignal(false);
   const createList = (
@@ -64,10 +63,10 @@ export const OrganizationWorkspaceSelection = () => {
 
   return (
     <div class="flex flex-row items-center">
-      <Show when={session() && session()!.user !== null && session()?.organizations}>
+      <Show when={props.session && props.session.user !== null && props.session.organizations}>
         {(uO) => (
           <Show
-            when={session() && session()!.user !== null && session()}
+            when={props.session && props.session.user !== null && props.session}
             fallback={<Badge variant="outline">No Organization</Badge>}
           >
             {(s) => (

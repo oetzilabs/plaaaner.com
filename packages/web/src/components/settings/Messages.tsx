@@ -1,33 +1,33 @@
 import { createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import { BellDot, BellOff, User } from "lucide-solid";
-import { For, createEffect } from "solid-js";
+import { createEffect, For } from "solid-js";
+import { toast } from "solid-sonner";
+import { getMessagingSettings } from "../../lib/api/messages";
 import { getNotificationSettings } from "../../lib/api/notifications";
 import { cn } from "../../lib/utils";
 import { changeMessageSettings, changeNotificationSettings } from "../../utils/api/actions";
 import { Button } from "../ui/button";
-import { toast } from "solid-sonner";
-import { getMessagingSettings } from "../../lib/api/messages";
-
-const message_types = [
-  {
-    type: "anyone",
-    icon: <BellDot class="w-4 h-4" />,
-    description: "Anyone can message you.",
-  },
-  {
-    type: "friends",
-    icon: <User class="w-4 h-4" />,
-    description: "Friends and mentions.",
-  },
-  {
-    type: "no-one",
-    icon: <BellOff class="w-4 h-4" />,
-    description: "Turn off all messages.",
-  },
-];
 
 export const Messages = () => {
   const messagingSettings = createAsync(() => getMessagingSettings());
+
+  const message_types = [
+    {
+      type: "anyone",
+      icon: <BellDot class="w-4 h-4" />,
+      description: "Anyone can message you.",
+    },
+    {
+      type: "friends",
+      icon: <User class="w-4 h-4" />,
+      description: "Friends and mentions.",
+    },
+    {
+      type: "no-one",
+      icon: <BellOff class="w-4 h-4" />,
+      description: "Turn off all messages.",
+    },
+  ];
 
   const _changeMessageSetting = useAction(changeMessageSettings);
   const isChangingMessageSettings = useSubmission(changeMessageSettings);
@@ -61,7 +61,7 @@ export const Messages = () => {
                   {
                     "bg-accent text-accent-foreground border border-neutral-300 dark:border-neutral-700 shadow-sm":
                       messagingSettings()?.type === n.type,
-                  }
+                  },
                 )}
                 disabled={isChangingMessageSettings.pending}
                 onClick={() => handleMessageSettingChange(n.type)}

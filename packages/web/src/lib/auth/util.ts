@@ -4,15 +4,25 @@ import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces"
 import { cache, redirect } from "@solidjs/router";
 import { getCookie, getEvent } from "vinxi/http";
 import { lucia } from ".";
+import { getContext } from "./context";
 
 export const getAuthenticatedUser = cache(async () => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.session) {
-    return null;
+  const [ctx, event] = await getContext();
+  if (!ctx) {
+    throw redirect("/auth/login");
   }
-  const { id } = event.context.session;
-  const { user } = await lucia.validateSession(id);
+
+  if (!ctx.session) {
+    console.error("Unauthorized");
+    throw redirect("/auth/login");
+  }
+
+  if (!ctx.user) {
+    console.error("Unauthorized");
+    throw redirect("/auth/login");
+  }
+  const { user } = await lucia.validateSession(ctx.session.id);
   return user;
 }, "user");
 
@@ -66,12 +76,21 @@ export const getAuthenticatedSession = cache(async () => {
 
 export const getAuthenticatedSessions = cache(async () => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    return redirect("/auth/login");
+  const [ctx, event] = await getContext();
+  if (!ctx) {
+    throw redirect("/auth/login");
   }
-  const { id } = event.context.user;
-  const sessions = await lucia.getUserSessions(id);
+
+  if (!ctx.session) {
+    console.error("Unauthorized");
+    throw redirect("/auth/login");
+  }
+
+  if (!ctx.user) {
+    console.error("Unauthorized");
+    throw redirect("/auth/login");
+  }
+  const sessions = await lucia.getUserSessions(ctx.user.id);
   return sessions;
 }, "sessions");
 

@@ -1,29 +1,11 @@
 import { createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import { BellDot, BellOff, User } from "lucide-solid";
-import { For, createEffect } from "solid-js";
+import { createEffect, For } from "solid-js";
+import { toast } from "solid-sonner";
 import { getNotificationSettings } from "../../lib/api/notifications";
 import { cn } from "../../lib/utils";
 import { changeNotificationSettings } from "../../utils/api/actions";
 import { Button } from "../ui/button";
-import { toast } from "solid-sonner";
-
-const notifications_types = [
-  {
-    type: "everything",
-    icon: <BellDot class="w-4 h-4" />,
-    description: "Email digest, mentions & all activity.",
-  },
-  {
-    type: "mentions",
-    icon: <User class="w-4 h-4" />,
-    description: "Only mentions and comments.",
-  },
-  {
-    type: "nothing",
-    icon: <BellOff class="w-4 h-4" />,
-    description: "Turn off all notifications.",
-  },
-];
 
 export const Notifications = () => {
   const notifcationSettings = createAsync(() => getNotificationSettings());
@@ -36,6 +18,24 @@ export const Notifications = () => {
       toast.success("Notification settings updated");
     }
   });
+
+  const notifications_types = [
+    {
+      type: "everything",
+      icon: <BellDot class="w-4 h-4" />,
+      description: "Email digest, mentions & all activity.",
+    },
+    {
+      type: "mentions",
+      icon: <User class="w-4 h-4" />,
+      description: "Only mentions and comments.",
+    },
+    {
+      type: "nothing",
+      icon: <BellOff class="w-4 h-4" />,
+      description: "Turn off all notifications.",
+    },
+  ];
 
   const handleNotificationChange = async (type: string) => {
     await _changeNotificationSettings(type);
@@ -59,7 +59,7 @@ export const Notifications = () => {
                   {
                     "bg-accent text-accent-foreground border border-neutral-300 dark:border-neutral-700 shadow-sm":
                       notifcationSettings()?.type === n.type,
-                  }
+                  },
                 )}
                 disabled={isChangingNotificationSettings.pending}
                 onClick={() => handleNotificationChange(n.type)}

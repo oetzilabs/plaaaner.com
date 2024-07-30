@@ -6,11 +6,10 @@ import { getContext } from "../auth/context";
 
 export const getNotificationSettings = cache(async () => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    throw redirect("/auth/login");
-  }
-  const user = event.context.user;
+
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
   return {
     type: "everything",
     createdAt: new Date(),

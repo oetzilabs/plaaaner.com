@@ -73,7 +73,7 @@ export const Sidebar = () => {
         {(s) => (
           <div class="flex flex-col gap-0 w-full grow h-full">
             <div class="w-full flex flex-col gap-2">
-              <OrganizationWorkspaceSelection />
+              <OrganizationWorkspaceSelection session={s()} />
               <div class="w-full h-max flex flex-col px-4 gap-2">
                 <For each={links}>
                   {(link) => (
