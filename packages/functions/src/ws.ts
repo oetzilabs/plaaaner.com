@@ -19,21 +19,24 @@ export const disconnect: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
 
 export const ping: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   const connectionId = event.requestContext.connectionId;
-  console.log("ping", connectionId);
   if (!connectionId) return error("No connectionId", StatusCodes.BAD_REQUEST);
   const payload = JSON.parse(event.body || "{}");
-  if (!payload.userId) return error("No userId", StatusCodes.BAD_REQUEST);
-  const userId = payload.userId;
+  // console.log("ping payload", payload.payload);
+  if (!payload.payload.userId) return error("No userId", StatusCodes.BAD_REQUEST);
+  const userId = payload.payload.userId;
+
   const x = await WebsocketCore.update(connectionId, userId);
-  // console.log("Updated Websocket Connection Entry", x, "payload", payload);
-  const id = payload.id;
+  // console.log("Updated Websocket Connection Entry", x);
+  const id = payload.payload.id;
   const sentAt = Date.now();
 
   await WebsocketCore.sendMessageToConnection(
     {
-      type: "pong",
-      recievedId: id,
-      sentAt: Date.now(),
+      action: "pong",
+      payload: {
+        recievedId: id,
+        sentAt: Date.now(),
+      },
     },
     connectionId,
   );

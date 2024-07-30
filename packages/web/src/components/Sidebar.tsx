@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { A, createAsync, useLocation, useResolvedPath } from "@solidjs/router";
 import { Activity, Bell, Circle, HelpCircle, LayoutDashboard } from "lucide-solid";
-import { JSXElement, Show } from "solid-js";
+import { For, JSXElement, Show } from "solid-js";
 import { getAuthenticatedSession } from "../lib/auth/util";
 import { OrganizationWorkspaceSelection } from "./OrganizationWorkspaceSelection";
 import { useSession } from "./SessionProvider";
@@ -49,6 +49,12 @@ export const SidebarLink = (props: {
 export const Sidebar = () => {
   const session = createAsync(() => getAuthenticatedSession());
 
+  const links = [
+    { href: "/dashboard", icon: <LayoutDashboard class="size-4" />, label: "Dashboard" },
+    { href: "/dashboard/notifications", icon: <Bell class="size-4" />, label: "Inbox" },
+    { href: "/dashboard/activity", icon: <Activity class="size-4" />, label: "Activities" },
+  ];
+
   return (
     <div class="relative w-max flex flex-col gap-0 border-r border-neutral-200 dark:border-neutral-800 grow min-h-0 max-h-screen">
       <Show
@@ -69,15 +75,13 @@ export const Sidebar = () => {
             <div class="w-full flex flex-col gap-2">
               <OrganizationWorkspaceSelection />
               <div class="w-full h-max flex flex-col px-4 gap-2">
-                <SidebarLink href="/dashboard" icon={<LayoutDashboard class="size-4" />}>
-                  Dashboard
-                </SidebarLink>
-                <SidebarLink href="/dashboard/notifications" icon={<Bell class="size-4" />}>
-                  Inbox
-                </SidebarLink>
-                <SidebarLink href="/dashboard/activity" icon={<Activity class="size-4" />}>
-                  Activities
-                </SidebarLink>
+                <For each={links}>
+                  {(link) => (
+                    <SidebarLink href={link.href} icon={link.icon}>
+                      {link.label}
+                    </SidebarLink>
+                  )}
+                </For>
               </div>
             </div>
             <div class="w-full grow flex flex-col gap-6"></div>

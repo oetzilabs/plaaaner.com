@@ -44,18 +44,19 @@ export const [Websocket, useWebsocket] = createContextProvider(
 
     const handlers = {
       open: () => {
-        console.log("open");
+        console.log("opened websocket");
         const s = session();
         if (!s) {
           console.error("no session");
           return;
         }
         if (!s.user) {
-          console.error("no user");
+          console.error("no logged in user, unable to send ping message");
           return;
         }
         const userId = s.user.id;
         if (!userId) {
+          console.error("no user id, unable to send ping message");
           return;
         }
         try {
@@ -69,28 +70,26 @@ export const [Websocket, useWebsocket] = createContextProvider(
       },
       close: (e: any) => {
         console.log("ws closed", e);
-        toast.info("Disconnected from server");
       },
       error: (e: any) => {
         console.log("ws errored", e);
-        toast.error("Could not connect to server");
       },
     };
+
     onMount(() => {
       if (props.websocket) {
         props.websocket.addEventListener("open", handlers.open);
         props.websocket.addEventListener("close", handlers.close);
         props.websocket.addEventListener("error", handlers.error);
       }
-    });
-
-    onCleanup(() => {
-      if (props.websocket) {
-        // props.websocket.removeEventListener("message", handlers.message);
-        props.websocket.removeEventListener("open", handlers.open);
-        props.websocket.removeEventListener("close", handlers.close);
-        props.websocket.removeEventListener("error", handlers.error);
-      }
+      onCleanup(() => {
+        if (props.websocket) {
+          // props.websocket.removeEventListener("message", handlers.message);
+          props.websocket.removeEventListener("open", handlers.open);
+          props.websocket.removeEventListener("close", handlers.close);
+          props.websocket.removeEventListener("error", handlers.error);
+        }
+      });
     });
 
     return {

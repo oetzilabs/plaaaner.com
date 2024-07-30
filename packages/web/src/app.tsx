@@ -46,12 +46,16 @@ export default function App() {
     }
 
     emitter.on("send", (data) => {
+      // console.log("send", data.payload);
+
       ws.send(JSON.stringify(data.payload));
     });
 
     emitter.on("message", (data) => {
+      // console.log("message", data);
       bus.emit(data);
     });
+
     emitter.on("clear", () => {
       bus.clear();
     });
@@ -64,27 +68,22 @@ export default function App() {
       emitter.emit(data.action, data);
     });
 
-    const send = (payload: any) => {
-      emitter.emit("send", payload);
-    };
-
     onCleanup(() => {
       ws.close();
       emitter.clear();
       clear();
       unsub();
     });
-
     ws.addEventListener("message", (e) => {
+      // console.log("message", e);
       const data = JSON.parse(e.data);
       const { action, payload } = data;
+      // console.log("received message", action, payload);
       emitter.emit(action, {
         action,
         payload,
       });
     });
-
-    onCleanup(() => {});
   });
 
   //eslint-disable-next-line no-undef

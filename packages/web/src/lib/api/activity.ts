@@ -2,7 +2,7 @@ import { Activities } from "@oetzilabs-plaaaner-com/core/src/entities/activities
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { action, cache, redirect, reload } from "@solidjs/router";
 import { getEvent } from "vinxi/http";
-import { getContext } from "../auth/util";
+import { getContext } from "../auth/context";
 
 export const getActivitySettings = cache(async () => {
   "use server";

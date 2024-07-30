@@ -10,7 +10,7 @@ import { getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
 import { lucia } from "../auth";
-import { getContext } from "../auth/util";
+import { getContext } from "../auth/context";
 import { getActivities } from "./activity";
 import { getLocaleSettings } from "./locale";
 
@@ -19,65 +19,57 @@ dayjs.extend(updateLocale);
 
 export const getPreviousPlans = cache(async () => {
   "use server";
-  const event = getEvent()!;
-
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
+  const [ctx, event] = await getContext();
+  if (!ctx) {
     throw redirect("/auth/login");
   }
 
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session) {
+  if (!ctx.session) {
     throw redirect("/auth/login");
   }
 
-  if (!session.organization_id) {
+  if (!ctx.session.organization_id) {
     throw redirect("/setup/organization");
   }
-  const plans = await Plans.findByOrganizationId(session.organization_id);
+  const plans = await Plans.findByOrganizationId(ctx.session.organization_id);
   return plans;
 }, "previousPlans");
 
 export const getPlans = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) {
+    throw redirect("/auth/login");
+  }
+
+  if (!ctx.session) {
+    throw redirect("/auth/login");
+  }
+
   const locale = getLocaleSettings(event);
   dayjs.updateLocale(locale.language, {});
 
-  const user = event.context.user;
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
-  const session = event.context.session;
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
   const plans = await Plans.findByOptions({
-    user_id: user.id,
-    workspace_id: session.workspace_id,
-    organization_id: session.organization_id,
+    user_id: ctx.user.id,
+    workspace_id: ctx.session.workspace_id,
+    organization_id: ctx.session.organization_id,
   });
   return plans;
 }, "plans");
 
 export const getPlan = cache(async (id: string) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) {
+    throw redirect("/auth/login");
+  }
+
+  if (!ctx.session) {
+    throw redirect("/auth/login");
+  }
+
   const locale = getLocaleSettings(event);
   dayjs.updateLocale(locale.language, {});
-
-  const user = event.context.user;
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
-  const session = event.context.session;
-  if (!session) {
-    throw redirect("/auth/login");
-  }
 
   const schema = z.string().uuid().safeParse(id);
   if (schema.success === false) {
@@ -93,8 +85,11 @@ export const getPlan = cache(async (id: string) => {
   }
 
   // check if the plan is in the user's workspace
-  if (!plan.workspaces.some((ws) => ws.workspace_id === session.workspace_id)) {
-    throw new Error("You do not have permission to view this plan");
+  if (!plan.workspaces.some((ws) => ws.workspace_id === ctx.session.workspace_id)) {
+    throw redirect(`/302?error=${encodeURIComponent("You do not have permission to view this plan")}`, {
+      status: 302,
+      statusText: "You do not have permission to view this plan",
+    });
   }
   return plan;
 }, "plan");

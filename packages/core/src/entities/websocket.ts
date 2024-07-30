@@ -75,7 +75,7 @@ export const disconnect = z.function(z.tuple([z.string()])).implement(async (con
 
 export const sendMessageToConnection = async (message: any, connectionId: string) => {
   const apiG = new ApiGatewayManagementApi({
-    endpoint: Resource.Websocket.url,
+    endpoint: Resource.Websocket.managementEndpoint, // Resource.Websocket.url is not working, so we use the management endpoint
   });
   try {
     // Send the message to the given client
@@ -83,10 +83,8 @@ export const sendMessageToConnection = async (message: any, connectionId: string
       ConnectionId: connectionId,
       Data: JSON.stringify(message),
     });
-    // console.log({ websocketSentMessage });
   } catch (e: unknown) {
     const eTyped = e as { statusCode: number };
-    console.log("error sending message", e);
     if (eTyped.statusCode === 410) {
       // Remove stale connections
       await db.delete(websockets).where(eq(websockets.connectionId, connectionId)).returning();
@@ -94,7 +92,7 @@ export const sendMessageToConnection = async (message: any, connectionId: string
       console.log(`GoneException: ${eTyped.message}`);
       await db.delete(websockets).where(eq(websockets.connectionId, connectionId)).returning();
     } else {
-      console.error(e);
+      await db.delete(websockets).where(eq(websockets.connectionId, connectionId)).returning();
     }
   }
 };

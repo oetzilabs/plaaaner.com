@@ -128,16 +128,3 @@ export const getCurrentWorkspace = cache(async () => {
 
   return workspace;
 }, "current-workspace");
-
-export const getContext = async () => {
-  const event = getEvent()!;
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-  if (!sessionId) {
-    return [null, event] as const;
-  }
-  const luciaContext = await lucia.validateSession(sessionId);
-  if (!luciaContext) {
-    return [null, event] as const;
-  }
-  return [luciaContext!, event] as const;
-};

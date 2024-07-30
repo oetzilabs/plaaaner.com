@@ -2,7 +2,7 @@ import { Notifications } from "@oetzilabs-plaaaner-com/core/src/entities/notific
 import { cache, redirect } from "@solidjs/router";
 import { getEvent } from "vinxi/http";
 import { lucia } from "../auth";
-import { getContext } from "../auth/util";
+import { getContext } from "../auth/context";
 
 export const getNotificationSettings = cache(async () => {
   "use server";
