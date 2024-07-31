@@ -192,42 +192,21 @@ export const getPlanTypeId = cache(async (plan_type: string) => {
 
 export const commentOnPlan = action(async (data: { planId: string; comment: string }) => {
   "use server";
-  const event = getEvent()!;
-
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-  const commented = await Plans.addComment(data.planId, user.id, data.comment);
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+  const commented = await Plans.addComment(data.planId, ctx.user.id, data.comment);
   return true;
 });
 
 export const getPlanComments = cache(async (plan_id) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-  if (!user) {
-    throw redirect("/auth/login");
-  }
   const plan = await Plans.findById(plan_id);
   if (!plan) {
     throw new Error("This plan does not exist");
@@ -266,31 +245,18 @@ export const deletePlanComment = action(async (comment_id) => {
 
 export const getUpcomingThreePlans = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
   const locale = getLocaleSettings(event);
   dayjs.updateLocale(locale.language, {});
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
   const fromDate = dayjs().startOf("day").toDate();
   const plans = await Plans.findByOptions({
-    user_id: user.id,
-    workspace_id: session.workspace_id,
-    organization_id: session.organization_id,
+    user_id: ctx.user.id,
+    workspace_id: ctx.session.workspace_id,
+    organization_id: ctx.session.organization_id,
   });
   const filtered = plans.filter(
     (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day"),
@@ -303,19 +269,13 @@ export const getUpcomingThreePlans = cache(async () => {
 
 export const getPlanLocation = cache(async (id: string) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+
   const locale = getLocaleSettings(event);
   dayjs.updateLocale(locale.language, {});
-
-  const user = event.context.user;
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
-  const session = event.context.session;
-  if (!session) {
-    throw redirect("/auth/login");
-  }
 
   const plan = await Plans.findById(id);
 
@@ -324,7 +284,7 @@ export const getPlanLocation = cache(async (id: string) => {
   }
 
   // check if the plan is in the user's workspace
-  if (!plan.workspaces.some((ws) => ws.workspace_id === session.workspace_id)) {
+  if (!plan.workspaces.some((ws) => ws.workspace_id === ctx.session.workspace_id)) {
     throw new Error("You do not have permission to view this plan");
   }
   // get the location of the plan
@@ -339,40 +299,34 @@ export const getPlanLocation = cache(async (id: string) => {
 export const savePlanLocation = action(
   async (data: { plan_id: string; plan: { location: z.infer<typeof ConcertLocationSchema> } }) => {
     "use server";
-    const event = getEvent()!;
+    const [ctx, event] = await getContext();
+    if (!ctx) throw redirect("/auth/login");
+    if (!ctx.session) throw redirect("/auth/login");
+    if (!ctx.user) throw redirect("/auth/login");
 
-    const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-    if (!sessionId) {
-      throw redirect("/auth/login");
-    }
-
-    const { session, user } = await lucia.validateSession(sessionId);
-    if (!session) {
-      throw redirect("/auth/login");
-    }
-
-    if (!session.organization_id) {
+    if (!ctx.session.organization_id) {
       throw redirect("/setup/organization");
     }
-    const workspaceId = session.workspace_id;
 
-    if (!workspaceId) {
+    if (!ctx.session.workspace_id) {
       throw redirect("/dashboard/w/new");
     }
-    const workspace = await Workspace.findById(workspaceId);
 
+    const workspace = await Workspace.findById(ctx.session.workspace_id);
     if (!workspace) {
       throw redirect("/dashboard/w/new");
     }
+
     const plan = await Plans.findById(data.plan_id);
     if (!plan) {
       throw new Error("This plan does not exist");
     }
+
     const updated = await Plans.update({
       id: plan.id,
       location: data.plan.location,
     });
+
     const updatedPlan = await Plans.findById(updated.id);
 
     if (!updatedPlan) {
@@ -385,22 +339,11 @@ export const savePlanLocation = action(
 
 export const deletePlan = action(async (plan_id) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!user) {
-    throw redirect("/auth/login");
-  }
   const plan = await Plans.findById(plan_id);
 
   if (!plan) {
@@ -411,7 +354,7 @@ export const deletePlan = action(async (plan_id) => {
     throw new Error("This Plan has already been deleted");
   }
 
-  if (plan.owner.id !== user.id) {
+  if (plan.owner.id !== ctx.user.id) {
     throw new Error("You do not have permission to delete this Plan");
   }
 
@@ -431,29 +374,19 @@ export const savePlanGeneral = action(
     };
   }) => {
     "use server";
-    const event = getEvent()!;
-    console.log(data);
+    const [ctx, event] = await getContext();
+    if (!ctx) throw redirect("/auth/login");
+    if (!ctx.session) throw redirect("/auth/login");
+    if (!ctx.user) throw redirect("/auth/login");
 
-    const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-    if (!sessionId) {
-      throw redirect("/auth/login");
-    }
-
-    const { session, user } = await lucia.validateSession(sessionId);
-    if (!session) {
-      throw redirect("/auth/login");
-    }
-
-    if (!session.organization_id) {
+    if (!ctx.session.organization_id) {
       throw redirect("/setup/organization");
     }
-    const workspaceId = session.workspace_id;
 
-    if (!workspaceId) {
+    if (!ctx.session.workspace_id) {
       throw redirect("/dashboard/w/new");
     }
-    const workspace = await Workspace.findById(workspaceId);
+    const workspace = await Workspace.findById(ctx.session.workspace_id);
 
     if (!workspace) {
       throw redirect("/dashboard/w/new");
@@ -565,25 +498,18 @@ export const savePlanTimeslots = action(
 
 export const createPlanCreationForm = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+
   const locale = getLocaleSettings(event);
   dayjs.updateLocale(locale.language, {});
 
-  const user = event.context.user;
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
-  const session = event.context.session;
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!session.organization_id) {
+  if (!ctx.session.organization_id) {
     throw redirect("/setup/organization");
   }
-  const workspaceId = session.workspace_id;
-  if (!workspaceId) {
+  if (!ctx.session.workspace_id) {
     throw new Error("No workspace selected");
   }
 
@@ -596,8 +522,8 @@ export const createPlanCreationForm = action(async (data: z.infer<typeof CreateP
       ends_at: dayjs().endOf("day").toDate(),
       status: "draft",
     },
-    user.id,
-    workspaceId,
+    ctx.user.id,
+    ctx.session.workspace_id,
   );
 
   return plan;

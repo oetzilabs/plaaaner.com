@@ -1,9 +1,10 @@
 import type { WebsocketMessage, WebsocketMessageProtocol } from "@/core/entities/websocket";
 import { getAuthenticatedSession } from "@/lib/auth/util";
 import { createContextProvider } from "@solid-primitives/context";
-import { Emitter } from "@solid-primitives/event-bus";
+import { Emitter, EmitterOn, Listener } from "@solid-primitives/event-bus";
 import { ReconnectingWebSocket } from "@solid-primitives/websocket";
 import { createAsync } from "@solidjs/router";
+import { T } from "node_modules/@kobalte/core/dist/toggle-button-root-1cfacf95";
 import { onCleanup, onMount } from "solid-js";
 import { toast } from "solid-sonner";
 
@@ -95,7 +96,8 @@ export const [Websocket, useWebsocket] = createContextProvider(
     return {
       ws: props.websocket,
       send: props.emitter.emit.bind(props.emitter.emit, "send"),
-      subscribe: (type: Parameters<typeof props.emitter.on>[0]) => props.emitter.on.bind(props.emitter.on, type),
+      subscribe: <T extends Parameters<typeof props.emitter.on>[0]>(type: T) =>
+        props.emitter.on.bind(props.emitter.on, type),
     };
   },
 );

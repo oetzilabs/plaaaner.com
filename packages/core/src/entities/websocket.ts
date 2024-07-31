@@ -5,6 +5,7 @@ import { Resource } from "sst";
 import { z } from "zod";
 import { db } from "../drizzle/sql/index";
 import { websockets } from "../drizzle/sql/schema";
+import { Activity } from "./activities";
 import { Notify } from "./notifications";
 import { Workspace } from "./workspaces";
 
@@ -16,6 +17,9 @@ export type WebsocketMessage<N extends string, P = unknown> = {
 };
 
 export type WebsocketMessageProtocol = {
+  "activity:created": WebsocketMessage<"activity:created", Activity>;
+  "activity:updated": WebsocketMessage<"activity:updated", Activity>;
+  "activity:deleted": WebsocketMessage<"activity:deleted", Activity>;
   send: WebsocketMessage<"send", WebsocketMessage<string, unknown>>;
   message: WebsocketMessage<"message", unknown>;
   clear: WebsocketMessage<"clear", unknown>;

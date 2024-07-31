@@ -6,11 +6,10 @@ import { getContext } from "../auth/context";
 
 export const getActivitySettings = cache(async () => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    throw redirect("/auth/login");
-  }
-  const user = event.context.user;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
   return {
     type: "everything",
     createdAt: new Date(),
@@ -23,19 +22,9 @@ export const getActivitySettings = cache(async () => {
 export const getActivities = cache(async () => {
   "use server";
   const [ctx, event] = await getContext();
-  if (!ctx) {
-    throw redirect("/auth/login");
-  }
-
-  if (!ctx.session) {
-    console.error("Unauthorized");
-    throw redirect("/auth/login");
-  }
-
-  if (!ctx.user) {
-    console.error("Unauthorized");
-    throw redirect("/auth/login");
-  }
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
   if (!ctx.session.organization_id) {
     console.error("Unauthorized");
@@ -58,35 +47,27 @@ export const getActivities = cache(async () => {
 
 export const getActivitiesByWorkspace = cache(async (workspaceId: string) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  if (!event.context.session) {
-    throw redirect("/auth/login");
-  }
-
-  const session = event.context.session;
-
-  if (!session.organization_id) {
+  if (!ctx.session.organization_id) {
     throw redirect("/setup/organization");
   }
 
-  if (!session.workspace_id) {
-    throw redirect(`/organizations/${session.organization_id}/workspace/new`);
+  if (!ctx.session.workspace_id) {
+    throw redirect(`/organizations/${ctx.session.organization_id}/workspace/new`);
   }
 
-  if (!event.context.user) {
-    throw redirect("/auth/login");
-  }
-
-  const user = event.context.user;
   const w = Workspace.findById(workspaceId);
   if (!w) {
     throw new Error("This workspace does not exist");
   }
 
   const acs = await Activities.getByOrganizationWorkspace({
-    user_id: user.id,
-    organization_id: session.organization_id,
+    user_id: ctx.user.id,
+    organization_id: ctx.session.organization_id,
     workspace_id: workspaceId,
   });
 
