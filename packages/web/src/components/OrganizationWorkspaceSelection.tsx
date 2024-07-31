@@ -1,23 +1,17 @@
 import { Badge } from "@/components/ui/badge";
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command";
-import { getUserOrganizations } from "@/lib/api/organizations";
 import { setDashboard } from "@/lib/api/user";
-import { createAsync, revalidate, useAction, useNavigate, useSubmission } from "@solidjs/router";
+import { revalidate, useAction, useNavigate, useSubmission } from "@solidjs/router";
 import { Building, Target } from "lucide-solid";
 import { createSignal, For, JSXElement, Show } from "solid-js";
 import { getAuthenticatedSession, UserSession } from "../lib/auth/util";
-import { useSession } from "./SessionProvider";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type OrgWorkspaceOption = {
@@ -36,13 +30,12 @@ type List = {
 export const OrganizationWorkspaceSelection = (props: { session: UserSession }) => {
   const setUserDashboard = useAction(setDashboard);
   const isChangingDashboard = useSubmission(setDashboard);
-  type OrgList = NonNullable<(typeof props)["session"]>["organizations"];
 
   const [openSelector, setOpenSelector] = createSignal(false);
-  const createList = (
-    uO: OrgList,
-    currentOrgId?: OrgList[number]["id"],
-    workspaceId?: OrgList[number]["workspaces"][number]["workspace"]["id"],
+  const createList = <T extends UserSession["organizations"]>(
+    uO: T,
+    currentOrgId?: string,
+    workspaceId?: string,
   ): List[] => {
     const x: List[] = [];
     for (const org of uO) {
@@ -72,7 +65,7 @@ export const OrganizationWorkspaceSelection = (props: { session: UserSession }) 
             {(s) => (
               <>
                 <div
-                  class="flex flex-row items-center justify-between p-4 pb-0 gap-4 cursor-pointer text-muted-foreground w-full group"
+                  class="flex flex-row items-center justify-between p-2 pb-0 gap-4 cursor-pointer text-muted-foreground w-full group"
                   onClick={() => {
                     if (isChangingDashboard.pending) return;
                     setOpenSelector(true);
@@ -81,7 +74,7 @@ export const OrganizationWorkspaceSelection = (props: { session: UserSession }) 
                   <div class="w-full flex flex-row items-center justify-between gap-2">
                     <Tooltip placement="right" gutter={8}>
                       <TooltipTrigger class="rounded-full">
-                        <div class="size-10 bg-indigo-500 flex items-center justify-center text-white rounded-full">
+                        <div class="size-8 bg-indigo-500 flex items-center justify-center text-white rounded-full">
                           <Building class="size-4" />
                         </div>
                       </TooltipTrigger>
@@ -105,7 +98,7 @@ export const OrganizationWorkspaceSelection = (props: { session: UserSession }) 
                 >
                   <CommandInput />
                   <CommandList>
-                    <CommandEmpty>No results found.</CommandEmpty>
+                    <CommandEmpty class="text-muted-foreground">No results found.</CommandEmpty>
                     <For each={createList(uO(), s().organization?.id, s().workspace?.id)}>
                       {(list) => (
                         <CommandGroup heading={list.label}>
@@ -124,7 +117,12 @@ export const OrganizationWorkspaceSelection = (props: { session: UserSession }) 
                               >
                                 <div class="flex flex-row items-center gap-2">
                                   {option.icon}
-                                  <span class="">{option.label}</span>
+                                  <span class="">
+                                    {option.label}
+                                    {option.organizationId === s().organization?.id &&
+                                      option.workspaceId === s().workspace?.id &&
+                                      " (current)"}
+                                  </span>
                                 </div>
                               </CommandItem>
                             )}

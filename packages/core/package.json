@@ -5,13 +5,14 @@
   "scripts": {
     "test": "sst bind vitest",
     "typecheck": "tsc -noEmit",
-    "generate": "drizzle-kit generate:pg"
+    "generate": "drizzle-kit generate:pg",
+    "studio": "sst shell 'drizzle-kit studio'"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "20.9.0",
     "@types/uuid": "9.0.7",
-    "drizzle-kit": "0.23.0",
+    "drizzle-kit": "0.23.1",
     "vitest": "1.4.0"
   },
   "dependencies": {
@@ -21,7 +22,7 @@
     "@aws-sdk/s3-request-presigner": "3.525.0",
     "@lucia-auth/adapter-drizzle": "^1.0.7",
     "@neondatabase/serverless": "0.9.4",
-    "dayjs": "1.11.10",
+    "dayjs": "1.11.12",
     "drizzle-orm": "0.32.1",
     "drizzle-zod": "0.5.1",
     "lucia": "^3.1.1",

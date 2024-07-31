@@ -1,26 +1,19 @@
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
-import { action, cache, redirect, revalidate } from "@solidjs/router";
+import { action, cache, redirect } from "@solidjs/router";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
+import { getContext } from "../auth/context";
 
 export const createOrganization = action(async (form: FormData) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    return new Error("Unauthorized");
-  }
-
-  const { session: currentSession, user } = await lucia.validateSession(sessionId);
-
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
+  // @ts-expect-error
   const data = Object.fromEntries(form.entries());
 
   const validation = Organization.safeParseCreate(data);
@@ -33,34 +26,30 @@ export const createOrganization = action(async (form: FormData) => {
     throw new Error("Organization name is too short. Please set a name");
   }
 
-  const organization = await Organization.create(validation.data, user.id);
+  const organization = await Organization.create(validation.data, ctx.user.id);
 
   if (!organization) {
     throw new Error("Couldn't create organization");
   }
 
-  const connected = await Organization.connectUser(organization.id, user.id);
+  const connected = await Organization.connectUser(organization.id, ctx.user.id);
 
   if (!connected) {
     throw new Error("Couldn't connect user to organization");
   }
 
-  if (!currentSession || !user) {
-    throw new Error("Unauthorized");
-  }
-
-  await lucia.invalidateSession(sessionId);
+  await lucia.invalidateSession(ctx.session.id);
 
   const session = await lucia.createSession(
-    user.id,
+    ctx.user.id,
     {
-      access_token: currentSession.access_token,
-      workspace_id: currentSession.workspace_id,
+      access_token: ctx.session.access_token,
+      workspace_id: ctx.session.workspace_id,
       organization_id: organization.id,
       createdAt: new Date(),
     },
     {
-      sessionId: sessionId,
+      sessionId: ctx.session.id,
     },
   );
 
@@ -72,26 +61,12 @@ export const createOrganization = action(async (form: FormData) => {
 
 export const getUserOrganizations = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    console.error("Unauthorized");
-    return [];
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-
-  if (!user) {
-    console.error("Unauthorized");
-    return [];
-
-    throw redirect("/auth/login");
-  }
-
-  const orgs = await Organization.findManyByUserId(user.id);
+  const orgs = await Organization.findManyByUserId(ctx.user.id);
 
   return orgs;
 }, "user-organizations");
@@ -129,45 +104,27 @@ export const getOrganizationById = cache(async (id: string) => {
 
 export const getOrganization = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    return new Error("Unauthorized");
-  }
-
-  const { session } = await lucia.validateSession(sessionId);
-
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!session.organization_id) {
+  if (!ctx.session.organization_id) {
     return null;
   }
 
-  const organizations = await Organization.findById(session.organization_id);
+  const organizations = await Organization.findById(ctx.session.organization_id);
 
   return organizations;
 }, "organization");
 
 export const requestOrganizationJoin = action(async (form: FormData) => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    return new Error("Unauthorized");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-
+  // @ts-expect-error
   const data = Object.fromEntries(form.entries());
 
   const validation = z
@@ -176,16 +133,12 @@ export const requestOrganizationJoin = action(async (form: FormData) => {
     })
     .safeParse(data);
 
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
   if (!validation.success) {
     console.error(validation.error);
     throw validation.error;
   }
 
-  if (session.organization_id !== null && session.organization_id === validation.data.organization_id) {
+  if (ctx.session.organization_id !== null && ctx.session.organization_id === validation.data.organization_id) {
     // user is already connected to the organization
     throw redirect("/dashboard");
   }
@@ -196,7 +149,7 @@ export const requestOrganizationJoin = action(async (form: FormData) => {
     throw new Error("Organization does not exist");
   }
 
-  const organizationJoin = await Organization.requestJoin(organization.id, user.id);
+  const organizationJoin = await Organization.requestJoin(organization.id, ctx.user.id);
 
   console.log("Requested to join:", organizationJoin);
 
@@ -211,89 +164,54 @@ export const getAllOrganizations = cache(async () => {
 
 export const getNoneConnectedOrganizations = cache(async () => {
   "use server";
-  const event = getEvent()!;
-
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { user } = await lucia.validateSession(sessionId);
-
-  if (!user) {
-    throw redirect("/auth/login");
-  }
-  const orgs = await Organization.notConnectedToUserById(user.id);
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+  const orgs = await Organization.notConnectedToUserById(ctx.user.id);
   return orgs;
 }, "none-connected-organizations");
 
 export const getTicketTypes = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session } = await lucia.validateSession(sessionId);
-
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!session.organization_id) {
+  if (!ctx.session.organization_id) {
     return [] as Awaited<ReturnType<typeof Organization.getTicketTypesByOrganization>>;
   }
 
-  const org_ticket_types = await Organization.getTicketTypesByOrganization(session.organization_id);
+  const org_ticket_types = await Organization.getTicketTypesByOrganization(ctx.session.organization_id);
 
   return org_ticket_types;
 }, "organization-ticket-types");
 
 export const fillDefaultTicketTypes = action(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session } = await lucia.validateSession(sessionId);
-
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!session.organization_id) {
+  if (!ctx.session.organization_id) {
     return [] as Awaited<ReturnType<typeof Organization.fillDefaultTicketTypes>>;
   }
 
-  const org_ticket_types = await Organization.fillDefaultTicketTypes(session.organization_id);
+  const org_ticket_types = await Organization.fillDefaultTicketTypes(ctx.session.organization_id);
 
   return org_ticket_types;
 });
 
 export const getDefaultTicketTypeCount = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session } = await lucia.validateSession(sessionId);
-
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!session.organization_id) {
+  if (!ctx.session.organization_id) {
     return 0;
   }
 

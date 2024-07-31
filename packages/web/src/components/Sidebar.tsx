@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { A, createAsync, useLocation, useResolvedPath } from "@solidjs/router";
 import { Activity, Bell, Circle, HelpCircle, LayoutDashboard } from "lucide-solid";
-import { For, JSXElement, Show } from "solid-js";
+import { For, JSXElement, Show, splitProps } from "solid-js";
 import { getAuthenticatedSession } from "../lib/auth/util";
 import { OrganizationWorkspaceSelection } from "./OrganizationWorkspaceSelection";
 import { useSession } from "./SessionProvider";
@@ -16,8 +16,6 @@ export const SidebarLink = (props: {
   variant?: "default" | "outline";
   class?: string;
 }) => {
-  const v = props.variant || "default";
-  const localClass = props.class || "";
   const l = useLocation();
   const pathname = useResolvedPath(() => l.pathname);
   const isActive = () => pathname()?.startsWith(props.href) ?? false;
@@ -29,16 +27,14 @@ export const SidebarLink = (props: {
           as={Button}
           variant={isActive() ? "default" : (props.variant ?? "outline")}
           class={cn(
-            "size-10 flex flex-col items-center justify-center rounded-full",
+            "size-8 flex flex-col items-center justify-center rounded-full",
             {
               "dark:text-indigo-500 text-white": isActive(),
             },
-            localClass,
+            props.class,
           )}
         >
-          <Show when={props.icon !== undefined && props.icon} fallback={<Circle class="size-4" fill="currentColor" />}>
-            {(icon) => icon()}
-          </Show>
+          {props.icon ?? <Circle class="size-4" fill="currentColor" />}
         </TooltipTrigger>
         <TooltipContent>{props.children}</TooltipContent>
       </Tooltip>
@@ -60,12 +56,12 @@ export const Sidebar = () => {
       <Show
         when={session() && session()!.user !== null && session()}
         fallback={
-          <div class="w-full p-4 flex flex-col gap-2">
+          <div class="w-full p-2 flex flex-col gap-2">
             <div class="w-full flex flex-col gap-2">
-              <Skeleton class="w-full size-10 rounded-full" />
-              <Skeleton class="w-full size-10 rounded-full" />
-              <Skeleton class="w-full size-10 rounded-full" />
-              <Skeleton class="w-full size-10 rounded-full" />
+              <Skeleton class="w-full size-8 rounded-full" />
+              <Skeleton class="w-full size-8 rounded-full" />
+              <Skeleton class="w-full size-8 rounded-full" />
+              <Skeleton class="w-full size-8 rounded-full" />
             </div>
           </div>
         }
@@ -74,7 +70,7 @@ export const Sidebar = () => {
           <div class="flex flex-col gap-0 w-full grow h-full">
             <div class="w-full flex flex-col gap-2">
               <OrganizationWorkspaceSelection session={s()} />
-              <div class="w-full h-max flex flex-col px-4 gap-2">
+              <div class="w-full h-max flex flex-col px-2 gap-2">
                 <For each={links}>
                   {(link) => (
                     <SidebarLink href={link.href} icon={link.icon}>
@@ -85,7 +81,7 @@ export const Sidebar = () => {
               </div>
             </div>
             <div class="w-full grow flex flex-col gap-6"></div>
-            <div class="w-full flex items-center flex-col p-4 gap-2">
+            <div class="w-full flex items-center flex-col p-2 gap-2">
               <SidebarLink href="/help/faq" icon={<HelpCircle class="size-4" />}>
                 FAQ
               </SidebarLink>

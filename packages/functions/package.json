@@ -7,17 +7,17 @@
     "typecheck": "tsc -noEmit"
   },
   "dependencies": {
-    "hono": "4.5.2",
+    "hono": "4.5.3",
     "@aws-sdk/client-s3": "3.445.0",
     "@aws-sdk/client-sesv2": "^3.609.0",
     "@aws-sdk/s3-request-presigner": "3.445.0",
     "@jsx-email/render": "^1.1.0",
     "@oetzilabs-plaaaner-com/core": "workspace:*",
-    "dayjs": "1.11.10",
+    "dayjs": "1.11.12",
     "http-status-codes": "2.3.0",
     "node-fetch": "3.3.2",
     "nodemailer": "^6.9.14",
-    "zod": "3.23.4"
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.140",

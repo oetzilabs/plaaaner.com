@@ -196,34 +196,26 @@ export const deleteWorkspace = action(async (id: string) => {
 
 export const setWorkspaceOwner = action(async (id: string) => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    return new Error("Unauthorized");
-  }
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
   const valid = z.string().uuid().safeParse(id);
   if (!valid.success) {
     return new Error("Invalid data");
   }
   const workspaceId = valid.data;
-  const ws = await Workspace.setOwner(workspaceId, event.context.user.id);
+  const ws = await Workspace.setOwner(workspaceId, ctx.user.id);
 
   return ws;
 });
 
 export const setCurrentWorkspace = action(async (data: FormData) => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    return new Error("Unauthorized");
-  }
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-  if (!sessionId) {
-    return new Error("Unauthorized");
-  }
-  const { session: currentSession, user } = await lucia.validateSession(sessionId);
-  if (!currentSession || !user) {
-    throw new Error("Unauthorized");
-  }
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
   // @ts-expect-error
   const data_ = Object.fromEntries(data.entries());
   const valid = z.string().uuid().safeParse(data_.workspace_id);
@@ -236,17 +228,17 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
     return new Error("Workspace not found");
   }
 
-  await lucia.invalidateSession(sessionId);
+  await lucia.invalidateSession(ctx.session.id);
   const session = await lucia.createSession(
-    user.id,
+    ctx.user.id,
     {
-      access_token: currentSession.access_token,
+      access_token: ctx.session.access_token,
       workspace_id: ws.id,
-      organization_id: currentSession.organization_id,
+      organization_id: ctx.session.organization_id,
       createdAt: new Date(),
     },
     {
-      sessionId: sessionId,
+      sessionId: ctx.session.id,
     },
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(session.id).serialize());

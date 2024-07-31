@@ -125,25 +125,16 @@ export const getCurrentOrganization = cache(async () => {
 
 export const getCurrentWorkspace = cache(async () => {
   "use server";
-  const event = getEvent()!;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
-
-  if (!sessionId) {
-    return new Error("Unauthorized");
-  }
-
-  const { session } = await lucia.validateSession(sessionId);
-
-  if (!session) {
-    throw redirect("/auth/login");
-  }
-
-  if (!session.workspace_id) {
+  if (!ctx.session.workspace_id) {
     return null;
   }
 
-  const workspace = await Workspace.findById(session.workspace_id);
+  const workspace = await Workspace.findById(ctx.session.workspace_id);
 
   return workspace;
 }, "current-workspace");

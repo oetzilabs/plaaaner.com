@@ -1,32 +1,40 @@
-import { useSession } from "@/components/SessionProvider";
 import { PlanActivity } from "@/components/dashboard/activity-components/plan";
-import { Badge } from "@/components/ui/badge";
-import { getOrganizationById } from "@/lib/api/organizations";
-import { getWorkspace } from "@/lib/api/workspaces";
-import { createAsync, redirect, useParams } from "@solidjs/router";
-import { For, Match, Show, Switch } from "solid-js";
-import { Transition, TransitionGroup } from "solid-transition-group";
-import { getActivitiesByWorkspace } from "@/lib/api/activity";
 import { PostActivity } from "@/components/dashboard/activity-components/post";
 import { Footer } from "@/components/Footer";
-import { Suspense } from "solid-js";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getActivitiesByWorkspace } from "@/lib/api/activity";
+import { getOrganizationById } from "@/lib/api/organizations";
+import { getWorkspace } from "@/lib/api/workspaces";
+import { getAuthenticatedSession } from "@/lib/auth/util";
+import { createAsync, redirect, RoutePreloadFuncArgs, useParams } from "@solidjs/router";
+import { For, Match, Show, Suspense, Switch } from "solid-js";
+import { Transition, TransitionGroup } from "solid-transition-group";
+
+export const route = {
+  preload: async (props: RoutePreloadFuncArgs) => {
+    const session = getAuthenticatedSession();
+    const org = await getOrganizationById(props.params.organization_id);
+    const ws = await getWorkspace(props.params.wid);
+    return { org, ws, session };
+  },
+};
 
 export default function ActivityInOrganizationWorkspace() {
-  const { organization_id, wid } = useParams();
-  const session = useSession();
-  if (!wid) throw redirect("/dashboard/workspaces", 303);
+  const params = useParams();
+  if (!params.wid) throw redirect("/dashboard/workspaces", 303);
 
-  const ws = createAsync(() => getWorkspace(wid));
-  const os = createAsync(() => getOrganizationById(organization_id));
-  const activities = createAsync(() => getActivitiesByWorkspace(wid));
+  const session = createAsync(() => getAuthenticatedSession());
+  const ws = createAsync(() => getWorkspace(params.wid));
+  const os = createAsync(() => getOrganizationById(params.organization_id));
+  const activities = createAsync(() => getActivitiesByWorkspace(params.wid));
 
   return (
     <div class="flex flex-col items-start w-full grow min-h-0 max-h-[calc(100vh-49px)]">
       <div class="flex flex-col items-start flex-grow min-h-0 max-h-screen w-full pt-10 gap-8  overflow-y-auto">
         <div class="flex flex-col gap-1 w-full container pb-60">
           <Show
-            when={typeof session !== "undefined" && session()}
+            when={session()}
             fallback={
               <div class="flex flex-col items-center justify-center h-full w-full">
                 <div class="flex flex-col items-center justify-center h-full w-full">
@@ -36,15 +44,15 @@ export default function ActivityInOrganizationWorkspace() {
             }
           >
             {(s) => (
-              <Show when={ws() && os() && activities() && { o: os()!, w: ws()!, activities: activities()! }}>
+              <Show when={ws() && os() && activities()}>
                 {(i) => (
                   <div class="flex flex-col items-start h-full w-full gap-4">
                     <div class="w-full flex flex-row gap-2">
                       <Show
-                        when={i().w.owner.id === s().user?.id}
+                        when={ws()!.owner.id === s().user?.id}
                         fallback={
                           <Badge variant="secondary" class="text-xs px-2 py-1 rounded-md">
-                            Owner: {i().w.owner.name}
+                            Owner: {ws()!.owner.name}
                           </Badge>
                         }
                       >
@@ -55,7 +63,7 @@ export default function ActivityInOrganizationWorkspace() {
                     </div>
                     <div class="w-full flex flex-col gap-4">
                       <h1 class="text-xl font-medium">
-                        <Show when={i().w.name === "default"} fallback={`Activities in ${i().w.name}`}>
+                        <Show when={ws()!.name === "default"} fallback={`Activities in ${ws()!.name}`}>
                           Activities in this Workspace
                         </Show>
                       </h1>
@@ -75,7 +83,7 @@ export default function ActivityInOrganizationWorkspace() {
                           }
                         >
                           <TransitionGroup name="slide-fade-up">
-                            <For each={i().activities}>
+                            <For each={activities()!}>
                               {(p) => (
                                 <Transition name="slide-fade-up">
                                   <div class="border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">

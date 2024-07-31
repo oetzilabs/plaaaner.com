@@ -1,5 +1,5 @@
-import { JSXElement } from "solid-js";
 import { Sidebar } from "@/components/Sidebar";
+import { JSXElement } from "solid-js";
 
 export default function DashboardLayout(props: { children: JSXElement }) {
   return (

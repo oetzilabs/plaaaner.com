@@ -60,7 +60,7 @@
     "leaflet": "^1.9.4",
     "leaflet-rotate": "^0.2.8",
     "lucia": "3.1.1",
-    "lucide-solid": "0.414.0",
+    "lucide-solid": "0.417.0",
     "node-fetch": "3.3.2",
     "oslo": "^1.2.0",
     "solid-devtools": "0.30.1",

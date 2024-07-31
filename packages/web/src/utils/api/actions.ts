@@ -4,14 +4,15 @@ import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organiza
 import { action, redirect, reload } from "@solidjs/router";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
+import { getContext } from "../../lib/auth/context";
 
 export const logout = action(async () => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.session) {
-    return new Error("Unauthorized");
-  }
-  await lucia.invalidateSession(event.context.session.id);
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+  await lucia.invalidateSession(ctx.session.id);
   appendHeader(event, "Set-Cookie", lucia.createBlankSessionCookie().serialize());
   event.context.session = null;
 
@@ -20,24 +21,20 @@ export const logout = action(async () => {
 
 export const revokeAllSessions = action(async () => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    console.log("Unauthorized");
-    return false;
-  }
-  const { id } = event.context.user;
-  await lucia.invalidateUserSessions(id);
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+  await lucia.invalidateUserSessions(ctx.user.id);
   reload({ headers: { Location: "/auth/login" }, status: 303, revalidate: getAuthenticatedSession.key });
 });
 
 export const revokeSession = action(async (session_id: string) => {
   "use server";
-  const event = getEvent()!;
-
-  const { session, user } = await lucia.validateSession(session_id);
-  if (!session || !user) {
-    throw redirect("/auth/login");
-  }
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
   await lucia.invalidateSession(session_id);
 
@@ -46,110 +43,101 @@ export const revokeSession = action(async (session_id: string) => {
 
 export const changeNotificationSettings = action(async (type: string) => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    return new Error("Unauthorized");
-  }
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
   return { type };
 });
 
 export const changeMessageSettings = action(async (type: string) => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    return new Error("Unauthorized");
-  }
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+
   return { type };
 });
 
 export const disconnectFromOrganization = action(async (data: string) => {
   "use server";
-  const event = getEvent()!;
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session || !user) {
-    throw redirect("/auth/login");
-  }
   const valid = z.string().uuid().safeParse(data);
   if (!valid.success) {
     throw new Error("Invalid data");
   }
   const organizationId = valid.data;
-  const o = await Organization.disconnectUser(organizationId, user.id);
-  await lucia.invalidateSession(sessionId);
+  const o = await Organization.disconnectUser(organizationId, ctx.user.id);
+  await lucia.invalidateSession(ctx.session.id);
   const new_session = await lucia.createSession(
-    user.id,
+    ctx.user.id,
     {
-      access_token: session.access_token,
+      access_token: ctx.session.access_token,
       organization_id: null,
       workspace_id: null,
       createdAt: new Date(),
     },
     {
-      sessionId: sessionId,
+      sessionId: ctx.session.id,
     },
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
-  event.context.session = session;
+  event.context.session = new_session;
   return o;
 });
 
 export const deleteOrganization = action(async (id: string) => {
   "use server";
-  const event = getEvent()!;
-  const sessionId = getCookie(event, lucia.sessionCookieName) ?? null;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  if (!sessionId) {
-    throw redirect("/auth/login");
-  }
-
-  const { session, user } = await lucia.validateSession(sessionId);
-  if (!session || !user) {
-    throw redirect("/auth/login");
-  }
   const valid = z.string().uuid().safeParse(id);
   if (!valid.success) {
     throw new Error("Invalid data");
   }
   const organizationId = valid.data;
   const o = await Organization.markAsDeleted({ id: organizationId });
-  await lucia.invalidateSession(sessionId);
+  await lucia.invalidateSession(ctx.session.id);
   const new_session = await lucia.createSession(
-    user.id,
+    ctx.user.id,
     {
-      access_token: session.access_token,
+      access_token: ctx.session.access_token,
       organization_id: null,
       workspace_id: null,
       createdAt: new Date(),
     },
     {
-      sessionId: sessionId,
+      sessionId: ctx.session.id,
     },
   );
   appendHeader(event, "Set-Cookie", lucia.createSessionCookie(new_session.id).serialize());
-  event.context.session = session;
+  event.context.session = new_session;
 
   return o;
 });
 
 export const setOrganizationOwner = action(async (id: string) => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    return new Error("Unauthorized");
-  }
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
+
   const valid = z.string().uuid().safeParse(id);
   if (!valid.success) {
     return new Error("Invalid data");
   }
+
   const organizationId = valid.data;
-  const o = await Organization.setOwner(organizationId, event.context.user.id);
+  const o = await Organization.setOwner(organizationId, ctx.user.id);
 
   return o;
 });
