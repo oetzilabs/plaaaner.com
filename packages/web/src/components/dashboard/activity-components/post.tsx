@@ -1,14 +1,3 @@
-import { UserSession } from "@/lib/auth/util";
-import { setFreshActivities, shortUsername } from "@/lib/utils";
-import { deletePost, getPosts } from "@/lib/api/posts";
-import { Posts } from "@oetzilabs-plaaaner-com/core/src/entities/posts";
-import dayjs from "dayjs";
-import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
-import { PostCommentsSection } from "./post-comments";
-import advancedFormat from "dayjs/plugin/advancedFormat";
-import localizedFormat from "dayjs/plugin/localizedFormat";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { For, Match, Show, Switch } from "solid-js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,11 +5,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
+import { deletePost, getPosts } from "@/lib/api/posts";
+import { UserSession } from "@/lib/auth/util";
+import { setFreshActivities, shortUsername } from "@/lib/utils";
+import { Posts } from "@oetzilabs-plaaaner-com/core/src/entities/posts";
 import { revalidate, useAction, useSubmission } from "@solidjs/router";
-import { Ellipsis, CircleAlert, Trash, EyeOff, Eye } from "lucide-solid";
-import { Button } from "../../ui/button";
+import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { CircleAlert, Ellipsis, Eye, EyeOff, Trash } from "lucide-solid";
+import { For, Match, Show, Switch } from "solid-js";
 import { toast } from "solid-sonner";
 import { getActivities } from "../../../lib/api/activity";
+import { Button } from "../../ui/button";
+import { PostCommentsSection } from "./post-comments";
+
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 dayjs.extend(advancedFormat);
@@ -81,15 +82,7 @@ export const PostActivity = (props: { session: UserSession; post: Posts.Frontend
                         closeOnSelect={false}
                         onSelect={async () => {
                           if (props.post.owner.id !== props.session?.user?.id) return;
-                          const removed = await removePost(props.post.id);
-                          if (!removed) {
-                            toast.error("Could not delete post");
-                            return;
-                          }
-
-                          await revalidate(getActivities.key);
-                          await revalidate(getPosts.key);
-                          toast.success("Post deleted, refreshing!");
+                          await removePost(props.post.id);
                         }}
                       >
                         <Trash class="size-4" />

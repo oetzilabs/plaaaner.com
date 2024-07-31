@@ -96,8 +96,12 @@ export const [Websocket, useWebsocket] = createContextProvider(
     return {
       ws: props.websocket,
       send: props.emitter.emit.bind(props.emitter.emit, "send"),
-      subscribe: <T extends Parameters<typeof props.emitter.on>[0]>(type: T) =>
-        props.emitter.on.bind(props.emitter.on, type),
+      subscribe: <T extends keyof WebsocketMessageProtocol>(type: T) => {
+        type PickedEvent = Pick<WebsocketMessageProtocol, T>;
+        const fn = props.emitter.on as EmitterOn<PickedEvent>;
+
+        return fn.bind(fn, type);
+      },
     };
   },
 );

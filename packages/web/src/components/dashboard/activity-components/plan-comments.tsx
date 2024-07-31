@@ -81,8 +81,7 @@ export const PlanCommentsSection = (props: {
 
   const removeComment = async (commentId: string) => {
     const removed = await deleteComment(commentId);
-    await revalidate(getPlanComments.keyFor(removed.planId));
-    await revalidate(getActivities.key);
+    await revalidate([getActivities.key, getPlanComments.keyFor(removed.planId)]);
   };
 
   return (
@@ -185,8 +184,7 @@ const PlanComment = (props: { planId: string; onPost: () => void }) => {
     if (c.trim().length === 0) return;
     const a = addComment({ planId: props.planId, comment: c });
 
-    await revalidate(getActivities.key);
-    await revalidate(getPlanComments.keyFor(props.planId));
+    await revalidate([getActivities.key, getPlanComments.keyFor(props.planId)]);
     return a;
   };
 

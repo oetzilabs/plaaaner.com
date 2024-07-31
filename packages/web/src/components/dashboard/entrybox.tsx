@@ -50,7 +50,7 @@ export const EntryBox = () => {
             </TabsList>
             <TabsContent value="plan" class="pt-0 gap-4 flex flex-col">
               <div class="flex flex-col w-full px-4 gap-2">
-                <TextFieldRoot onChange={(v) => setTitle(v)} value={title()}>
+                <TextFieldRoot onChange={setTitle} value={title()}>
                   <TextField
                     autofocus
                     placeholder="Plan Name"
@@ -62,7 +62,7 @@ export const EntryBox = () => {
                     }}
                   />
                 </TextFieldRoot>
-                <TextFieldRoot onChange={(v) => setDescription(v)} value={description()}>
+                <TextFieldRoot onChange={setDescription} value={description()}>
                   <TextArea
                     placeholder="Describe your new plan..."
                     class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none bg-muted"
@@ -113,9 +113,9 @@ export const EntryBox = () => {
                       //   title: t,
                       //   description: d,
                       // });
-                      await revalidate(getActivities.key);
-                      await revalidate(getPlans.key);
-                      await revalidate(getUpcomingThreePlans.key);
+                      // await revalidate(getActivities.key);
+                      // await revalidate(getPlans.key);
+                      // await revalidate(getUpcomingThreePlans.key);
                     }}
                   >
                     <span class="">Create Plan</span>
@@ -125,7 +125,7 @@ export const EntryBox = () => {
             </TabsContent>
             <TabsContent value="post" class="pt-0 gap-4 flex flex-col">
               <div class="flex flex-col w-full px-4">
-                <TextFieldRoot onChange={(v) => setPostContent(v)} value={postContent()}>
+                <TextFieldRoot onChange={setPostContent} value={postContent()}>
                   <TextArea
                     autofocus
                     placeholder="What's up?"
@@ -150,16 +150,17 @@ export const EntryBox = () => {
                     variant="default"
                     size="sm"
                     class="w-max flex items-center justify-center gap-2"
+                    type="button"
                     onClick={async () => {
                       const content = postContent();
                       if (content.length === 0) {
                         return;
                       }
-                      const post = await createPost(content);
-                      if (post) {
-                        setPostContent("");
-                        await revalidate(getActivities.key, true);
-                      }
+                      await createPost(content);
+                      setPostContent("");
+                      // if (post) {
+                      //   // await revalidate(getActivities.key, true);
+                      // }
                     }}
                   >
                     <Switch fallback={<Plus class="size-4" />}>

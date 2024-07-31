@@ -14,7 +14,7 @@ import { getUserOrganizations } from "@/lib/api/organizations";
 import { getNearbyPlans, getUpcomingThreePlans } from "@/lib/api/plans";
 import { getAuthenticatedSession, UserSession } from "@/lib/auth/util";
 import { Title } from "@solidjs/meta";
-import { A, createAsync, revalidate } from "@solidjs/router";
+import { A, action, createAsync, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
@@ -29,7 +29,8 @@ export const route = {
     const notifications = await getNotifications();
     const upcomingPlans = await getUpcomingThreePlans();
     const nearbyPlans = await getNearbyPlans();
-    return { session, notifications, upcomingPlans, nearbyPlans, userOrganizations };
+    const activities = await getActivities();
+    return { session, notifications, upcomingPlans, nearbyPlans, userOrganizations, activities };
   },
 };
 
@@ -104,24 +105,8 @@ export default function DashboardPage() {
                       <div class="col-span-4 hidden md:flex flex-col row-span-12">
                         <div class="flex flex-col w-full gap-4 sticky top-0 pt-4">
                           <UpcomingPlans session={s} />
-                          <Suspense
-                            fallback={
-                              <div class="p-4 w-full flex flex-col items-center justify-center">
-                                <Loader2 class="size-4 animate-spin" />
-                              </div>
-                            }
-                          >
-                            <NotificationList session={s} />
-                          </Suspense>
-                          <Suspense
-                            fallback={
-                              <div class="p-4 w-full flex flex-col items-center justify-center">
-                                <Loader2 class="size-4 animate-spin" />
-                              </div>
-                            }
-                          >
-                            <NearbyPlansList session={s} />
-                          </Suspense>
+                          <NotificationList session={s} />
+                          <NearbyPlansList session={s} />
                           <div class="flex flex-col w-full gap-2">
                             <SmallFooter />
                             <Disclaimers />
@@ -129,22 +114,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div class="col-span-8 row-span-1 w-full flex flex-col">
-                        <Suspense
-                          fallback={
-                            <div class="py-10 w-full flex flex-col items-center justify-center gap-4">
-                              <For each={Array(5).fill(null)}>
-                                {() => (
-                                  <Skeleton
-                                    class="w-full"
-                                    style={{ height: `${Math.floor(Math.random() * 200) + 100}px` }}
-                                  />
-                                )}
-                              </For>
-                            </div>
-                          }
-                        >
-                          <Activities session={s} />
-                        </Suspense>
+                        <Activities session={s} />
                       </div>
                     </div>
                   </div>

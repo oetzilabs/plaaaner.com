@@ -114,7 +114,14 @@ export default function App() {
             <>
               <MetaProvider>
                 <Title>Plaaaner.com</Title>
-                <Suspense>
+                <Suspense
+                  fallback={
+                    <div class="w-full flex flex-col items-center justify-center h-screen">
+                      <Loader2 class="size-4 animate-spin" />
+                      Loading Page
+                    </div>
+                  }
+                >
                   <ColorModeScript storageType={storageManager.type} initialColorMode="system" />
                   <ColorModeProvider storageManager={storageManager}>
                     <Toaster

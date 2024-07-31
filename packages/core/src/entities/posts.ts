@@ -1,12 +1,12 @@
+import dayjs from "dayjs";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { db } from "../drizzle/sql";
-import { PostCreateSchema, PostUpdateSchema, post_comments, posts, workspaces_posts } from "../drizzle/sql/schema";
+import { post_comments, PostCreateSchema, posts, PostUpdateSchema, workspaces_posts } from "../drizzle/sql/schema";
 import { Organization } from "./organizations";
-import { Workspace } from "./workspaces";
 import { User } from "./users";
-import dayjs from "dayjs";
+import { Workspace } from "./workspaces";
 
 export * as Posts from "./posts";
 
@@ -19,7 +19,7 @@ export const create = z
     const postsCreated = await db.insert(posts).values(postsToCreate).returning();
 
     await Promise.all(
-      postsCreated.map((pl) => db.insert(workspaces_posts).values({ post_id: pl.id, workspace_id }).returning())
+      postsCreated.map((pl) => db.insert(workspaces_posts).values({ post_id: pl.id, workspace_id }).returning()),
     );
 
     return postsCreated;
@@ -47,6 +47,7 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
         },
       },
       owner: true,
+      workpaces: true,
     },
   });
 });
@@ -59,7 +60,7 @@ export const findByOptions = z
         workspace_id: z.string().uuid().nullable(),
         organization_id: z.string().uuid().nullable(),
       }),
-    ])
+    ]),
   )
   .implement(async ({ user_id, organization_id, workspace_id }) => {
     if (!organization_id) {
@@ -165,7 +166,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true })
         .merge(z.object({ id: z.string().uuid() })),
-    ])
+    ]),
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
@@ -233,8 +234,8 @@ export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).imp
             },
           },
         },
-      })
-    )
+      }),
+    ),
   );
   return ps.flat().map((oe) => oe.post);
 });
