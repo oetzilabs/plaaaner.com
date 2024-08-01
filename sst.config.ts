@@ -31,7 +31,7 @@ export default $config({
       websocket: websocket.ws.url,
       authUrl: auth.auth.authenticator.url,
       api: api.api.url,
-      solidStartUrl: solidStart.solidStartApp.url,
+      solidStartUrl: $dev ? "http://localhost:3000" : solidStart.solidStartApp.url,
     };
   },
 });
