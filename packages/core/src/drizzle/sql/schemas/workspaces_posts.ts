@@ -24,7 +24,7 @@ export const workspaces_posts = schema.table(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.workspace_id, table.post_id] }),
-  })
+  }),
 );
 
 export const workspaces_posts_relation = relations(workspaces_posts, ({ many, one }) => ({
@@ -42,8 +42,6 @@ export type WorkspacePostSelect = typeof workspaces_posts.$inferSelect;
 export type WorkspacePostInsert = typeof workspaces_posts.$inferInsert;
 
 export const WorkspacePostCreateSchema = createInsertSchema(workspaces_posts);
-export const WorkspacePostUpdateSchema = WorkspacePostCreateSchema.partial()
-  .omit({ createdAt: true, updatedAt: true })
-  .extend({
-    id: z.string().uuid(),
-  });
+export const WorkspacePostUpdateSchema = WorkspacePostCreateSchema.partial().omit({ createdAt: true }).extend({
+  id: z.string().uuid(),
+});

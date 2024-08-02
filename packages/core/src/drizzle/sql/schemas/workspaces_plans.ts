@@ -3,8 +3,8 @@ import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { plans } from "./plans";
-import { workspaces } from "./workspaces";
 import { schema } from "./utils";
+import { workspaces } from "./workspaces";
 
 export const workspaces_plans = schema.table(
   "workspaces_plans",
@@ -24,7 +24,7 @@ export const workspaces_plans = schema.table(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.workspace_id, table.plan_id] }),
-  })
+  }),
 );
 
 export const workspaces_plans_relation = relations(workspaces_plans, ({ many, one }) => ({
@@ -42,8 +42,6 @@ export type WorkspacePlanSelect = typeof workspaces_plans.$inferSelect;
 export type WorkspacePlanInsert = typeof workspaces_plans.$inferInsert;
 
 export const WorkspacePlanCreateSchema = createInsertSchema(workspaces_plans);
-export const WorkspacePlanUpdateSchema = WorkspacePlanCreateSchema.partial()
-  .omit({ createdAt: true, updatedAt: true })
-  .extend({
-    id: z.string().uuid(),
-  });
+export const WorkspacePlanUpdateSchema = WorkspacePlanCreateSchema.partial().omit({ createdAt: true }).extend({
+  id: z.string().uuid(),
+});

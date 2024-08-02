@@ -1,9 +1,9 @@
+import { relations } from "drizzle-orm";
 import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
-import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
 import { organizations } from "./organization";
+import { schema } from "./utils";
 import { workspaces } from "./workspaces";
 
 export const workspaces_organizations = schema.table(
@@ -24,7 +24,7 @@ export const workspaces_organizations = schema.table(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.workspace_id, table.organization_id] }),
-  })
+  }),
 );
 
 export const workspaces_organizations_relation = relations(workspaces_organizations, ({ many, one }) => ({
@@ -43,7 +43,7 @@ export type WorkspaceOrganizationInsert = typeof workspaces_organizations.$infer
 
 export const WorkspaceOrganizationCreateSchema = createInsertSchema(workspaces_organizations);
 export const WorkspaceOrganizationUpdateSchema = WorkspaceOrganizationCreateSchema.partial()
-  .omit({ createdAt: true, updatedAt: true })
+  .omit({ createdAt: true })
   .extend({
     id: z.string().uuid(),
   });

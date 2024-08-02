@@ -1,10 +1,10 @@
+import { relations } from "drizzle-orm";
 import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
-import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { users } from "./users";
+import { schema } from "./utils";
 import { workspaces } from "./workspaces";
-import { relations } from "drizzle-orm";
 
 export const users_workspaces = schema.table(
   "users_workspaces",
@@ -24,7 +24,7 @@ export const users_workspaces = schema.table(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.workspace_id, table.user_id] }),
-  })
+  }),
 );
 
 export const users_workspaces_relation = relations(users_workspaces, ({ one }) => ({
@@ -40,9 +40,6 @@ export const users_workspaces_relation = relations(users_workspaces, ({ one }) =
 
 export type UsersWorkspaceSelect = typeof users_workspaces.$inferSelect;
 export type UsersWorkspaceInsert = typeof users_workspaces.$inferInsert;
-export const UsersWorkspaceUpdate = createInsertSchema(users_workspaces)
-  .partial()
-  .omit({ createdAt: true, updatedAt: true })
-  .extend({
-    id: z.string().uuid(),
-  });
+export const UsersWorkspaceUpdate = createInsertSchema(users_workspaces).partial().omit({ createdAt: true }).extend({
+  id: z.string().uuid(),
+});
