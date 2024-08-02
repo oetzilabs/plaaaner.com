@@ -29,7 +29,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 })}
               >
                 <History class="size-4" />
-                <h3 class="text-base font-medium capitalize">Previous {plan.newPlan().plan_type}</h3>
+                <h3 class="text-base font-medium capitalize">Previous {plan.newPlan().plan_type_id}</h3>
               </div>
               <div class="flex flex-row items-center gap-2">
                 <Button
@@ -39,7 +39,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                   onClick={() => {
                     if (!props.formRef) return;
                     props.formRef.reset();
-                    plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type));
+                    plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type_id));
                   }}
                   aria-label="Resets the Form"
                   disabled={plan.isCreating.pending || isFormEmpty(plan.newPlan())}
@@ -55,7 +55,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                     const eH = plan.planHistory();
                     eH.undo();
                   }}
-                  aria-label={`Undo Fill From Previous ${plan.newPlan().plan_type}`}
+                  aria-label={`Undo Fill From Previous ${plan.newPlan().plan_type_id}`}
                   disabled={
                     plan.newPlan().referenced_from === undefined ||
                     plan.isCreating.pending ||
@@ -74,7 +74,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 })}
               >
                 <AlertDescription class="text-xs">
-                  You can also fill the form with a previous {plan.newPlan().plan_type} to save time.
+                  You can also fill the form with a previous {plan.newPlan().plan_type_id} to save time.
                 </AlertDescription>
               </Alert>
             </Show>
@@ -91,7 +91,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 each={pE().slice(0, 3)}
                 fallback={
                   <div class="max-w-full w-full flex flex-col gap-2 border border-neutral-200 dark:border-neutral-800 rounded p-2 items-center justify-center">
-                    <span class="text-xs text-muted-foreground">There are no previous {plan.newPlan().plan_type}s</span>
+                    <span class="text-xs text-muted-foreground">There are no previous {plan.newPlan().plan_type_id}s</span>
                   </div>
                 }
               >
@@ -160,7 +160,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                   onClick={() => {
                     if (!props.formRef) return;
                     props.formRef.reset();
-                    plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type));
+                    plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type_id));
                   }}
                   aria-label="Resets the Form"
                   disabled={plan.isCreating.pending || isFormEmpty(plan.newPlan())}
@@ -176,7 +176,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                     const eH = plan.planHistory();
                     eH.undo();
                   }}
-                  aria-label={`Undo Fill From Previous ${plan.newPlan().plan_type}`}
+                  aria-label={`Undo Fill From Previous ${plan.newPlan().plan_type_id}`}
                   disabled={
                     plan.newPlan().referenced_from === undefined ||
                     plan.isCreating.pending ||
@@ -195,7 +195,7 @@ export const Sidebar = (props: { formRef: HTMLFormElement }) => {
                 })}
               >
                 <AlertDescription class="text-xs">
-                  You can also fill the form with a recommended {plan.newPlan().plan_type} to save time.
+                  You can also fill the form with a recommended {plan.newPlan().plan_type_id} to save time.
                 </AlertDescription>
               </Alert>
             </Show>

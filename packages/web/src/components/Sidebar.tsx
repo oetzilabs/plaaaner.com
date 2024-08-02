@@ -52,7 +52,7 @@ export const Sidebar = () => {
   ];
 
   return (
-    <div class="relative w-max flex flex-col gap-0 border-r border-neutral-200 dark:border-neutral-800 grow min-h-0 max-h-screen">
+    <div class="relative w-max flex flex-col gap-0 border-r border-neutral-200 dark:border-neutral-800 grow min-h-0 max-h-screen ">
       <Show
         when={session() && session()!.user !== null && session()}
         fallback={

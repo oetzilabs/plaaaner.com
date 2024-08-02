@@ -16,7 +16,8 @@ export const route = {
     const session = getAuthenticatedSession();
     const org = await getOrganizationById(props.params.organization_id);
     const ws = await getWorkspace(props.params.wid);
-    return { org, ws, session };
+    const activities = await getActivitiesByWorkspace(props.params.wid);
+    return { org, ws, session, activities };
   },
 };
 
@@ -44,67 +45,48 @@ export default function ActivityInOrganizationWorkspace() {
             }
           >
             {(s) => (
-              <Show when={ws() && os() && activities()}>
-                {(i) => (
-                  <div class="flex flex-col items-start h-full w-full gap-4">
-                    <div class="w-full flex flex-row gap-2">
-                      <Show
-                        when={ws()!.owner.id === s().user?.id}
-                        fallback={
-                          <Badge variant="secondary" class="text-xs px-2 py-1 rounded-md">
-                            Owner: {ws()!.owner.name}
-                          </Badge>
-                        }
-                      >
+              <Show when={ws() !== undefined && os() !== undefined && activities() !== undefined}>
+                <div class="flex flex-col items-start h-full w-full gap-4">
+                  <div class="w-full flex flex-row gap-2">
+                    <Show
+                      when={ws()!.owner.id === s().user?.id}
+                      fallback={
                         <Badge variant="secondary" class="text-xs px-2 py-1 rounded-md">
-                          This Workspace belongs to you
+                          Owner: {ws()!.owner.name}
                         </Badge>
+                      }
+                    >
+                      <Badge variant="secondary" class="text-xs px-2 py-1 rounded-md">
+                        This Workspace belongs to you
+                      </Badge>
+                    </Show>
+                  </div>
+                  <div class="w-full flex flex-col gap-4">
+                    <h1 class="text-xl font-medium">
+                      <Show when={ws()!.name === "default"} fallback={`Activities in ${ws()!.name}`}>
+                        Activities in this Workspace
                       </Show>
-                    </div>
-                    <div class="w-full flex flex-col gap-4">
-                      <h1 class="text-xl font-medium">
-                        <Show when={ws()!.name === "default"} fallback={`Activities in ${ws()!.name}`}>
-                          Activities in this Workspace
-                        </Show>
-                      </h1>
-                      <div class="flex gap-4 flex-col w-full">
-                        <Suspense
-                          fallback={
-                            <div class="py-10 w-full flex flex-col items-center justify-center gap-4">
-                              <For each={Array(5).fill(null)}>
-                                {() => (
-                                  <Skeleton
-                                    class="w-full"
-                                    style={{ height: `${Math.floor(Math.random() * 200) + 100}px` }}
-                                  />
-                                )}
-                              </For>
+                    </h1>
+                    <div class="flex gap-4 flex-col w-full">
+                      <For each={activities()!}>
+                        {(p) => (
+                          <Transition name="slide-fade-up">
+                            <div class="border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">
+                              <Switch>
+                                <Match when={p.type === "plan" && p.value}>
+                                  {(plan) => <PlanActivity plan={plan()} session={s()} />}
+                                </Match>
+                                <Match when={p.type === "post" && p.value}>
+                                  {(post) => <PostActivity post={post()} session={s()} />}
+                                </Match>
+                              </Switch>
                             </div>
-                          }
-                        >
-                          <TransitionGroup name="slide-fade-up">
-                            <For each={activities()!}>
-                              {(p) => (
-                                <Transition name="slide-fade-up">
-                                  <div class="border relative border-neutral-200 dark:border-neutral-800 rounded-md hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">
-                                    <Switch>
-                                      <Match when={p.type === "plan" && p.value}>
-                                        {(plan) => <PlanActivity plan={plan()} session={s()} />}
-                                      </Match>
-                                      <Match when={p.type === "post" && p.value}>
-                                        {(post) => <PostActivity post={post()} session={s()} />}
-                                      </Match>
-                                    </Switch>
-                                  </div>
-                                </Transition>
-                              )}
-                            </For>
-                          </TransitionGroup>
-                        </Suspense>
-                      </div>
+                          </Transition>
+                        )}
+                      </For>
                     </div>
                   </div>
-                )}
+                </div>
               </Show>
             )}
           </Show>

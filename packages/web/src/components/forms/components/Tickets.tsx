@@ -62,20 +62,20 @@ export const Tickets = () => {
     const cpt = cp.capacity_type;
     if (cpt === "none") {
       return {
-        message: `You have not set a capacity for the ${nc.plan_type}.`,
+        message: `You have not set a capacity for the ${nc.plan_type_id}.`,
         type: "error",
       };
     }
     const cpv = parseInt(String(cp.value));
     if (totalTickets === cpv) {
       return {
-        message: `You have reached the maximum capacity of tickets for this ${nc.plan_type}.`,
+        message: `You have reached the maximum capacity of tickets for this ${nc.plan_type_id}.`,
         type: "success:done",
       } as const;
     }
     if (totalTickets > cpv) {
       return {
-        message: `You have exceeded the maximum capacity of tickets for this ${nc.plan_type}.\nPlease reduce the quantity.`,
+        message: `You have exceeded the maximum capacity of tickets for this ${nc.plan_type_id}.\nPlease reduce the quantity.`,
         type: "error",
       } as const;
     }
@@ -316,7 +316,7 @@ export const Tickets = () => {
                     const cpt = cp.capacity_type;
                     if (cpt === "none") {
                       toast.error("Error Adding Ticket", {
-                        description: `You have not set a capacity for the ${plan.newPlan().plan_type}.`,
+                        description: `You have not set a capacity for the ${plan.newPlan().plan_type_id}.`,
                       });
                       return;
                     }
@@ -324,7 +324,7 @@ export const Tickets = () => {
                     if (totalTickets >= cpv) {
                       toast.error("Error Adding Ticket", {
                         description: `You have reached the maximum capacity of tickets for this ${
-                          plan.newPlan().plan_type
+                          plan.newPlan().plan_type_id
                         }.`,
                       });
                       return;

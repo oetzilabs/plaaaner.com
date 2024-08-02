@@ -136,7 +136,7 @@ export const Time = () => {
         <TextFieldRoot class="w-full flex flex-col gap-2" aria-label="Start Time">
           <div class="flex flex-row items-center justify-between w-full">
             <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              When is the {plan?.newPlan().plan_type}?
+              When is the {plan?.newPlan().plan_type_id}?
             </TextFieldLabel>
             <Button
               size="sm"

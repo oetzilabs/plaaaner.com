@@ -59,7 +59,7 @@ export default function DashboardPage() {
             <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
               <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)]">
                 <div class="flex flex-col w-full flex-grow min-h-0 max-h-screen overflow-y-auto">
-                  <div class="container flex flex-col gap-4 max-w-full md:max-w-6xl h-screen relative">
+                  <div class="w-full sm:container !px-8 flex flex-col gap-4 max-w-full md:max-w-6xl h-screen relative">
                     <div class="w-full h-auto grid grid-cols-1 md:grid-cols-12 grid-flow-row-dense gap-4">
                       <div class="col-span-8 flex w-full flex-col gap-2 pb-0 pt-4">
                         <span class="font-medium text-3xl">
@@ -88,7 +88,17 @@ export default function DashboardPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={async () => await revalidate(getActivities.key, true)}
+                              onClick={async () =>
+                                await revalidate(
+                                  [
+                                    getActivities.key,
+                                    getNearbyPlans.key,
+                                    getNotifications.key,
+                                    getUpcomingThreePlans.key,
+                                  ],
+                                  true,
+                                )
+                              }
                             >
                               Refresh
                             </Button>

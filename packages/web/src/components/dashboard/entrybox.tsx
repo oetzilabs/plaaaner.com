@@ -106,14 +106,23 @@ export const EntryBox = () => {
                       if (t.length === 0 || d.length === 0) {
                         return;
                       }
-                      // TODO: Create Plan
-                      // await createAndRedirectToPlanCreation({
-                      //   title: t,
-                      //   description: d,
-                      // });
-                      // await revalidate(getActivities.key);
-                      // await revalidate(getPlans.key);
-                      // await revalidate(getUpcomingThreePlans.key);
+                      await createAndRedirectToPlanCreation({
+                        name: t,
+                        description: d,
+                        days: [],
+                        time_slots: {},
+                        tickets: [],
+                        capacity: {
+                          value: "none",
+                          capacity_type: "none",
+                        },
+                        location: {
+                          location_type: "other",
+                          details: "",
+                        },
+                        plan_type_id: null,
+                        referenced_from: undefined,
+                      });
                     }}
                   >
                     <span class="">Create Plan</span>

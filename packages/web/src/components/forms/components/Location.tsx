@@ -28,7 +28,7 @@ export const LocationTab = () => {
       <div class="flex flex-col items-start justify-between gap-2 w-full">
         <RadioGroup
           value={plan.newPlan().location.location_type}
-          aria-label={`Where is the ${plan.newPlan().plan_type}?`}
+          aria-label={`Where is the ${plan.newPlan().plan_type_id}?`}
           onChange={(value) => {
             const v = value as ReturnType<typeof plan.newPlan>["location"]["location_type"];
             switch (v) {
@@ -84,7 +84,7 @@ export const LocationTab = () => {
           class="w-full flex flex-col gap-2"
         >
           <RadioGroupLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Where is the {plan.newPlan().plan_type}?
+            Where is the {plan.newPlan().plan_type_id}?
           </RadioGroupLabel>
           <div class="grid grid-cols-2 gap-2 w-full">
             <RadioGroupItem value="venue">
@@ -177,7 +177,7 @@ export const LocationTab = () => {
               }}
             >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                What is the URL of the {plan.newPlan().plan_type}?
+                What is the URL of the {plan.newPlan().plan_type_id}?
               </TextFieldLabel>
               <TextField />
             </TextFieldRoot>
@@ -208,7 +208,7 @@ export const LocationTab = () => {
               }}
             >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Where is the {plan.newPlan().plan_type} going to take place?
+                Where is the {plan.newPlan().plan_type_id} going to take place?
               </TextFieldLabel>
               <TextField />
             </TextFieldRoot>
@@ -239,7 +239,7 @@ export const LocationTab = () => {
               }}
             >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Where is the {plan.newPlan().plan_type} going to take place?
+                Where is the {plan.newPlan().plan_type_id} going to take place?
               </TextFieldLabel>
               <TextField />
             </TextFieldRoot>
@@ -270,7 +270,7 @@ export const LocationTab = () => {
               }}
             >
               <TextFieldLabel class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Where is the {plan.newPlan().plan_type} going to take place?
+                Where is the {plan.newPlan().plan_type_id} going to take place?
               </TextFieldLabel>
               <TextArea autoResize />
             </TextFieldRoot>

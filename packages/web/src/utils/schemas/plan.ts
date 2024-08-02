@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { ConcertLocationSchema } from "./shared";
-import type { TicketTypeSelect } from "@/core/drizzle/sql/schema";
 
 const TicketPrice = z.number({ required_error: "Price is required" }).min(0).step(0.01);
 const TicketCurrency = z.discriminatedUnion("currency_type", [
@@ -18,13 +17,21 @@ export const TicketShape = z.union([
   z.literal("custom"),
 ]);
 
+export const TicketType = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  owner_id: z.string().uuid(),
+  payment_type: z.enum(["FREE", "PAID"]),
+});
+
 export const BaseTicketSchema = z.object({
   name: z.string({ required_error: "Name is required" }).max(50),
   shape: TicketShape,
   price: TicketPrice,
   currency: TicketCurrency,
   quantity: z.number({ required_error: "Quantity is required" }).min(0),
-  ticket_type: z.custom<TicketTypeSelect>(),
+  ticket_type: TicketType,
 });
 
 const CapacitySchema = z.discriminatedUnion("capacity_type", [
@@ -37,7 +44,7 @@ const CapacitySchema = z.discriminatedUnion("capacity_type", [
 ]);
 
 const BasePlanSchema = z.object({
-  plan_type: z.any(),
+  plan_type_id: z.string().uuid().nullable(),
   referenced_from: z.string().optional(),
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
   description: z.string().optional().nullable(),

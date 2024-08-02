@@ -14,10 +14,10 @@ import { Sidebar } from "./components/Sidebar";
 
 type PlanFormSchema = z.infer<typeof CreatePlanFormSchema>;
 
-type DefaultPlanFunction = (plan_type: PlanFormSchema["plan_type"]) => PlanFormSchema;
+type DefaultPlanFunction = (plan_type: PlanFormSchema["plan_type_id"]) => PlanFormSchema;
 
 export const DEFAULT_PLAN: DefaultPlanFunction = (plan_type) => ({
-  plan_type,
+  plan_type_id: plan_type,
   name: "",
   description: "",
   days: [dayjs().startOf("day").toDate(), dayjs().startOf("day").add(1, "day").toDate()],
@@ -41,7 +41,7 @@ export const DEFAULT_PLAN: DefaultPlanFunction = (plan_type) => ({
 });
 
 type CreatePlanProviderProps = {
-  plan_type: PlanFormSchema["plan_type"];
+  plan_type: PlanFormSchema["plan_type_id"];
 };
 
 export type TabValue = "general" | "time" | "location" | "tickets";
@@ -155,11 +155,11 @@ export const [CreatePlanProvider, usePlanProvider] = createContextProvider((prop
 const Title = () => {
   const plan = usePlanProvider();
   if (!plan) return <Skeleton class="w-40 h-8" />;
-  return <h1 class="text-3xl font-semibold w-full capitalize">Create {plan.newPlan().plan_type}</h1>;
+  return <h1 class="text-3xl font-semibold w-full capitalize">Create {plan.newPlan().plan_type_id}</h1>;
 };
 
 export const isFormEmpty = (plan: PlanFormSchema) => {
-  return JSON.stringify(plan) === JSON.stringify(DEFAULT_PLAN(plan.plan_type));
+  return JSON.stringify(plan) === JSON.stringify(DEFAULT_PLAN(plan.plan_type_id));
 };
 
 export const CreatePlan = (props: CreatePlanProviderProps) => {

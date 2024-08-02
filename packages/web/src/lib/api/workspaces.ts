@@ -14,31 +14,30 @@ const WorkspaceCreateSchemaWithConnect = WorkspaceCreateSchema.extend({
 export const getWorkspaces = cache(async () => {
   "use server";
   const [ctx, event] = await getContext();
-  if (!ctx) {
-    throw redirect("/auth/login");
-  }
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
-  if (!ctx.session) {
-    console.error("Unauthorized");
-    throw redirect("/auth/login");
-  }
-
-  if (!ctx.user) {
-    console.error("Unauthorized");
-    throw redirect("/auth/login");
-  }
   const ws = await Workspace.findManyByUserId(ctx.user.id);
   return ws;
 }, "workspaces");
 
 export const getWorkspace = cache(async (id: string) => {
   "use server";
-  const event = getEvent()!;
-  if (!event.context.user) {
-    throw redirect("/auth/login");
-  }
-  const user = event.context.user;
+  const [ctx, event] = await getContext();
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
   const ws = await Workspace.findById(id);
+  if (!ws) {
+    throw redirect("/404", { status: 404, statusText: "Not Found" });
+  }
+
+  const isConnected = await Workspace.hasUser(ws.id, ctx.user.id);
+  if (!isConnected) {
+    throw redirect("/403", { status: 403, statusText: "You are not connected to this workspace" });
+  }
+
   return ws;
 }, "workspace");
 

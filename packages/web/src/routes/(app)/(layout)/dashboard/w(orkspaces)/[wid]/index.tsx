@@ -2,20 +2,36 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getWorkspace, setWorkspaceOwner } from "@/lib/api/workspaces";
 import { getAuthenticatedSession } from "@/lib/auth/util";
-import { createAsync, redirect, revalidate, useAction, useParams, useSubmission } from "@solidjs/router";
+import {
+  createAsync,
+  redirect,
+  revalidate,
+  RoutePreloadFuncArgs,
+  useAction,
+  useParams,
+  useSubmission,
+} from "@solidjs/router";
 import { Show } from "solid-js";
 
-export default function Workspace() {
-  const { wid } = useParams();
-  if (!wid) throw redirect("/dashboard/workspaces", 303);
+export const route = {
+  preload: async (props: RoutePreloadFuncArgs) => {
+    const session = await getAuthenticatedSession();
+    const ws = await getWorkspace(props.params.wid);
+    return { ws, session };
+  },
+};
 
-  const ws = createAsync(() => getWorkspace(wid));
+export default function Workspace() {
+  const params = useParams();
+  if (!params.wid) throw redirect("/dashboard/workspaces", 303);
+
+  const ws = createAsync(() => getWorkspace(params.wid));
 
   const ownWorkspace = useAction(setWorkspaceOwner);
   const changingWorkspaceOwner = useSubmission(setWorkspaceOwner);
 
   const handleWorkspaceOwnerChange = async () => {
-    await ownWorkspace(wid);
+    await ownWorkspace(params.wid);
 
     await revalidate(getAuthenticatedSession.key);
   };
@@ -32,6 +48,7 @@ export default function Workspace() {
                 </Badge>
                 <Show
                   when={w().owner}
+                  keyed
                   fallback={
                     <div class="flex gap-2">
                       <Badge variant="secondary">No owner</Badge>
@@ -46,7 +63,7 @@ export default function Workspace() {
                     </div>
                   }
                 >
-                  {(o) => <Badge variant="default">Owner: {o().name}</Badge>}
+                  {(o) => <Badge variant="default">Owner: {o.name}</Badge>}
                 </Show>
               </div>
               <div class="w-full flex flex-col gap-4">

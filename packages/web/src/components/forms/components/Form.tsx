@@ -69,7 +69,7 @@ export const FormControls = (props: {
           size={isSmall() ? "icon" : "default"}
           onClick={() => {
             if (!props.formRef) return;
-            plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type));
+            plan.setNewPlan(DEFAULT_PLAN(plan.newPlan().plan_type_id));
             props.formRef.reset();
             plan.clearPlanHistory();
           }}
@@ -128,24 +128,24 @@ export const FormControls = (props: {
         </Button>
         <Button
           type="submit"
-          aria-label={`Create ${plan.newPlan().plan_type}`}
+          aria-label={`Create ${plan.newPlan().plan_type_id}`}
           class="flex flex-row items-center justify-between gap-2 capitalize"
           disabled={plan.isCreating.pending || !isAllowedToCreatePlan()}
         >
           <Switch
             fallback={
               <>
-                <span class="text-sm font-medium leading-none w-max">Create {plan.newPlan().plan_type}</span>
+                <span class="text-sm font-medium leading-none w-max">Create {plan.newPlan().plan_type_id}</span>
                 <Plus class="w-4 h-4" />
               </>
             }
           >
             <Match when={plan.isCreating.pending}>
-              <span class="text-sm font-medium leading-none">Creating {plan.newPlan().plan_type}...</span>
+              <span class="text-sm font-medium leading-none">Creating {plan.newPlan().plan_type_id}...</span>
               <Loader2 class="w-4 h-4 animate-spin" />
             </Match>
             <Match when={plan.isCreating.result}>
-              <span class="text-sm font-medium leading-none">{plan.newPlan().plan_type} Created!</span>
+              <span class="text-sm font-medium leading-none">{plan.newPlan().plan_type_id} Created!</span>
               <CheckCheck class="w-4 h-4" />
             </Match>
           </Switch>
@@ -158,7 +158,7 @@ export const FormControls = (props: {
                 navigate(`/plans/${data.id}`);
               }}
             >
-              <span class="text-sm font-medium leading-none capitalize">View {plan.newPlan().plan_type}</span>
+              <span class="text-sm font-medium leading-none capitalize">View {plan.newPlan().plan_type_id}</span>
             </Button>
           )}
         </Show>

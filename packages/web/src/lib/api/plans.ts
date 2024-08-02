@@ -167,7 +167,7 @@ export const getNearbyPlans = cache(async () => {
           lat: z.number(),
           lng: z.number(),
         })
-        .parse(data),
+        .parse(data)
     );
 
   console.log({ location });
@@ -259,7 +259,7 @@ export const getUpcomingThreePlans = cache(async () => {
     organization_id: ctx.session.organization_id,
   });
   const filtered = plans.filter(
-    (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day"),
+    (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day")
   );
   const sorted = filtered.sort((a, b) => {
     return dayjs(a.starts_at).isBefore(dayjs(b.starts_at)) ? -1 : 1;
@@ -334,7 +334,7 @@ export const savePlanLocation = action(
     }
 
     return updatedPlan;
-  },
+  }
 );
 
 export const deletePlan = action(async (plan_id) => {
@@ -408,7 +408,7 @@ export const savePlanGeneral = action(
     }
 
     return updatedPlan;
-  },
+  }
 );
 
 export const savePlanTimeslots = action(
@@ -479,8 +479,8 @@ export const savePlanTimeslots = action(
             starts_at: ts.start,
             ends_at: ts.end,
             plan_id: savedPlan.id,
-          }) as TS,
-      ),
+          }) as TS
+      )
     );
 
     const timeSlots = tss.flat();
@@ -493,7 +493,7 @@ export const savePlanTimeslots = action(
     }
 
     return updatedPlan;
-  },
+  }
 );
 
 export const createPlanCreationForm = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
@@ -517,14 +517,14 @@ export const createPlanCreationForm = action(async (data: z.infer<typeof CreateP
     {
       name: data.name,
       description: data.description,
-      plan_type_id: null,
+      plan_type_id: data.plan_type_id,
       starts_at: dayjs().startOf("day").toDate(),
       ends_at: dayjs().endOf("day").toDate(),
       status: "draft",
     },
     ctx.user.id,
-    ctx.session.workspace_id,
+    ctx.session.workspace_id
   );
 
-  return plan;
+  throw redirect(`/dashboard/p/${plan.id}`);
 });

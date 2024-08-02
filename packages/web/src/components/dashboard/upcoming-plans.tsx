@@ -29,36 +29,34 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
         <div class="flex flex-col w-full gap-2">
           <Show when={upcomingPlans()}>
             {(list) => (
-              <TransitionGroup name="slide-fade-up">
-                <For
-                  each={list()}
-                  fallback={
-                    <div class="w-full flex flex-col items-center justify-center bg-neutral-50 dark:bg-neutral-950 text-muted-foreground text-xs p-3 border border-neutral-200 dark:border-neutral-800 rounded-md">
-                      <span>No upcoming Plans, create one!</span>
-                    </div>
-                  }
-                >
-                  {(upcomingplan) => (
-                    <Transition name="slide-fade-up">
-                      <A
-                        href={`/dashboard/plans/${upcomingplan.id}`}
-                        class={cn(
-                          buttonVariants({
-                            variant: "ghost",
-                            size: "sm",
-                          }),
-                          "flex flex-col w-full p-3 border relative border-neutral-200 dark:border-neutral-800 rounded-md h-auto",
-                        )}
-                      >
-                        <div class="w-full flex flex-col gap-2">
-                          <div class="w-full text-sm font-semibold">{upcomingplan.name}</div>
-                          <div class="w-full text-xs text-muted-foreground">{upcomingplan.description}</div>
-                        </div>
-                      </A>
-                    </Transition>
-                  )}
-                </For>
-              </TransitionGroup>
+              <For
+                each={list()}
+                fallback={
+                  <div class="w-full flex flex-col items-center justify-center bg-neutral-50 dark:bg-neutral-950 text-muted-foreground text-xs p-3 border border-neutral-200 dark:border-neutral-800 rounded-md">
+                    <span>No upcoming Plans, create one!</span>
+                  </div>
+                }
+              >
+                {(upcomingplan) => (
+                  <Transition name="slide-fade-up">
+                    <A
+                      href={`/dashboard/p/${upcomingplan.id}`}
+                      class={cn(
+                        buttonVariants({
+                          variant: "ghost",
+                          size: "sm",
+                        }),
+                        "flex flex-col w-full p-3 border relative border-neutral-200 dark:border-neutral-800 rounded-md h-auto",
+                      )}
+                    >
+                      <div class="w-full flex flex-col gap-2">
+                        <div class="w-full text-sm font-semibold">{upcomingplan.name}</div>
+                        <div class="w-full text-xs text-muted-foreground">{upcomingplan.description}</div>
+                      </div>
+                    </A>
+                  </Transition>
+                )}
+              </For>
             )}
           </Show>
         </div>
