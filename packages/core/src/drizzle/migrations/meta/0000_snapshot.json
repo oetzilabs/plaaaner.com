@@ -1,10 +1,10 @@
 {
-  "id": "5ba7a50c-31a2-42ce-8055-feddf188452e",
+  "id": "706b6665-bb80-4094-8999-beb13fb6ab55",
   "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "session": {
+    "plaaaner.session": {
       "name": "session",
       "schema": "plaaaner",
       "columns": {
@@ -78,7 +78,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "users": {
+    "plaaaner.users": {
       "name": "users",
       "schema": "plaaaner",
       "columns": {
@@ -132,7 +132,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "organizations": {
+    "plaaaner.organizations": {
       "name": "organizations",
       "schema": "plaaaner",
       "columns": {
@@ -195,7 +195,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "organizations_joins": {
+    "plaaaner.organizations_joins": {
       "name": "organizations_joins",
       "schema": "plaaaner",
       "columns": {
@@ -240,6 +240,7 @@
         "type": {
           "name": "type",
           "type": "joinType",
+          "typeSchema": "plaaaner",
           "primaryKey": false,
           "notNull": true
         },
@@ -284,7 +285,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "organizations_ticket_types": {
+    "plaaaner.organizations_ticket_types": {
       "name": "organizations_ticket_types",
       "schema": "plaaaner",
       "columns": {
@@ -361,7 +362,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "users_organizations": {
+    "plaaaner.users_organizations": {
       "name": "users_organizations",
       "schema": "plaaaner",
       "columns": {
@@ -427,7 +428,7 @@
       },
       "uniqueConstraints": {}
     },
-    "workspaces": {
+    "plaaaner.workspaces": {
       "name": "workspaces",
       "schema": "plaaaner",
       "columns": {
@@ -490,7 +491,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "workspaces_organizations": {
+    "plaaaner.workspaces_organizations": {
       "name": "workspaces_organizations",
       "schema": "plaaaner",
       "columns": {
@@ -556,7 +557,7 @@
       },
       "uniqueConstraints": {}
     },
-    "workspaces_plans": {
+    "plaaaner.workspaces_plans": {
       "name": "workspaces_plans",
       "schema": "plaaaner",
       "columns": {
@@ -622,7 +623,7 @@
       },
       "uniqueConstraints": {}
     },
-    "workspaces_posts": {
+    "plaaaner.workspaces_posts": {
       "name": "workspaces_posts",
       "schema": "plaaaner",
       "columns": {
@@ -688,7 +689,7 @@
       },
       "uniqueConstraints": {}
     },
-    "users_workspaces": {
+    "plaaaner.users_workspaces": {
       "name": "users_workspaces",
       "schema": "plaaaner",
       "columns": {
@@ -754,7 +755,7 @@
       },
       "uniqueConstraints": {}
     },
-    "plans": {
+    "plaaaner.plans": {
       "name": "plans",
       "schema": "plaaaner",
       "columns": {
@@ -830,6 +831,7 @@
         "status": {
           "name": "status",
           "type": "plans_status",
+          "typeSchema": "plaaaner",
           "primaryKey": false,
           "notNull": true,
           "default": "'published'"
@@ -869,7 +871,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "plan_tickets": {
+    "plaaaner.plan_tickets": {
       "name": "plan_tickets",
       "schema": "plaaaner",
       "columns": {
@@ -935,7 +937,7 @@
       },
       "uniqueConstraints": {}
     },
-    "plan_types": {
+    "plaaaner.plan_types": {
       "name": "plan_types",
       "schema": "plaaaner",
       "columns": {
@@ -1004,7 +1006,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "plan_comments": {
+    "plaaaner.plan_comments": {
       "name": "plan_comments",
       "schema": "plaaaner",
       "columns": {
@@ -1087,7 +1089,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "plan_comments_mentions": {
+    "plaaaner.plan_comments_mentions": {
       "name": "plan_comments_mentions",
       "schema": "plaaaner",
       "columns": {
@@ -1186,7 +1188,7 @@
       },
       "uniqueConstraints": {}
     },
-    "plan_times": {
+    "plaaaner.plan_times": {
       "name": "plan_times",
       "schema": "plaaaner",
       "columns": {
@@ -1275,7 +1277,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "plan_participants": {
+    "plaaaner.plan_participants": {
       "name": "plan_participants",
       "schema": "plaaaner",
       "columns": {
@@ -1352,7 +1354,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "posts": {
+    "plaaaner.posts": {
       "name": "posts",
       "schema": "plaaaner",
       "columns": {
@@ -1397,6 +1399,7 @@
         "status": {
           "name": "status",
           "type": "post_status",
+          "typeSchema": "plaaaner",
           "primaryKey": false,
           "notNull": true,
           "default": "'published'"
@@ -1422,7 +1425,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "post_comments": {
+    "plaaaner.post_comments": {
       "name": "post_comments",
       "schema": "plaaaner",
       "columns": {
@@ -1505,7 +1508,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "post_comments_mentions": {
+    "plaaaner.post_comments_mentions": {
       "name": "post_comments_mentions",
       "schema": "plaaaner",
       "columns": {
@@ -1604,7 +1607,7 @@
       },
       "uniqueConstraints": {}
     },
-    "tickets": {
+    "plaaaner.tickets": {
       "name": "tickets",
       "schema": "plaaaner",
       "columns": {
@@ -1667,6 +1670,7 @@
         "currency": {
           "name": "currency",
           "type": "currency",
+          "typeSchema": "plaaaner",
           "primaryKey": false,
           "notNull": true
         },
@@ -1679,6 +1683,7 @@
         "ticket_shape": {
           "name": "ticket_shape",
           "type": "ticket_shape",
+          "typeSchema": "plaaaner",
           "primaryKey": false,
           "notNull": true
         }
@@ -1731,7 +1736,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "ticket_types": {
+    "plaaaner.ticket_types": {
       "name": "ticket_types",
       "schema": "plaaaner",
       "columns": {
@@ -1782,6 +1787,7 @@
         "payment_type": {
           "name": "payment_type",
           "type": "ticketPaymentType",
+          "typeSchema": "plaaaner",
           "primaryKey": false,
           "notNull": true,
           "default": "'FREE'"
@@ -1807,7 +1813,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "websockets": {
+    "plaaaner.websockets": {
       "name": "websockets",
       "schema": "plaaaner",
       "columns": {
@@ -1870,7 +1876,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user_dismissed_organization_notifications": {
+    "plaaaner.user_dismissed_organization_notifications": {
       "name": "user_dismissed_organization_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -1935,7 +1941,7 @@
       },
       "uniqueConstraints": {}
     },
-    "user_dismissed_system_notifications": {
+    "plaaaner.user_dismissed_system_notifications": {
       "name": "user_dismissed_system_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -2000,7 +2006,7 @@
       },
       "uniqueConstraints": {}
     },
-    "user_dismissed_workspace_notifications": {
+    "plaaaner.user_dismissed_workspace_notifications": {
       "name": "user_dismissed_workspace_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -2065,7 +2071,7 @@
       },
       "uniqueConstraints": {}
     },
-    "system_notifications": {
+    "plaaaner.system_notifications": {
       "name": "system_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -2113,7 +2119,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "organizations_notifications": {
+    "plaaaner.organizations_notifications": {
       "name": "organizations_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -2182,7 +2188,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "workspaces_notifications": {
+    "plaaaner.workspaces_notifications": {
       "name": "workspaces_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -2251,7 +2257,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "plan_comment_mention_notifications": {
+    "plaaaner.plan_comment_mention_notifications": {
       "name": "plan_comment_mention_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -2338,7 +2344,7 @@
       },
       "uniqueConstraints": {}
     },
-    "post_comment_mention_notifications": {
+    "plaaaner.post_comment_mention_notifications": {
       "name": "post_comment_mention_notifications",
       "schema": "plaaaner",
       "columns": {
@@ -2427,59 +2433,66 @@
     }
   },
   "enums": {
-    "joinType": {
+    "plaaaner.joinType": {
       "name": "joinType",
-      "values": {
-        "request": "request",
-        "invite": "invite"
-      }
+      "schema": "plaaaner",
+      "values": [
+        "request",
+        "invite"
+      ]
     },
-    "plans_status": {
+    "plaaaner.plans_status": {
       "name": "plans_status",
-      "values": {
-        "published": "published",
-        "draft": "draft",
-        "hidden": "hidden"
-      }
+      "schema": "plaaaner",
+      "values": [
+        "published",
+        "draft",
+        "hidden"
+      ]
     },
-    "post_status": {
+    "plaaaner.post_status": {
       "name": "post_status",
-      "values": {
-        "published": "published",
-        "draft": "draft",
-        "hidden": "hidden"
-      }
+      "schema": "plaaaner",
+      "values": [
+        "published",
+        "draft",
+        "hidden"
+      ]
     },
-    "currency": {
+    "plaaaner.currency": {
       "name": "currency",
-      "values": {
-        "FREE": "FREE",
-        "USD": "USD",
-        "EUR": "EUR",
-        "CHF": "CHF",
-        "OTHER": "OTHER"
-      }
+      "schema": "plaaaner",
+      "values": [
+        "FREE",
+        "USD",
+        "EUR",
+        "CHF",
+        "OTHER"
+      ]
     },
-    "ticket_shape": {
+    "plaaaner.ticket_shape": {
       "name": "ticket_shape",
-      "values": {
-        "default": "default",
-        "default-1": "default-1",
-        "default-2": "default-2",
-        "custom": "custom"
-      }
+      "schema": "plaaaner",
+      "values": [
+        "default",
+        "default-1",
+        "default-2",
+        "custom"
+      ]
     },
-    "ticketPaymentType": {
+    "plaaaner.ticketPaymentType": {
       "name": "ticketPaymentType",
-      "values": {
-        "FREE": "FREE",
-        "PAID": "PAID"
-      }
+      "schema": "plaaaner",
+      "values": [
+        "FREE",
+        "PAID"
+      ]
     }
   },
   "schemas": {
     "plaaaner": "plaaaner"
   },
+  "sequences": {},
   "_meta": {
     "columns": {},
     "schemas": {},

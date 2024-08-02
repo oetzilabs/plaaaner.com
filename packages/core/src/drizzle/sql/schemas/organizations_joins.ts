@@ -1,4 +1,4 @@
-import { timestamp, uuid, pgEnum } from "drizzle-orm/pg-core";
+import { timestamp, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
@@ -7,7 +7,7 @@ import { relations } from "drizzle-orm";
 import { organizations } from "./organization";
 import { users } from "./users";
 
-export const joinType = pgEnum("joinType", ["request", "invite"]);
+export const joinType = schema.enum("joinType", ["request", "invite"]);
 
 export const organizations_joins = schema.table("organizations_joins", {
   ...Entity.defaults,

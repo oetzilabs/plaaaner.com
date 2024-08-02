@@ -210,6 +210,11 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
               workspace: true,
             },
           },
+          ticket_types: {
+            with: {
+              ticket_type: true,
+            }
+          }
         },
       },
     },

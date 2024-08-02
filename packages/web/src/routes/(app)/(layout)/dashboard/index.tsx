@@ -7,30 +7,27 @@ import { SmallFooter } from "@/components/dashboard/small-footer";
 import { UpcomingPlans } from "@/components/dashboard/upcoming-plans";
 import { NotLoggedIn } from "@/components/NotLoggedIn";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getActivities } from "@/lib/api/activity";
 import { getNotifications } from "@/lib/api/notifications";
-import { getUserOrganizations } from "@/lib/api/organizations";
 import { getNearbyPlans, getUpcomingThreePlans } from "@/lib/api/plans";
 import { getAuthenticatedSession, UserSession } from "@/lib/auth/util";
 import { Title } from "@solidjs/meta";
-import { A, action, createAsync, revalidate } from "@solidjs/router";
+import { A, createAsync, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Loader2 } from "lucide-solid";
-import { For, Match, Show, Suspense, Switch } from "solid-js";
+import { Match, Show, Switch } from "solid-js";
 
 dayjs.extend(relativeTime);
 
 export const route = {
   preload: async () => {
     const session = await getAuthenticatedSession();
-    const userOrganizations = await getUserOrganizations();
     const notifications = await getNotifications();
     const upcomingPlans = await getUpcomingThreePlans();
     const nearbyPlans = await getNearbyPlans();
     const activities = await getActivities();
-    return { session, notifications, upcomingPlans, nearbyPlans, userOrganizations, activities };
+    return { session, notifications, upcomingPlans, nearbyPlans, activities };
   },
 };
 

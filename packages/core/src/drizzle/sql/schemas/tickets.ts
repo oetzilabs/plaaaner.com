@@ -1,15 +1,15 @@
-import { decimal, integer, pgEnum, text, uuid } from "drizzle-orm/pg-core";
-import { Entity } from "./entity";
-import { schema } from "./utils";
+import { relations } from "drizzle-orm";
+import { decimal, integer, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
-import { users } from "./users";
-import { ticket_types } from "./ticket_types";
+import { Entity } from "./entity";
 import { plans } from "./plans";
+import { ticket_types } from "./ticket_types";
+import { users } from "./users";
+import { schema } from "./utils";
 
-export const currency = pgEnum("currency", ["FREE", "USD", "EUR", "CHF", "OTHER"]);
-export const ticketShape = pgEnum("ticket_shape", ["default", "default-1", "default-2", "custom"]);
+export const currency = schema.enum("currency", ["FREE", "USD", "EUR", "CHF", "OTHER"]);
+export const ticketShape = schema.enum("ticket_shape", ["default", "default-1", "default-2", "custom"]);
 
 export const tickets = schema.table("tickets", {
   ...Entity.defaults,

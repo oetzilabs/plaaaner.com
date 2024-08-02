@@ -1,12 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createPlanCreationForm, getPlans, getUpcomingThreePlans } from "@/lib/api/plans";
+import { createPlanCreationForm } from "@/lib/api/plans";
 import { createNewPost } from "@/lib/api/posts";
-import { ActivityChange, cn, refreshActivities, setFreshActivities } from "@/lib/utils";
-import { A, revalidate, useAction, useSubmission } from "@solidjs/router";
-import { CalendarFold, CircleAlert, Loader, Loader2, Newspaper, Pencil, Plus } from "lucide-solid";
+import { useAction, useSubmission } from "@solidjs/router";
+import { CalendarFold, Loader2, Newspaper, Pencil, Plus } from "lucide-solid";
 import { createSignal, Match, Switch } from "solid-js";
-import { getActivities } from "../../lib/api/activity";
-import { Button, buttonVariants } from "../ui/button";
+import { Button } from "../ui/button";
 import { TextArea } from "../ui/textarea";
 import { TextField, TextFieldRoot } from "../ui/textfield";
 import { ToggleButton } from "../ui/toggle";

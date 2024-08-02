@@ -1,4 +1,4 @@
-import { pgEnum, text, uuid } from "drizzle-orm/pg-core";
+import { text, uuid } from "drizzle-orm/pg-core";
 import { Entity } from "./entity";
 import { schema } from "./utils";
 import { createInsertSchema } from "drizzle-zod";
@@ -7,7 +7,7 @@ import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { tickets } from "./tickets";
 
-export const ticketPaymentType = pgEnum("ticketPaymentType", ["FREE", "PAID"]);
+export const ticketPaymentType = schema.enum("ticketPaymentType", ["FREE", "PAID"]);
 
 export const ticket_types = schema.table("ticket_types", {
   ...Entity.defaults,

@@ -1,37 +1,37 @@
 CREATE SCHEMA "plaaaner";
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "joinType" AS ENUM('request', 'invite');
+ CREATE TYPE "plaaaner"."joinType" AS ENUM('request', 'invite');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "plans_status" AS ENUM('published', 'draft', 'hidden');
+ CREATE TYPE "plaaaner"."plans_status" AS ENUM('published', 'draft', 'hidden');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "post_status" AS ENUM('published', 'draft', 'hidden');
+ CREATE TYPE "plaaaner"."post_status" AS ENUM('published', 'draft', 'hidden');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "currency" AS ENUM('FREE', 'USD', 'EUR', 'CHF', 'OTHER');
+ CREATE TYPE "plaaaner"."currency" AS ENUM('FREE', 'USD', 'EUR', 'CHF', 'OTHER');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "ticket_shape" AS ENUM('default', 'default-1', 'default-2', 'custom');
+ CREATE TYPE "plaaaner"."ticket_shape" AS ENUM('default', 'default-1', 'default-2', 'custom');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "ticketPaymentType" AS ENUM('FREE', 'PAID');
+ CREATE TYPE "plaaaner"."ticketPaymentType" AS ENUM('FREE', 'PAID');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."organizations_joins" (
 	"deleted_at" timestamp with time zone,
 	"organization_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
-	"type" "joinType" NOT NULL,
+	"type" "plaaaner"."joinType" NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."plans" (
 	"starts_at" timestamp with time zone NOT NULL,
 	"ends_at" timestamp with time zone NOT NULL,
 	"location" jsonb DEFAULT '{"location_type":"other","details":""}'::jsonb NOT NULL,
-	"status" "plans_status" DEFAULT 'published' NOT NULL
+	"status" "plaaaner"."plans_status" DEFAULT 'published' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaaaner"."plan_tickets" (
@@ -209,7 +209,7 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."posts" (
 	"deleted_at" timestamp with time zone,
 	"content" text NOT NULL,
 	"owner" uuid NOT NULL,
-	"status" "post_status" DEFAULT 'published' NOT NULL
+	"status" "plaaaner"."post_status" DEFAULT 'published' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaaaner"."post_comments" (
@@ -242,9 +242,9 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."tickets" (
 	"owner" uuid NOT NULL,
 	"plan_id" uuid NOT NULL,
 	"price" numeric(2) NOT NULL,
-	"currency" "currency" NOT NULL,
+	"currency" "plaaaner"."currency" NOT NULL,
 	"quantity" integer NOT NULL,
-	"ticket_shape" "ticket_shape" NOT NULL
+	"ticket_shape" "plaaaner"."ticket_shape" NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaaaner"."ticket_types" (
@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS "plaaaner"."ticket_types" (
 	"name" text NOT NULL,
 	"description" text,
 	"owner" uuid,
-	"payment_type" "ticketPaymentType" DEFAULT 'FREE' NOT NULL
+	"payment_type" "plaaaner"."ticketPaymentType" DEFAULT 'FREE' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "plaaaner"."websockets" (

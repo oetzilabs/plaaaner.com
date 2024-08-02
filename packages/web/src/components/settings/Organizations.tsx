@@ -13,14 +13,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  fillDefaultTicketTypes,
-  getDefaultTicketTypeCount,
-  getTicketTypes,
-  getUserOrganizations,
-} from "@/lib/api/organizations";
+import { fillDefaultTicketTypes, getDefaultTicketTypeCount, getTicketTypes } from "@/lib/api/organizations";
 import { setCurrentOrganization } from "@/lib/api/user";
-import { getAuthenticatedSession, getAuthenticatedUser, type UserSession } from "@/lib/auth/util";
+import { getAuthenticatedSession, type UserSession } from "@/lib/auth/util";
 import { deleteOrganization, disconnectFromOrganization } from "@/utils/api/actions";
 import { A, createAsync, revalidate, useAction, useSubmission } from "@solidjs/router";
 import dayjs from "dayjs";
@@ -31,7 +26,6 @@ import { cn } from "../../lib/utils";
 import { NotLoggedIn } from "../NotLoggedIn";
 
 export const Organizations = (props: { session: UserSession }) => {
-  const organizations = createAsync(() => getUserOrganizations());
   const defaultTicketTypeCount = createAsync(() => getDefaultTicketTypeCount(), { deferStream: true });
 
   const disconnectOrganization = useAction(disconnectFromOrganization);
@@ -61,7 +55,7 @@ export const Organizations = (props: { session: UserSession }) => {
                       variant: "default",
                       size: "sm",
                     }),
-                    "w-max gap-2 items-center",
+                    "w-max gap-2 items-center"
                   )}
                 >
                   <Plus class="size-4" />
@@ -74,7 +68,7 @@ export const Organizations = (props: { session: UserSession }) => {
           <div class="gap-4 w-full flex flex-col">
             <Suspense fallback={<For each={[0, 1]}>{() => <Skeleton class="w-full h-48" />}</For>}>
               <For
-                each={organizations()}
+                each={props.session.organizations}
                 fallback={
                   <Alert class="flex flex-col items-start gap-2 w-full bg-muted">
                     <span class="text-lg font-semibold">No organizations</span>
@@ -146,15 +140,14 @@ export const Organizations = (props: { session: UserSession }) => {
                           <For
                             each={organization.ticket_types.filter((tt) => !tt.ticket_type.name.startsWith("default"))}
                           >
-                            {(ticket_type) => (
+                            {(tt) => (
                               <Badge
-                                variant={ticket_type.ticket_type.name.startsWith("default") ? "secondary" : "default"}
+                                variant={tt.ticket_type.name.startsWith("default") ? "secondary" : "default"}
                                 class={cn("w-full p-2 px-3", {
-                                  "text-muted-foreground cursor-not-allowed":
-                                    ticket_type.ticket_type.name.startsWith("default"),
+                                  "text-muted-foreground cursor-not-allowed": tt.ticket_type.name.startsWith("default"),
                                 })}
                               >
-                                {ticket_type.ticket_type.name} ({ticket_type.ticket_type.payment_type})
+                                {tt.ticket_type.name} ({tt.ticket_type.payment_type})
                               </Badge>
                             )}
                           </For>
@@ -233,7 +226,9 @@ export const Organizations = (props: { session: UserSession }) => {
                               type="submit"
                               class="w-max"
                               aria-label="Disconnect from organization"
-                              disabled={isDisconnectingFromOrganization.pending || organizations()!.length === 1}
+                              disabled={
+                                isDisconnectingFromOrganization.pending || props.session.organizations!.length === 1
+                              }
                               onClick={async () => {
                                 await disconnectOrganization(organization.id);
 
