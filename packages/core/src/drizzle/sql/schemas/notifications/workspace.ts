@@ -1,19 +1,22 @@
 import { relations } from "drizzle-orm";
-import { text, uuid } from "drizzle-orm/pg-core";
+import { text, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { Entity } from "../entity";
-import { schema } from "../utils";
+import { prefixed_cuid2 } from "../../../../custom_cuid2";
+import { commonTable } from "../entity";
 import { workspaces } from "../workspaces";
 
-export const workspaces_notifications = schema.table("workspaces_notifications", {
-  ...Entity.defaults,
-  workspace_id: uuid("workspace_id")
-    .references(() => workspaces.id)
-    .notNull(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-});
+export const workspaces_notifications = commonTable(
+  "workspaces_notifications",
+  {
+    workspace_id: varchar("workspace_id")
+      .references(() => workspaces.id)
+      .notNull(),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+  },
+  "workspace_notification",
+);
 
 export const workspaces_notifications_relation = relations(workspaces_notifications, ({ many, one }) => ({
   workspace: one(workspaces, {
@@ -29,5 +32,5 @@ export const WorkspaceNotificationCreateSchema = createInsertSchema(workspaces_n
 export const WorkspaceNotificationUpdateSchema = WorkspaceNotificationCreateSchema.partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({
-    id: z.string().uuid(),
+    id: prefixed_cuid2,
   });

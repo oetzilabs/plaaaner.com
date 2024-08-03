@@ -61,19 +61,14 @@ export const changeMessageSettings = action(async (type: string) => {
   return { type };
 });
 
-export const disconnectFromOrganization = action(async (data: string) => {
+export const disconnectFromOrganization = action(async (org_id: string) => {
   "use server";
   const [ctx, event] = await getContext();
   if (!ctx) throw redirect("/auth/login");
   if (!ctx.session) throw redirect("/auth/login");
   if (!ctx.user) throw redirect("/auth/login");
 
-  const valid = z.string().uuid().safeParse(data);
-  if (!valid.success) {
-    throw new Error("Invalid data");
-  }
-  const organizationId = valid.data;
-  const o = await Organization.disconnectUser(organizationId, ctx.user.id);
+  const o = await Organization.disconnectUser(org_id, ctx.user.id);
   await lucia.invalidateSession(ctx.session.id);
   const new_session = await lucia.createSession(
     ctx.user.id,
@@ -99,12 +94,7 @@ export const deleteOrganization = action(async (id: string) => {
   if (!ctx.session) throw redirect("/auth/login");
   if (!ctx.user) throw redirect("/auth/login");
 
-  const valid = z.string().uuid().safeParse(id);
-  if (!valid.success) {
-    throw new Error("Invalid data");
-  }
-  const organizationId = valid.data;
-  const o = await Organization.markAsDeleted({ id: organizationId });
+  const o = await Organization.markAsDeleted({ id });
   await lucia.invalidateSession(ctx.session.id);
   const new_session = await lucia.createSession(
     ctx.user.id,
@@ -131,13 +121,7 @@ export const setOrganizationOwner = action(async (id: string) => {
   if (!ctx.session) throw redirect("/auth/login");
   if (!ctx.user) throw redirect("/auth/login");
 
-  const valid = z.string().uuid().safeParse(id);
-  if (!valid.success) {
-    return new Error("Invalid data");
-  }
-
-  const organizationId = valid.data;
-  const o = await Organization.setOwner(organizationId, ctx.user.id);
+  const o = await Organization.setOwner(id, ctx.user.id);
 
   return o;
 });

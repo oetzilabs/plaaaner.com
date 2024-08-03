@@ -1,3 +1,4 @@
+import { prefixed_cuid2 } from "@oetzilabs-plaaaner-com/core/src/custom_cuid2";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { action, cache, redirect } from "@solidjs/router";
@@ -129,7 +130,7 @@ export const requestOrganizationJoin = action(async (form: FormData) => {
 
   const validation = z
     .object({
-      organization_id: z.string().uuid(),
+      organization_id: prefixed_cuid2,
     })
     .safeParse(data);
 

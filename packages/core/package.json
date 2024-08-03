@@ -6,6 +6,7 @@
     "test": "sst bind vitest",
     "typecheck": "tsc -noEmit",
     "generate": "sst shell 'drizzle-kit generate'",
+    "migrate": "sst shell 'drizzle-kit migrate'",
     "up": "sst shell 'drizzle-kit up'",
     "studio": "sst shell 'drizzle-kit studio'"
   },
@@ -23,6 +24,7 @@
     "@aws-sdk/s3-request-presigner": "3.525.0",
     "@lucia-auth/adapter-drizzle": "^1.0.7",
     "@neondatabase/serverless": "0.9.4",
+    "@paralleldrive/cuid2": "^2.2.2",
     "dayjs": "1.11.12",
     "drizzle-orm": "0.32.1",
     "drizzle-zod": "0.5.1",

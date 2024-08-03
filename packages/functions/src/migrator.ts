@@ -1,7 +1,7 @@
 import { migrate } from "@/core/drizzle/sql";
-import { ApiHandler } from "sst/node/api";
+import { APIGatewayEvent, Handler } from "aws-lambda";
 
-export const handler = ApiHandler(async (_evt) => {
+export const handler: Handler<APIGatewayEvent> = async (_evt) => {
   await migrate().catch((e) => {
     // full error
     console.error(JSON.stringify(e, null, 2));
@@ -11,4 +11,4 @@ export const handler = ApiHandler(async (_evt) => {
   return {
     body: "Migrated!",
   };
-});
+};

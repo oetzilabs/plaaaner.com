@@ -18,6 +18,7 @@ import dayjs from "dayjs";
 import { CircleAlert, Ellipsis, Loader2, MessageSquareDiff, Trash } from "lucide-solid";
 import { createResource, createSignal, For, Match, Show, Switch } from "solid-js";
 import { Transition } from "solid-transition-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 
 export const PostCommentsSection = (props: {
   postId: string;
@@ -98,16 +99,19 @@ export const PostCommentsSection = (props: {
             </Show>
             <For each={filteredComments({ last: visibleComments() }, cs())}>
               {(comment) => (
-                <div class="w-full flex flex-row items-center justify-between gap-4 leading-tight text-sm p-2 hover:bg-neutral-100/50 dark:hover:bg-neutral-900/50 rounded-md group">
+                <div class="w-full flex flex-row items-center justify-between gap-4 leading-tight text-sm p-2 hover:bg-neutral-100/50 dark:hover:bg-neutral-900/50 rounded-md group ">
                   <ImageRoot class="self-start size-6 text-[8pt] text-muted-foreground">
                     <Image src={""} alt={`Profile Picture of ${comment.user.name}`} />
                     <ImageFallback>{shortUsername(comment.user.name)}</ImageFallback>
                   </ImageRoot>
                   <div class="flex flex-row items-start justify-between w-full">
                     <div class="flex-1 flex flex-col w-full gap-1">
-                      <span class="text-muted-foreground text-xs font-bold">
-                        {props.username} {dayjs(comment.createdAt).format("LT")}
-                      </span>
+                      <Tooltip>
+                        <TooltipTrigger class="text-muted-foreground text-xs font-bold w-max">
+                          {props.username} {dayjs(comment.createdAt).fromNow()}
+                        </TooltipTrigger>
+                        <TooltipContent>{dayjs(comment.createdAt).format("LLL")}</TooltipContent>
+                      </Tooltip>
                       <span class="text-justify w-full pr-1">{comment.comment}</span>
                     </div>
                     <div class="w-max flex">
@@ -123,7 +127,7 @@ export const PostCommentsSection = (props: {
                           <Show when={comment.user.id === props.session?.user?.id}>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
+                              class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-50"
                               disabled={isDeletingComment.pending}
                               closeOnSelect={false}
                               onSelect={async () => {
@@ -169,6 +173,7 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
 
   const addComment = useAction(commentOnPost);
   const isCommenting = useSubmission(commentOnPost);
+
   const [isFocused, setIsFocused] = createSignal(false);
 
   const postComment = async () => {
@@ -180,13 +185,17 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
     return commented;
   };
 
+  let commentorRef: HTMLTextAreaElement;
+
   return (
     <div class="w-full h-auto flex flex-col gap-2">
       <TextFieldRoot onChange={setComment} value={comment()}>
         <TextArea
           placeholder="Add a comment..."
           autoResize
-          class={cn("shadow-none !ring-0 !outline-none rounded-md px-0 resize-none  p-2 min-h-10 transition-height", {
+          ref={commentorRef!}
+          disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
+          class={cn("shadow-none !ring-0 !outline-none rounded-md px-0 resize-none p-2 min-h-10 transition-height", {
             "bg-muted": isFocused() || comment().length > 0,
           })}
           style={{
@@ -199,47 +208,57 @@ const PostComment = (props: { postId: string; onPost: () => void }) => {
             if (comment().length > 0) return;
             setIsFocused(false);
           }}
-          onKeyDown={(e: KeyboardEvent) => {
+          onKeyDown={async (e: KeyboardEvent) => {
             if (e.key === "Escape") {
               setComment("");
+            }
+            // detect ctrl+enter
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              await postComment();
+              setComment("");
+              props.onPost();
+              if (commentorRef) {
+                commentorRef.focus();
+              }
             }
           }}
         ></TextArea>
       </TextFieldRoot>
-      <Transition name="slide-fade-down">
-        <Show when={isFocused()}>
-          <div class="flex flex-row w-full items-center justify-between gap-2">
-            <div class="w-full"></div>
-            <div class="w-max flex flex-row gap-1">
-              <Button
-                size="sm"
-                aria-disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
-                disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
-                onClick={async () => {
-                  await postComment();
-                  setComment("");
-                  props.onPost();
-                }}
-                class="flex flex-row gap-2"
-              >
-                <Switch
-                  fallback={
-                    <div class="flex flex-row gap-2 items-center justify-center">
-                      <MessageSquareDiff class="size-4" />
-                      <span>Comment</span>
-                    </div>
-                  }
-                >
-                  <Match when={isCommenting.pending && isCommenting.input[0].postId === props.postId}>
-                    <Loader2 class="size-4 animate-spin" />
-                    <span>Commenting</span>
-                  </Match>
-                </Switch>
-              </Button>
-            </div>
-          </div>
-        </Show>
-      </Transition>
+      <div class="flex flex-row w-full items-center justify-between gap-2 h-min">
+        <div class="w-full"></div>
+        <div class="w-max flex flex-row gap-1">
+          <Button
+            size="sm"
+            aria-disabled={isCommenting.pending && isCommenting.input[0].postId === props.postId}
+            disabled={
+              !isFocused() ||
+              !comment().length ||
+              (isCommenting.pending && isCommenting.input[0].postId === props.postId)
+            }
+            onClick={async () => {
+              await postComment();
+              setComment("");
+              props.onPost();
+            }}
+            class="flex flex-row gap-2"
+          >
+            <Switch
+              fallback={
+                <div class="flex flex-row gap-2 items-center justify-center">
+                  <MessageSquareDiff class="size-4" />
+                  <span>Comment</span>
+                </div>
+              }
+            >
+              <Match when={isCommenting.pending && isCommenting.input[0].postId === props.postId}>
+                <Loader2 class="size-4 animate-spin" />
+                <span>Commenting</span>
+              </Match>
+            </Switch>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

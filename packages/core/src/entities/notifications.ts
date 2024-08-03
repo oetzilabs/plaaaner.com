@@ -3,6 +3,7 @@ import { and, count, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { Resource } from "sst";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
 import {
   organizations_notifications,
@@ -29,7 +30,7 @@ export type Notify = {
 };
 
 export const createSystemNotification = z
-  .function(z.tuple([SystemNotificationCreateSchema, z.string().uuid()]))
+  .function(z.tuple([SystemNotificationCreateSchema, prefixed_cuid2]))
   .implement(async (input, reference_id) => {
     const [x] = await db.insert(system_notifications).values(input).returning();
 
@@ -37,7 +38,7 @@ export const createSystemNotification = z
   });
 
 export const createWorkspaceNotification = z
-  .function(z.tuple([SystemNotificationCreateSchema, z.string().uuid()]))
+  .function(z.tuple([SystemNotificationCreateSchema, prefixed_cuid2]))
   .implement(async (input, reference_id) => {
     const [x] = await db.insert(system_notifications).values(input).returning();
 
@@ -45,7 +46,7 @@ export const createWorkspaceNotification = z
   });
 
 export const createOrganizationNotification = z
-  .function(z.tuple([SystemNotificationCreateSchema, z.string().uuid()]))
+  .function(z.tuple([SystemNotificationCreateSchema, prefixed_cuid2]))
   .implement(async (input, reference_id) => {
     const [x] = await db.insert(system_notifications).values(input).returning();
 
@@ -61,13 +62,13 @@ export const countAll = z.function(z.tuple([])).implement(async () => {
   return x.count;
 });
 
-export const findById = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
+export const findById = z.function(z.tuple([prefixed_cuid2])).implement(async (input) => {
   return db.query.system_notifications.findFirst({
     where: (notifications, operations) => operations.eq(notifications.id, input),
   });
 });
 
-export const countByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
+export const countByOrganizationId = z.function(z.tuple([prefixed_cuid2])).implement(async (input) => {
   const [org_notifications] = await db
     .select({ count: count(organizations_notifications.id) })
     .from(organizations_notifications)
@@ -75,7 +76,7 @@ export const countByOrganizationId = z.function(z.tuple([z.string().uuid()])).im
   return org_notifications.count;
 });
 
-export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
+export const findByOrganizationId = z.function(z.tuple([prefixed_cuid2])).implement(async (input) => {
   const org_notifications = await db.query.organizations_notifications.findMany({
     where: (fields, operations) => operations.eq(fields.organization_id, input),
   });
@@ -104,7 +105,7 @@ export const update = z
       createInsertSchema(system_notifications)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
+        .merge(z.object({ id: prefixed_cuid2 })),
     ]),
   )
   .implement(async (input) => {
@@ -116,11 +117,11 @@ export const update = z
     return updatedOrganization;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
-export const sendMissingSystemNotifications = z.function(z.tuple([z.string().uuid()])).implement(async (userId) => {
+export const sendMissingSystemNotifications = z.function(z.tuple([prefixed_cuid2])).implement(async (userId) => {
   const _notifications = await db.select({ id: system_notifications.id }).from(system_notifications);
   const notificationsIds = _notifications.map((x) => x.id);
   const dismissedNotifications = await db
@@ -151,7 +152,7 @@ export const publish = z.function(z.tuple([z.custom<Notify>()])).implement(async
 });
 
 export const dismiss = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (userId, notificationId) => {
     const [x] = await db
       .insert(user_dismissed_system_notifications)
@@ -164,7 +165,7 @@ export const dismiss = z
     return x;
   });
 
-export const dismissAll = z.function(z.tuple([z.string().uuid()])).implement(async (userId) => {
+export const dismissAll = z.function(z.tuple([prefixed_cuid2])).implement(async (userId) => {
   // set dismissedAt to now
   const dismissedNotifications = await db
     .select({ id: user_dismissed_system_notifications.notificationId })

@@ -1,19 +1,22 @@
 import { relations } from "drizzle-orm";
-import { text, uuid } from "drizzle-orm/pg-core";
+import { text, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { Entity } from "../entity";
+import { prefixed_cuid2 } from "../../../../custom_cuid2";
+import { commonTable } from "../entity";
 import { organizations } from "../organization";
-import { schema } from "../utils";
 
-export const organizations_notifications = schema.table("organizations_notifications", {
-  ...Entity.defaults,
-  organization_id: uuid("organization_id")
-    .references(() => organizations.id)
-    .notNull(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-});
+export const organizations_notifications = commonTable(
+  "organizations_notifications",
+  {
+    organization_id: varchar("organization_id")
+      .references(() => organizations.id)
+      .notNull(),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+  },
+  "organization_notification",
+);
 
 export const organizations_notifications_relation = relations(organizations_notifications, ({ many, one }) => ({
   organization: one(organizations, {
@@ -29,5 +32,5 @@ export const OrganizationNotificationCreateSchema = createInsertSchema(organizat
 export const OrganizationNotificationUpdateSchema = OrganizationNotificationCreateSchema.partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({
-    id: z.string().uuid(),
+    id: prefixed_cuid2,
   });

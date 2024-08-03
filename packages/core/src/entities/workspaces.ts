@@ -1,20 +1,21 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
 import {
-  WorkspaceCreateSchema,
-  WorkspaceUpdateSchema,
   users_workspaces,
+  WorkspaceCreateSchema,
   workspaces,
   workspaces_organizations,
+  WorkspaceUpdateSchema,
 } from "../drizzle/sql/schema";
 import { Organization } from "./organizations";
 
 export * as Workspace from "./workspaces";
 
 export const create = z
-  .function(z.tuple([WorkspaceCreateSchema, z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([WorkspaceCreateSchema, prefixed_cuid2, prefixed_cuid2]))
   .implement(async (userInput, owner_id, organization_id) => {
     const [workspace] = await db
       .insert(workspaces)
@@ -89,7 +90,7 @@ export const findByOrganizationId = z.function(z.tuple([z.string()])).implement(
 });
 
 export const hasUser = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (workspace_id, user_id) => {
     const isConnected = await db.query.users_workspaces.findFirst({
       where: (fields, operators) =>
@@ -99,7 +100,7 @@ export const hasUser = z
     return !!isConnected;
   });
 
-export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
+export const findManyByUserId = z.function(z.tuple([prefixed_cuid2])).implement(async (input) => {
   const userWs = await db.query.workspaces.findMany({
     where: (fields, operations) =>
       operations.and(operations.eq(fields.owner_id, input), operations.isNull(fields.deletedAt)),
@@ -219,8 +220,8 @@ export const update = z
       createInsertSchema(workspaces)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
-    ])
+        .merge(z.object({ id: prefixed_cuid2 })),
+    ]),
   )
   .implement(async (input) => {
     const [updatedWorkspace] = await db
@@ -231,12 +232,12 @@ export const update = z
     return updatedWorkspace;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
 export const connectUser = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (workspace_id, user_id) => {
     const isConnected = await db.query.users_workspaces.findFirst({
       where: (fields, operators) =>
@@ -248,7 +249,7 @@ export const connectUser = z
   });
 
 export const disconnectUser = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (workspace_id, user_id) => {
     const [deleted] = await db
       .delete(users_workspaces)
@@ -258,7 +259,7 @@ export const disconnectUser = z
   });
 
 export const setOwner = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (workspace_id, user_id) => {
     const [updated] = await db
       .update(workspaces)
@@ -268,7 +269,7 @@ export const setOwner = z
     return updated;
   });
 
-export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const lastCreatedByUser = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.workspaces.findFirst({
     where: (workspaces, operations) => and(operations.eq(workspaces.owner_id, user_id), isNull(workspaces.deletedAt)),
     orderBy(fields, operators) {

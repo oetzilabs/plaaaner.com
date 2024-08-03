@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
 import { post_comments, PostCreateSchema, posts, PostUpdateSchema, workspaces_posts } from "../drizzle/sql/schema";
 import { Organization } from "./organizations";
@@ -11,7 +12,7 @@ import { Workspace } from "./workspaces";
 export * as Posts from "./posts";
 
 export const create = z
-  .function(z.tuple([z.array(PostCreateSchema).or(PostCreateSchema), z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([z.array(PostCreateSchema).or(PostCreateSchema), prefixed_cuid2, prefixed_cuid2]))
   .implement(async (userInput, userId, workspace_id) => {
     const postsToCreate = Array.isArray(userInput)
       ? userInput.map((p) => ({ ...p, owner_id: userId }))
@@ -56,9 +57,9 @@ export const findByOptions = z
   .function(
     z.tuple([
       z.object({
-        user_id: z.string().uuid(),
-        workspace_id: z.string().uuid().nullable(),
-        organization_id: z.string().uuid().nullable(),
+        user_id: prefixed_cuid2,
+        workspace_id: prefixed_cuid2.nullable(),
+        organization_id: prefixed_cuid2.nullable(),
       }),
     ]),
   )
@@ -105,6 +106,7 @@ export const findByOptions = z
               },
             },
             owner: true,
+            workpaces: true,
           },
         },
       },
@@ -165,24 +167,29 @@ export const update = z
       createInsertSchema(posts)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
+        .merge(
+          z.object({
+            id: prefixed_cuid2,
+            location: z.object({ zipCode: z.string(), city: z.string() }).nullable().optional(),
+          }),
+        ),
     ]),
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
       .update(posts)
-      .set({ ...input, updatedAt: new Date() })
+      .set({ ...input, updatedAt: new Date(), location: input.location })
       .where(eq(posts.id, input.id))
       .returning();
     return updatedOrganization;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
 export const setOwner = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (organization_id, user_id) => {
     const [updated] = await db
       .update(posts)
@@ -192,7 +199,7 @@ export const setOwner = z
     return updated;
   });
 
-export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const findByUserId = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.posts.findMany({
     where: (fields, operations) => operations.and(operations.eq(fields.owner_id, user_id), isNull(fields.deletedAt)),
     orderBy(fields, operators) {
@@ -208,12 +215,13 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
           user: true,
         },
       },
+      workpaces: true,
     },
   });
   return ws;
 });
 
-export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
+export const findByOrganizationId = z.function(z.tuple([prefixed_cuid2])).implement(async (organization_id) => {
   const workspaces = await Workspace.findByOrganizationId(organization_id);
   const ps = await Promise.all(
     workspaces.map(async (ws) =>
@@ -231,6 +239,7 @@ export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).imp
                 },
               },
               owner: true,
+              workpaces: true,
             },
           },
         },
@@ -240,13 +249,13 @@ export const findByOrganizationId = z.function(z.tuple([z.string().uuid()])).imp
   return ps.flat().map((oe) => oe.post);
 });
 
-export const recommendNewPlans = z.function(z.tuple([z.string().uuid()])).implement(async (organization_id) => {
+export const recommendNewPlans = z.function(z.tuple([prefixed_cuid2])).implement(async (organization_id) => {
   // const previousPlans = await findByOrganizationId(organization_id);
 
   return [] as Awaited<ReturnType<typeof findByOrganizationId>>;
 });
 
-export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const lastCreatedByUser = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.posts.findFirst({
     where: (fields, operators) => and(operators.eq(fields.owner_id, user_id), operators.isNull(fields.deletedAt)),
     orderBy(fields, operators) {
@@ -264,7 +273,7 @@ export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implem
   return ws;
 });
 
-export const notConnectedToUserById = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const notConnectedToUserById = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const usersOrgsResult = await db.query.users_organizations.findMany({
     where(fields, operators) {
       return operators.eq(fields.user_id, user_id);
@@ -300,7 +309,7 @@ export const getTypeId = z.function(z.tuple([z.string()])).implement(async (t) =
 });
 
 export const addComment = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid(), z.string()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2, z.string()]))
   .implement(async (post_id, user_id, comment) => {
     const post = await findById(post_id);
 
@@ -326,7 +335,7 @@ export const addComment = z
     return commented;
   });
 
-export const findComment = z.function(z.tuple([z.string().uuid()])).implement(async (comment_id) => {
+export const findComment = z.function(z.tuple([prefixed_cuid2])).implement(async (comment_id) => {
   const comment = await db.query.post_comments.findFirst({
     where(fields, operators) {
       return operators.eq(fields.id, comment_id);
@@ -339,7 +348,7 @@ export const findComment = z.function(z.tuple([z.string().uuid()])).implement(as
   return comment;
 });
 
-export const deleteComment = z.function(z.tuple([z.string().uuid()])).implement(async (comment_id) => {
+export const deleteComment = z.function(z.tuple([prefixed_cuid2])).implement(async (comment_id) => {
   const comment = await findComment(comment_id);
   if (!comment) {
     throw new Error("This comment does not exist");

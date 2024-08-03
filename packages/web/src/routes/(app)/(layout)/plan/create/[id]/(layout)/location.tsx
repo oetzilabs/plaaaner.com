@@ -22,14 +22,8 @@ const ClientMap = clientOnly(() => import("@/components/ClientMap"));
 
 export default function PlanCreateLocationPage() {
   const params = useParams();
-  const v = params.id;
-  const isUUID = z.string().uuid().safeParse(v);
-
-  if (!v || !isUUID.success) {
-    return redirect("/404", { status: 404 });
-  }
-  const planLocation = createAsync(() => getPlanLocation(isUUID.data), { deferStream: true });
-  const plan = createAsync(() => getPlan(isUUID.data), { deferStream: true });
+  const planLocation = createAsync(() => getPlanLocation(params.id), { deferStream: true });
+  const plan = createAsync(() => getPlan(params.id), { deferStream: true });
   const savePlanLocationAction = useAction(savePlanLocation);
   const isSaving = useSubmission(savePlanLocation);
 

@@ -1,23 +1,24 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
 import {
+  ticket_types,
   TicketCreateSchema,
+  tickets,
   TicketTypeCreateSchema,
   TicketUpdateSchema,
-  ticket_types,
-  tickets,
 } from "../drizzle/sql/schema";
 
 export * as Tickets from "./tickets";
 
 export const create = z
-  .function(z.tuple([TicketCreateSchema.array(), z.string().uuid()]))
+  .function(z.tuple([TicketCreateSchema.array(), prefixed_cuid2]))
   .implement(async (userInput, userId) => {
     const x = await db
       .insert(tickets)
-      .values(userInput.map((t) => ({...t, owner_id: userId})))
+      .values(userInput.map((t) => ({ ...t, owner_id: userId })))
       .returning();
 
     return x;
@@ -69,7 +70,7 @@ export const update = z
       createInsertSchema(tickets)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
+        .merge(z.object({ id: prefixed_cuid2 })),
     ]),
   )
   .implement(async (input) => {
@@ -81,12 +82,12 @@ export const update = z
     return updatedOrganization;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
 export const setOwner = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (organization_id, user_id) => {
     const [updated] = await db
       .update(tickets)
@@ -96,7 +97,7 @@ export const setOwner = z
     return updated;
   });
 
-export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const findByUserId = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.tickets.findFirst({
     where: (tickets, operations) => and(operations.eq(tickets.owner_id, user_id), isNull(tickets.deletedAt)),
     orderBy(fields, operators) {
@@ -106,7 +107,7 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
   return ws;
 });
 
-export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const lastCreatedByUser = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.tickets.findFirst({
     where: (fields, operators) => and(operators.eq(fields.owner_id, user_id), operators.isNull(fields.deletedAt)),
     orderBy(fields, operators) {

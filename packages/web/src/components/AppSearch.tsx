@@ -1,16 +1,22 @@
-import { CommandDialog, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { getAuthenticatedUser } from "@/lib/auth/util";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { getAuthenticatedSession, type UserSession } from "@/lib/auth/util";
 import { useColorMode } from "@kobalte/core";
-import { createAsync } from "@solidjs/router";
-import { User } from "lucia";
+import { createAsync, useNavigate } from "@solidjs/router";
 import { Search } from "lucide-solid";
-import { createEffect, createSignal, onCleanup } from "solid-js";
+import { createEffect, createSignal, For, onCleanup } from "solid-js";
 import { toast } from "solid-sonner";
 
 type Option = {
   label: string;
   value: string;
-  onSelect(user: User): Promise<void>;
+  onSelect(user: UserSession): Promise<void>;
 };
 
 type List = {
@@ -20,18 +26,27 @@ type List = {
 
 export const AppSearch = () => {
   const [openSearch, setOpenSearch] = createSignal(false);
-  const user = createAsync(() => getAuthenticatedUser());
-  const { setColorMode, toggleColorMode } = useColorMode();
+  const session = createAsync(() => getAuthenticatedSession());
+  const { setColorMode, toggleColorMode, colorMode } = useColorMode();
+  const navigate = useNavigate();
 
-  const data: List[] = [
+  const DEFAULT_DATA: List[] = [
     {
       label: "Suggestions",
       options: [
         {
+          label: "Dashboard",
+          value: "Dashboard",
+          onSelect: async (user) => {
+            navigate("/dashboard");
+            setOpenSearch(false);
+          },
+        },
+        {
           label: "Calendar",
           value: "Calendar",
           onSelect: async (user) => {
-            toast.info("hello", { description: user.username });
+            toast.info("hello", { description: user.user?.name });
           },
         },
         {
@@ -47,17 +62,26 @@ export const AppSearch = () => {
         {
           label: "Profile",
           value: "Profile",
-          onSelect: async () => {},
+          onSelect: async () => {
+            navigate("/profile");
+            setOpenSearch(false);
+          },
         },
         {
           label: "Messages",
           value: "Messages",
-          onSelect: async () => {},
+          onSelect: async () => {
+            navigate("/messages");
+            setOpenSearch(false);
+          },
         },
         {
           label: "Settings",
           value: "Settings",
-          onSelect: async () => {},
+          onSelect: async () => {
+            navigate("/profile/settings");
+            setOpenSearch(false);
+          },
         },
       ],
     },
@@ -79,15 +103,17 @@ export const AppSearch = () => {
           },
         },
         {
-          label: "Toggle Mode",
-          value: "Toggle Mode",
+          label: "System Mode",
+          value: "System Mode",
           onSelect: async (user) => {
-            toggleColorMode();
+            setColorMode("system");
           },
         },
       ],
     },
   ];
+
+  const [data, setData] = createSignal<List[]>(DEFAULT_DATA);
 
   createEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -113,48 +139,33 @@ export const AppSearch = () => {
         <Search class="w-4 h-4" />
         <div class="sr-only md:min-w-[300px] md:not-sr-only max-w-full text-sm">Search plans...</div>
       </div>
-      <CommandDialog
-        open={openSearch()}
-        onOpenChange={setOpenSearch}
-        options={data}
-        optionValue="value"
-        optionTextValue="label"
-        optionLabel="label"
-        optionGroupChildren="options"
-        placeholder="Type a command or search..."
-      >
+      <CommandDialog open={openSearch()} onOpenChange={setOpenSearch}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
+          <For each={data()}>
+            {(list) => (
+              <CommandGroup heading={list.label}>
+                <For each={list.options}>
+                  {(option) => (
+                    <CommandItem
+                      class="flex flex-row items-center gap-2"
+                      onSelect={() => {
+                        const sess = session();
+                        if (!sess) return;
+                        if (!sess.user) return;
+                        option.onSelect(sess);
+                      }}
+                    >
+                      {option.label}
+                    </CommandItem>
+                  )}
+                </For>
+              </CommandGroup>
+            )}
+          </For>
         </CommandList>
       </CommandDialog>
-      {/* <CommandDialog
-        open={openSearch()}
-        onOpenChange={setOpenSearch}
-        options={data}
-        optionValue="value"
-        optionTextValue="label"
-        optionLabel="label"
-        optionGroupChildren="options"
-        placeholder="Type a command or search..."
-        itemComponent={(props) => (
-          <CommandItem item={props.item} class="flex flex-row items-center gap-2">
-            <CommandItemLabel>{props.item.rawValue.label}</CommandItemLabel>
-          </CommandItem>
-        )}
-        sectionComponent={(props) => <CommandHeading>{props.section.rawValue.label}</CommandHeading>}
-        class="md:rounded-lg md:border md:shadow-md"
-        onChange={(e: Option) => {
-          const u = user();
-          if (!u) {
-            return;
-          }
-          e.onSelect(u);
-        }}
-      >
-        <CommandInput />
-        <CommandList />
-      </CommandDialog> */}
     </div>
   );
 };

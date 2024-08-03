@@ -27,7 +27,7 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
       <div class="rounded-md bg-background relative">
         <div class="absolute top-4 right-4 z-[2]">
           <DropdownMenu>
-            <DropdownMenuTrigger as={Button} variant="outline" size="sm" class="!p-2">
+            <DropdownMenuTrigger as={Button} variant="outline" size="sm" class="!p-1 !size-7">
               <Ellipsis class="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -54,7 +54,7 @@ export const PlanActivity = (props: { session: UserSession; plan: Plans.Frontend
               <Show when={props.plan.owner.id === props.session?.user?.id}>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
+                  class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-50"
                   disabled={isDeletingPlan.pending}
                   closeOnSelect={false}
                   onSelect={async () => {

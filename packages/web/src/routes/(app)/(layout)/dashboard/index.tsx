@@ -15,7 +15,7 @@ import { Title } from "@solidjs/meta";
 import { A, createAsync, revalidate } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { Loader2 } from "lucide-solid";
+import { Bolt, Loader2, Nut, RefreshCw, RotateCcw, Settings, Settings2 } from "lucide-solid";
 import { Match, Show, Switch } from "solid-js";
 
 dayjs.extend(relativeTime);
@@ -59,7 +59,7 @@ export default function DashboardPage() {
             <div class="flex flex-col gap-8 grow min-h-0 max-h-screen">
               <div class="flex flex-col w-full grow min-h-0 max-h-[calc(100vh-49px)]">
                 <div class="flex flex-col w-full flex-grow min-h-0 max-h-screen overflow-y-auto">
-                  <div class="w-full sm:container !px-8 flex flex-col gap-4 max-w-full md:max-w-6xl h-screen relative">
+                  <div class="w-full sm:container !px-4 flex flex-col gap-4 max-w-full h-screen relative">
                     <div class="w-full h-auto grid grid-cols-1 md:grid-cols-12 grid-flow-row-dense gap-4">
                       <div class="col-span-8 flex w-full flex-col gap-2 pb-0 pt-4">
                         <span class="font-medium text-3xl">
@@ -71,8 +71,8 @@ export default function DashboardPage() {
                           , {s.user?.name}
                         </span>
                         <div class="w-full flex flex-row items-center gap-2 justify-between">
-                          <div class="flex flex-row items-center gap-2">
-                            <span class="text-sm">
+                          <div class="flex flex-row items-center gap-2 group">
+                            <span class="text-sm flex gap-1">
                               Here's what's going on at{" "}
                               <A
                                 href={`/dashboard/o/${s.organization?.id}/w/${s.workspace?.id}`}
@@ -82,12 +82,16 @@ export default function DashboardPage() {
                                   ? s.organization?.name
                                   : s.workspace?.name}
                               </A>
+                              <Button variant="ghost" size="sm" class="!p-1 !size-5 group-hover:visible invisible">
+                                <Bolt class="size-3" />
+                              </Button>
                             </span>
                           </div>
                           <div class="flex flex-row items-center gap-2">
                             <Button
-                              size="sm"
+                              size="icon"
                               variant="outline"
+                              class="!p-2 size-8"
                               onClick={async () =>
                                 await revalidate(
                                   [
@@ -100,7 +104,8 @@ export default function DashboardPage() {
                                 )
                               }
                             >
-                              Refresh
+                              <span class="sr-only">Refresh</span>
+                              <RefreshCw class="size-4" />
                             </Button>
                           </div>
                         </div>
@@ -110,7 +115,7 @@ export default function DashboardPage() {
                         <EntryBox />
                       </div>
                       <div class="col-span-4 hidden md:flex flex-col row-span-12">
-                        <div class="flex flex-col w-full gap-4 sticky top-0 pt-4">
+                        <div class="flex flex-col w-full gap-4 sticky top-6 pt-4">
                           <UpcomingPlans session={s} />
                           <NotificationList session={s} />
                           <NearbyPlansList session={s} />

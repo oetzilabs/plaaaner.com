@@ -157,7 +157,7 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
+          class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-50"
           disabled={isLoggingOut.pending}
           onSelect={async () => {
             await logoutAction();

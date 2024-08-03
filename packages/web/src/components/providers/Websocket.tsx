@@ -70,7 +70,7 @@ export const [Websocket, useWebsocket] = createContextProvider(
         }
       },
       close: (e: any) => {
-        console.log("ws closed", e);
+        console.log("closed websocket", e);
       },
       error: (e: any) => {
         console.log("ws errored", e);

@@ -1,21 +1,24 @@
-import { uuid } from "drizzle-orm/pg-core";
-import { Entity } from "./entity";
-import { schema } from "./utils";
+import { relations } from "drizzle-orm";
+import { varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { users } from "./users";
+import { prefixed_cuid2 } from "../../../custom_cuid2";
+import { commonTable } from "./entity";
 import { plans } from "./plans";
-import { relations } from "drizzle-orm";
+import { users } from "./users";
 
-export const plan_participants = schema.table("plan_participants", {
-  ...Entity.defaults,
-  participant_id: uuid("participant_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  plan_id: uuid("plan_id")
-    .notNull()
-    .references(() => plans.id, { onDelete: "cascade" }),
-});
+export const plan_participants = commonTable(
+  "plan_participants",
+  {
+    participant_id: varchar("participant_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    plan_id: varchar("plan_id")
+      .notNull()
+      .references(() => plans.id, { onDelete: "cascade" }),
+  },
+  "plan_participant",
+);
 
 export const plan_participants_relation = relations(plan_participants, ({ one }) => ({
   user: one(users, {
@@ -34,5 +37,5 @@ export const PlanParticipantsUpdate = createInsertSchema(plan_participants)
   .partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({
-    id: z.string().uuid(),
+    id: prefixed_cuid2,
   });

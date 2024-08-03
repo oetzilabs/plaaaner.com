@@ -45,7 +45,6 @@ const RealtimeActivities = (props: { initialActivities: Accessor<Activity[]>; se
   //   setActivitiesList(as);
   // });
 
-  /*
   onMount(() => {
     if (!ws) return;
 
@@ -76,13 +75,19 @@ const RealtimeActivities = (props: { initialActivities: Accessor<Activity[]>; se
       unsub_updated();
     });
   });
-  */
 
   return (
-    <For each={activitiesList()}>
+    <For
+      each={activitiesList()}
+      fallback={
+        <div class="flex w-full h-full items-center justify-center bg-neutral-100 dark:bg-neutral-900 rounded-lg p-8 text-muted-foreground text-sm">
+          No activities yet
+        </div>
+      }
+    >
       {(activity) => (
         <Transition name="slide-fade-up">
-          <li class="border relative border-neutral-200 dark:border-neutral-800 rounded-lg hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip">
+          <li class="border relative border-neutral-200 dark:border-neutral-800 rounded-lg hover:shadow-sm shadow-none transition-shadow bg-background overflow-clip first:-mt-6">
             <Switch>
               <Match when={activity.type === "plan" && activity.value} keyed>
                 {(plan) => <PlanActivity plan={plan} session={props.session} />}

@@ -116,7 +116,7 @@ export default function App() {
                 <Title>Plaaaner.com</Title>
                 <Suspense
                   fallback={
-                    <div class="w-full flex flex-col items-center justify-center h-screen">
+                    <div class="w-full flex flex-col items-center justify-center h-screen bg-background text-muted-foreground gap-2">
                       <Loader2 class="size-4 animate-spin" />
                       Loading Page
                     </div>
@@ -129,12 +129,13 @@ export default function App() {
                       duration={5000}
                       theme="system"
                       icons={{
-                        info: <Info class="w-6 h-6" />,
-                        success: <CheckCheck class="w-6 h-6" />,
-                        error: <AlertCircleIcon class="w-6 h-6" />,
-                        loading: <Loader2 class="w-6 h-6 animate-spin" />,
-                        warning: <AlertCircleIcon class="w-6 h-6" />,
+                        info: <Info class="size-4" />,
+                        success: <CheckCheck class="size-4" />,
+                        error: <AlertCircleIcon class="size-4" />,
+                        loading: <Loader2 class="size-4 animate-spin" />,
+                        warning: <AlertCircleIcon class="size-4" />,
                       }}
+                      gap={4}
                     />
                     <div
                       class="w-full flex flex-col"

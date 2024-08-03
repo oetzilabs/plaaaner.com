@@ -1,13 +1,14 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
 import {
+  ticket_types,
   TicketCreateSchema,
+  tickets,
   TicketTypeCreateSchema,
   TicketUpdateSchema,
-  ticket_types,
-  tickets,
 } from "../drizzle/sql/schema";
 
 export * as TicketTypes from "./ticket_types";
@@ -25,7 +26,7 @@ export const DEFAULT_TICKET_TYPES: Parameters<typeof create>[0] = [
 ] as const;
 
 export const create = z
-  .function(z.tuple([TicketTypeCreateSchema.array(), z.string().uuid().nullable()]))
+  .function(z.tuple([TicketTypeCreateSchema.array(), prefixed_cuid2.nullable()]))
   .implement(async (ticket_types_to_create, user_id) => {
     const names = ticket_types_to_create.map((tt) => tt.name);
     const existing = await db.query.ticket_types.findMany({
@@ -48,7 +49,7 @@ export const create = z
   });
 
 export const upsert = z
-  .function(z.tuple([TicketTypeCreateSchema.array(), z.string().uuid().nullable()]))
+  .function(z.tuple([TicketTypeCreateSchema.array(), prefixed_cuid2.nullable()]))
   .implement(async (ticket_types_to_create, user_id) => {
     const updated = [];
     const names = ticket_types_to_create.map((tt) => tt.name);
@@ -124,7 +125,7 @@ export const update = z
       createInsertSchema(ticket_types)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
+        .merge(z.object({ id: prefixed_cuid2 })),
     ]),
   )
   .implement(async (input) => {
@@ -136,12 +137,12 @@ export const update = z
     return updatedOrganization;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
 export const setOwner = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (organization_id, user_id) => {
     const [updated] = await db
       .update(ticket_types)
@@ -151,7 +152,7 @@ export const setOwner = z
     return updated;
   });
 
-export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const findByUserId = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.ticket_types.findFirst({
     where: (ticket_types, operations) =>
       and(operations.eq(ticket_types.owner_id, user_id), isNull(ticket_types.deletedAt)),
@@ -162,7 +163,7 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
   return ws;
 });
 
-export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const lastCreatedByUser = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.ticket_types.findFirst({
     where: (fields, operators) => and(operators.eq(fields.owner_id, user_id), operators.isNull(fields.deletedAt)),
     orderBy(fields, operators) {

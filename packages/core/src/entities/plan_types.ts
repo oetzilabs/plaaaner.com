@@ -1,8 +1,9 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
-import { PlanTypeCreateSchema, PlanTypeUpdateSchema, plan_types, plans } from "../drizzle/sql/schema";
+import { plan_types, plans, PlanTypeCreateSchema, PlanTypeUpdateSchema } from "../drizzle/sql/schema";
 
 export * as PlanTypes from "./plan_types";
 
@@ -26,7 +27,7 @@ export const DEFAULT_PLAN_TYPES: Parameters<typeof create>[0] = [
 ] as const;
 
 export const create = z
-  .function(z.tuple([PlanTypeCreateSchema.array(), z.string().uuid().nullable()]))
+  .function(z.tuple([PlanTypeCreateSchema.array(), prefixed_cuid2.nullable()]))
   .implement(async (plan_types_to_create, user_id) => {
     const names = plan_types_to_create.map((tt) => tt.name);
     const existing = await db.query.plan_types.findMany({
@@ -49,7 +50,7 @@ export const create = z
   });
 
 export const upsert = z
-  .function(z.tuple([PlanTypeCreateSchema.array(), z.string().uuid().nullable()]))
+  .function(z.tuple([PlanTypeCreateSchema.array(), prefixed_cuid2.nullable()]))
   .implement(async (plan_types_to_create, user_id) => {
     const updated = [];
     const names = plan_types_to_create.map((tt) => tt.name);
@@ -125,8 +126,8 @@ export const update = z
       createInsertSchema(plan_types)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
-    ])
+        .merge(z.object({ id: prefixed_cuid2 })),
+    ]),
   )
   .implement(async (input) => {
     const [updatedOrganization] = await db
@@ -137,12 +138,12 @@ export const update = z
     return updatedOrganization;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
 export const setOwner = z
-  .function(z.tuple([z.string().uuid(), z.string().uuid()]))
+  .function(z.tuple([prefixed_cuid2, prefixed_cuid2]))
   .implement(async (organization_id, user_id) => {
     const [updated] = await db
       .update(plan_types)
@@ -152,7 +153,7 @@ export const setOwner = z
     return updated;
   });
 
-export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const findByUserId = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.plan_types.findFirst({
     where: (plan_types, operations) => and(operations.eq(plan_types.owner_id, user_id), isNull(plan_types.deletedAt)),
     orderBy(fields, operators) {
@@ -162,7 +163,7 @@ export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(a
   return ws;
 });
 
-export const lastCreatedByUser = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const lastCreatedByUser = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.plan_types.findFirst({
     where: (fields, operators) => and(operators.eq(fields.owner_id, user_id), operators.isNull(fields.deletedAt)),
     orderBy(fields, operators) {

@@ -18,11 +18,11 @@ export const UpcomingPlans = (props: { session: UserSession }) => {
   const upcomingPlans = createAsync(() => getUpcomingThreePlans());
 
   return (
-    <div class="flex flex-col w-full gap-2">
+    <div class="flex flex-col w-full gap-2 -mt-7">
       <div class="flex flex-col w-full gap-2">
         <A
           href={`/dashboard/o/${props.session.organization?.id}/workspace/${props.session.workspace?.id}/plans`}
-          class="flex flex-col w-full font-medium text-sm"
+          class="flex flex-col w-full font-medium text-sm hover:underline underline-offset-2"
         >
           Upcoming Plans
         </A>

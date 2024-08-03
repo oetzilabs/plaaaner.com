@@ -1,3 +1,4 @@
+import { prefixed_cuid2 } from "@oetzilabs-plaaaner-com/core/src/custom_cuid2";
 import { z } from "zod";
 import { ConcertLocationSchema } from "./shared";
 
@@ -18,10 +19,10 @@ export const TicketShape = z.union([
 ]);
 
 export const TicketType = z.object({
-  id: z.string().uuid(),
+  id: prefixed_cuid2,
   name: z.string().min(1),
   description: z.string().min(1),
-  owner_id: z.string().uuid(),
+  owner_id: prefixed_cuid2,
   payment_type: z.enum(["FREE", "PAID"]),
 });
 
@@ -44,7 +45,7 @@ const CapacitySchema = z.discriminatedUnion("capacity_type", [
 ]);
 
 const BasePlanSchema = z.object({
-  plan_type_id: z.string().uuid().nullable(),
+  plan_type_id: prefixed_cuid2.nullable(),
   referenced_from: z.string().optional(),
   name: z.string({ required_error: "Name is required" }).min(3).max(50),
   description: z.string().optional().nullable(),
@@ -54,8 +55,8 @@ const BasePlanSchema = z.object({
       z.object({
         start: z.date(),
         end: z.date(),
-      })
-    )
+      }),
+    ),
   ),
   capacity: CapacitySchema,
   location: ConcertLocationSchema,

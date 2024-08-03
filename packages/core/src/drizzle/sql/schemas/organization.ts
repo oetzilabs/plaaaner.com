@@ -1,21 +1,24 @@
-import { text, uuid } from "drizzle-orm/pg-core";
-import { Entity } from "./entity";
-import { schema } from "./utils";
+import { relations } from "drizzle-orm";
+import { text, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { prefixed_cuid2 } from "../../../custom_cuid2";
+import { commonTable } from "./entity";
+import { organizations_ticket_types } from "./organizations_ticket_types";
+import { users_organizations } from "./user_organizations";
 import { users } from "./users";
 import { workspaces_organizations } from "./workspaces_organizations";
-import { users_organizations } from "./user_organizations";
-import { organizations_ticket_types } from "./organizations_ticket_types";
 
-export const organizations = schema.table("organizations", {
-  ...Entity.defaults,
-  name: text("name").notNull(),
-  owner_id: uuid("owner")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-});
+export const organizations = commonTable(
+  "organizations",
+  {
+    name: text("name").notNull(),
+    owner_id: varchar("owner")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+  },
+  "org",
+);
 
 export const organizations_relation = relations(organizations, ({ many, one }) => ({
   owner: one(users, {
@@ -36,5 +39,5 @@ export const OrganizationCreateSchema = createInsertSchema(organizations).omit({
 export const OrganizationUpdateSchema = OrganizationCreateSchema.partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({
-    id: z.string().uuid(),
+    id: prefixed_cuid2,
   });

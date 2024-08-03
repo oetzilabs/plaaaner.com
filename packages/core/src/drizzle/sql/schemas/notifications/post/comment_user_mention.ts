@@ -1,7 +1,8 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
+import { primaryKey, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../../../../../custom_cuid2";
 import { plan_comments } from "../../plan_comments";
 import { posts } from "../../posts";
 import { users } from "../../users";
@@ -16,13 +17,13 @@ export const post_comment_user_mention_notifications = schema.table(
     })
       .notNull()
       .defaultNow(),
-    userId: uuid("user_id")
+    userId: varchar("user_id")
       .notNull()
       .references(() => users.id),
-    commentId: uuid("comment_id")
+    commentId: varchar("comment_id")
       .notNull()
       .references(() => plan_comments.id),
-    postId: uuid("post_id")
+    postId: varchar("post_id")
       .notNull()
       .references(() => posts.id),
   },
@@ -30,7 +31,7 @@ export const post_comment_user_mention_notifications = schema.table(
     return {
       pk: primaryKey({ columns: [table.userId, table.postId, table.commentId] }),
     };
-  }
+  },
 );
 
 export const post_comment_mention_notifications_relations = relations(
@@ -48,12 +49,12 @@ export const post_comment_mention_notifications_relations = relations(
       fields: [post_comment_user_mention_notifications.postId],
       references: [posts.id],
     }),
-  })
+  }),
 );
 
 export const PostCommentMentionNotificationsCreateSchema = createInsertSchema(post_comment_user_mention_notifications);
 export const PostCommentMentionNotificationsUpdateSchema = PostCommentMentionNotificationsCreateSchema.partial()
-  .omit({ createdAt: true, updatedAt: true })
+  .omit({ createdAt: true })
   .extend({
-    id: z.string().uuid(),
+    id: prefixed_cuid2,
   });

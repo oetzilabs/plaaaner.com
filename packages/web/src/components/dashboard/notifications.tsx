@@ -19,7 +19,7 @@ export const NotificationList = (props: { session: UserSession }) => {
       <div class="flex flex-col w-full gap-2">
         <A
           href={`/dashboard/o/${props.session.organization?.id}/notifications`}
-          class="flex flex-col w-full font-medium text-sm"
+          class="flex flex-col w-full font-medium text-sm hover:underline underline-offset-2"
         >
           Notifications
         </A>

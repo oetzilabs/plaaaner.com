@@ -8,14 +8,8 @@ import { z } from "zod";
 
 export default function PlanCreateGeneralPage() {
   const params = useParams();
-  const v = params.id;
-  const isUUID = z.string().uuid().safeParse(v);
 
-  if (!v || !isUUID.success) {
-    return redirect("/404", { status: 404 });
-  }
-
-  const plan = createAsync(() => getPlan(isUUID.data), { deferStream: true });
+  const plan = createAsync(() => getPlan(params.id), { deferStream: true });
   const savePlanAction = useAction(savePlanGeneral);
   const isSaving = useSubmission(savePlanGeneral);
 

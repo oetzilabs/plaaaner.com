@@ -1,7 +1,7 @@
-import { ApiHandler } from "sst/node/api";
+import { APIGatewayEvent, Handler } from "aws-lambda";
 
-export const main = ApiHandler(async (_evt) => {
+export const main: Handler<APIGatewayEvent> = async (_evt) => {
   return {
     statusCode: 200,
   };
-});
+};

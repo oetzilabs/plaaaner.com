@@ -13,8 +13,9 @@ export const db = drizzle(client, {
 });
 
 export const migrate = async () => {
-  const folder = Resource.App.stage !== "production" ? "packages/core/src/drizzle/migrations" : "drizzle/migrations";
-  return mig(db, { migrationsFolder: join(process.cwd(), folder) });
+  // const folder = Resource.App.stage !== "production" ? "drizzle/migrations" : "drizzle/migrations";
+  // console.log("Migrating... ", folder, process.cwd());
+  return mig(db, { migrationsFolder: join(process.cwd(), "drizzle/migrations") });
 };
 
 export const luciaAdapter = new DrizzlePostgreSQLAdapter(db, schema.sessions, schema.users);

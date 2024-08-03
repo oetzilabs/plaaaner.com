@@ -1,3 +1,4 @@
+import { prefixed_cuid2 } from "@oetzilabs-plaaaner-com/core/src/custom_cuid2";
 import { PlanTimesCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 import { ConcertLocationSchema, Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
@@ -71,7 +72,7 @@ export const getPlan = cache(async (id: string) => {
   const locale = getLocaleSettings(event);
   dayjs.updateLocale(locale.language, {});
 
-  const schema = z.string().uuid().safeParse(id);
+  const schema = prefixed_cuid2.safeParse(id);
   if (schema.success === false) {
     throw redirect(`/404`, {
       status: 404,
@@ -120,18 +121,9 @@ export const getRecommendedPlans = cache(async () => {
 export const getNearbyPlans = cache(async () => {
   "use server";
   const [ctx, event] = await getContext();
-  if (!ctx) {
-    throw redirect("/auth/login");
-  }
-
-  if (!ctx.session) {
-    console.error("Unauthorized");
-    throw redirect("/auth/login");
-  }
-
-  if (!ctx.user) {
-    throw redirect("/auth/login");
-  }
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
+  if (!ctx.user) throw redirect("/auth/login");
 
   // @ts-ignore
   const ip = event.node.req.client._peername.address;
@@ -167,7 +159,7 @@ export const getNearbyPlans = cache(async () => {
           lat: z.number(),
           lng: z.number(),
         })
-        .parse(data)
+        .parse(data),
     );
 
   console.log({ location });
@@ -259,7 +251,7 @@ export const getUpcomingThreePlans = cache(async () => {
     organization_id: ctx.session.organization_id,
   });
   const filtered = plans.filter(
-    (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day")
+    (p) => dayjs(p.starts_at).isAfter(fromDate) || dayjs(p.starts_at).isSame(fromDate, "day"),
   );
   const sorted = filtered.sort((a, b) => {
     return dayjs(a.starts_at).isBefore(dayjs(b.starts_at)) ? -1 : 1;
@@ -334,7 +326,7 @@ export const savePlanLocation = action(
     }
 
     return updatedPlan;
-  }
+  },
 );
 
 export const deletePlan = action(async (plan_id) => {
@@ -408,7 +400,7 @@ export const savePlanGeneral = action(
     }
 
     return updatedPlan;
-  }
+  },
 );
 
 export const savePlanTimeslots = action(
@@ -479,8 +471,8 @@ export const savePlanTimeslots = action(
             starts_at: ts.start,
             ends_at: ts.end,
             plan_id: savedPlan.id,
-          }) as TS
-      )
+          }) as TS,
+      ),
     );
 
     const timeSlots = tss.flat();
@@ -493,7 +485,7 @@ export const savePlanTimeslots = action(
     }
 
     return updatedPlan;
-  }
+  },
 );
 
 export const createPlanCreationForm = action(async (data: z.infer<typeof CreatePlanFormSchema>) => {
@@ -523,7 +515,7 @@ export const createPlanCreationForm = action(async (data: z.infer<typeof CreateP
       status: "draft",
     },
     ctx.user.id,
-    ctx.session.workspace_id
+    ctx.session.workspace_id,
   );
 
   throw redirect(`/dashboard/p/${plan.id}`);

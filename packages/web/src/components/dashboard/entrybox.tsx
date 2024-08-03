@@ -1,9 +1,10 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsIndicator, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createPlanCreationForm } from "@/lib/api/plans";
 import { createNewPost } from "@/lib/api/posts";
 import { useAction, useSubmission } from "@solidjs/router";
 import { CalendarFold, Loader2, Newspaper, Pencil, Plus } from "lucide-solid";
 import { createSignal, Match, Switch } from "solid-js";
+import { Transition } from "solid-transition-group";
 import { Button } from "../ui/button";
 import { TextArea } from "../ui/textarea";
 import { TextField, TextFieldRoot } from "../ui/textfield";
@@ -34,16 +35,18 @@ export const EntryBox = () => {
   return (
     <div class="flex w-full flex-col bg-background pb-4">
       <div class="flex w-full flex-col gap-8 pt-4">
-        <div class="flex flex-col w-full border border-neutral-200 dark:border-neutral-800 rounded-lg gap-4 bg-background shadow-md">
+        <div class="flex flex-col w-full border border-neutral-200 dark:border-neutral-800 rounded-lg gap-4 bg-background">
           <Tabs defaultValue="plan" class="w-full">
             <TabsList>
               <TabsTrigger value="plan" class="py-2 flex flex-row items-center gap-2">
                 <CalendarFold class="size-4" />
                 Plan
+                <TabsIndicator />
               </TabsTrigger>
               <TabsTrigger value="post" class="py-2 flex flex-row items-center gap-2">
                 <Newspaper class="size-4" />
                 Post
+                <TabsIndicator />
               </TabsTrigger>
             </TabsList>
             <TabsContent value="plan" class="pt-0 gap-4 flex flex-col">
@@ -53,8 +56,31 @@ export const EntryBox = () => {
                     autofocus
                     placeholder="Plan Name"
                     class="border-none shadow-none bg-transparent !ring-0 !outline-none text-xl rounded-md font-semibold px-0"
-                    onKeyDown={(e: KeyboardEvent) => {
+                    onKeyDown={async (e: KeyboardEvent) => {
                       if (e.key === "Escape") {
+                        resetForm();
+                      }
+                      // detect ctrl+enter
+                      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                        if (title().length === 0 || description().length === 0) return;
+                        e.preventDefault();
+                        await createAndRedirectToPlanCreation({
+                          name: title(),
+                          description: description(),
+                          days: [],
+                          time_slots: {},
+                          tickets: [],
+                          capacity: {
+                            value: "none",
+                            capacity_type: "none",
+                          },
+                          location: {
+                            location_type: "other",
+                            details: "",
+                          },
+                          plan_type_id: null,
+                          referenced_from: undefined,
+                        });
                         resetForm();
                       }
                     }}
@@ -65,8 +91,31 @@ export const EntryBox = () => {
                     placeholder="Describe your new plan..."
                     class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none bg-muted"
                     autoResize
-                    onKeyDown={(e: KeyboardEvent) => {
+                    onKeyDown={async (e: KeyboardEvent) => {
                       if (e.key === "Escape") {
+                        resetForm();
+                      }
+                      // detect ctrl+enter
+                      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                        if (title().length === 0 || description().length === 0) return;
+                        e.preventDefault();
+                        await createAndRedirectToPlanCreation({
+                          name: title(),
+                          description: description(),
+                          days: [],
+                          time_slots: {},
+                          tickets: [],
+                          capacity: {
+                            value: "none",
+                            capacity_type: "none",
+                          },
+                          location: {
+                            location_type: "other",
+                            details: "",
+                          },
+                          plan_type_id: null,
+                          referenced_from: undefined,
+                        });
                         resetForm();
                       }
                     }}
@@ -138,9 +187,15 @@ export const EntryBox = () => {
                     placeholder="What's up?"
                     class="border-none shadow-none !ring-0 !outline-none rounded-md px-2 resize-none min-h-[6.5rem] bg-muted"
                     autoResize
-                    onKeyDown={(e: KeyboardEvent) => {
+                    onKeyDown={async (e: KeyboardEvent) => {
                       if (e.key === "Escape") {
                         resetForm();
+                      }
+                      // detect ctrl+enter
+                      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        await createPost(postContent());
+                        setPostContent("");
                       }
                     }}
                   />
@@ -156,7 +211,7 @@ export const EntryBox = () => {
                     disabled={isPostEmpty() || isCreatingPost.pending}
                     variant="default"
                     size="sm"
-                    class="w-max flex items-center justify-center gap-2"
+                    class="w-max flex items-center justify-center gap-1"
                     type="button"
                     onClick={async () => {
                       const content = postContent();
@@ -170,12 +225,12 @@ export const EntryBox = () => {
                       // }
                     }}
                   >
+                    <span class="">Create Post</span>
                     <Switch fallback={<Plus class="size-4" />}>
                       <Match when={isCreatingPost.pending}>
                         <Loader2 class="size-4 animate-spin" />
                       </Match>
                     </Switch>
-                    <span class="">Create Post</span>
                   </Button>
                 </div>
               </div>

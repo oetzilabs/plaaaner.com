@@ -130,7 +130,7 @@ export const PlanCommentsSection = (props: {
                           <Show when={comment.user.id === props.session?.user?.id}>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-100"
+                              class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-50"
                               disabled={isDeletingComment.pending}
                               closeOnSelect={false}
                               onSelect={async () => {
@@ -194,6 +194,7 @@ const PlanComment = (props: { planId: string; onPost: () => void }) => {
         <TextArea
           placeholder="Add a comment..."
           autoResize={isFocused() || comment().length > 0}
+          disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
           class={cn("shadow-none !ring-0 !outline-none rounded-md px-0 resize-none  p-2 min-h-10 transition-height", {
             "bg-muted": isFocused() || comment().length > 0,
           })}
@@ -207,47 +208,54 @@ const PlanComment = (props: { planId: string; onPost: () => void }) => {
             if (comment().length > 0) return;
             setIsFocused(false);
           }}
-          onKeyDown={(e: KeyboardEvent) => {
+          onKeyDown={async (e: KeyboardEvent) => {
             if (e.key === "Escape") {
               setComment("");
+            }
+            // detect ctrl+enter
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              await postComment();
+              setComment("");
+              props.onPost();
             }
           }}
         ></TextArea>
       </TextFieldRoot>
-      <Transition name="slide-fade-down">
-        <Show when={isFocused()}>
-          <div class="flex flex-row w-full items-center justify-between gap-4">
-            <div class="w-full"></div>
-            <div class="w-max flex flex-row gap-1">
-              <Button
-                size="sm"
-                aria-disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
-                disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
-                onClick={async () => {
-                  await postComment();
-                  setComment("");
-                  props.onPost();
-                }}
-                class="flex flex-row gap-2"
-              >
-                <Switch
-                  fallback={
-                    <div class="flex flex-row gap-2 items-center justify-center">
-                      <MessageSquareDiff class="size-4" />
-                      <span>Comment</span>
-                    </div>
-                  }
-                >
-                  <Match when={isCommenting.pending && isCommenting.input[0].planId === props.planId}>
-                    <Loader2 class="size-4 animate-spin" />
-                    <span>Commenting</span>
-                  </Match>
-                </Switch>
-              </Button>
-            </div>
-          </div>
-        </Show>
-      </Transition>
+      <div class="flex flex-row w-full items-center justify-between gap-4">
+        <div class="w-full"></div>
+        <div class="w-max flex flex-row gap-1">
+          <Button
+            size="sm"
+            aria-disabled={isCommenting.pending && isCommenting.input[0].planId === props.planId}
+            disabled={
+              !isFocused() ||
+              !comment().length ||
+              (isCommenting.pending && isCommenting.input[0].planId === props.planId)
+            }
+            onClick={async () => {
+              await postComment();
+              setComment("");
+              props.onPost();
+            }}
+            class="flex flex-row gap-2"
+          >
+            <Switch
+              fallback={
+                <div class="flex flex-row gap-2 items-center justify-center">
+                  <MessageSquareDiff class="size-4" />
+                  <span>Comment</span>
+                </div>
+              }
+            >
+              <Match when={isCommenting.pending && isCommenting.input[0].planId === props.planId}>
+                <Loader2 class="size-4 animate-spin" />
+                <span>Commenting</span>
+              </Match>
+            </Switch>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
+import { primaryKey, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { plan_comments } from "./plan_comments";
 import { plans } from "./plans";
 import { users } from "./users";
@@ -8,13 +8,13 @@ import { schema } from "./utils";
 export const plan_comments_mentions = schema.table(
   "plan_comments_mentions",
   {
-    planId: uuid("plan_id")
+    planId: varchar("plan_id")
       .references(() => plans.id, { onDelete: "cascade" })
       .notNull(),
-    commentId: uuid("comment_id")
+    commentId: varchar("comment_id")
       .references(() => plan_comments.id, { onDelete: "cascade" })
       .notNull(),
-    userId: uuid("user_id")
+    userId: varchar("user_id")
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
     createdAt: timestamp("created_at", {
@@ -36,7 +36,7 @@ export const plan_comments_mentions = schema.table(
     return {
       pk: primaryKey({ columns: [table.userId, table.planId, table.commentId] }),
     };
-  }
+  },
 );
 
 export const plan_comments_mentions_relation = relations(plan_comments_mentions, ({ many, one }) => ({

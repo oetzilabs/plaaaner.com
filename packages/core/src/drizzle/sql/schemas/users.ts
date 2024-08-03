@@ -1,24 +1,28 @@
 import { relations } from "drizzle-orm";
-import { text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { Entity } from "./entity";
-import { users_workspaces } from "./users_workspaces";
-import { schema } from "./utils";
+import { text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { users_organizations } from "./user_organizations";
-import { organizations_joins } from "./organizations_joins";
+import { prefixed_cuid2 } from "../../../custom_cuid2";
+import { commonTable, Entity } from "./entity";
 import { plan_comment_user_mention_notifications } from "./notifications/plan/comment_user_mention";
+import { organizations_joins } from "./organizations_joins";
 import { plan_comments } from "./plan_comments";
+import { users_organizations } from "./user_organizations";
+import { users_workspaces } from "./users_workspaces";
+import { schema } from "./utils";
 
-export const users = schema.table("users", {
-  ...Entity.defaults,
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  emailVerifiedAt: timestamp("email_verified_at", {
-    withTimezone: true,
-    mode: "date",
-  }),
-});
+export const users = commonTable(
+  "users",
+  {
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    emailVerifiedAt: timestamp("email_verified_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+  },
+  "user",
+);
 
 export const sessions = schema.table("session", {
   id: text("id").primaryKey(),
@@ -32,7 +36,7 @@ export const sessions = schema.table("session", {
     withTimezone: true,
     mode: "date",
   }),
-  userId: uuid("user_id")
+  userId: varchar("user_id")
     .notNull()
     .references(() => users.id, {
       onDelete: "cascade",
@@ -43,8 +47,8 @@ export const sessions = schema.table("session", {
     mode: "date",
   }).notNull(),
   access_token: text("access_token"),
-  workspace_id: uuid("workspace_id"),
-  organization_id: uuid("organization_id"),
+  workspace_id: varchar("workspace_id"),
+  organization_id: varchar("organization_id"),
 });
 
 export const userRelation = relations(users, ({ many }) => ({
@@ -61,7 +65,7 @@ export type UserInsert = typeof users.$inferInsert;
 export const UserUpdateSchema = createInsertSchema(users)
   .partial()
   .omit({ createdAt: true, updatedAt: true })
-  .extend({ id: z.string().uuid() });
+  .extend({ id: prefixed_cuid2 });
 
 export const sessionRelation = relations(sessions, ({ one }) => ({
   user: one(users, {
@@ -75,4 +79,4 @@ export type SessionInsert = typeof sessions.$inferInsert;
 export const SessionUpdateSchema = createInsertSchema(sessions)
   .partial()
   .omit({ createdAt: true, updatedAt: true })
-  .extend({ id: z.string().uuid() });
+  .extend({ id: prefixed_cuid2 });

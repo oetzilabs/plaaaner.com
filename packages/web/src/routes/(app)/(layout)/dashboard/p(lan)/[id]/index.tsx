@@ -23,7 +23,7 @@ export default function PlanPage() {
           {(p) => (
             <div class="flex flex-col items-start h-full w-full gap-4">
               <div class="flex flex-row items-center justify-start gap-2">
-                <div class="flex flex-col gap-1 font-bold text-xl">{p.name}</div>
+                <div class="flex flex-col gap-1 font-bold text-2xl">{p.name}</div>
                 <div class="">
                   <Badge variant="outline">{p.status}</Badge>
                 </div>

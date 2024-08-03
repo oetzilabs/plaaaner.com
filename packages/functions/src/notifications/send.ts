@@ -1,8 +1,9 @@
-import { ApiHandler, usePathParam } from "sst/node/api";
-import { error, getUser, json } from "../utils";
+import { prefixed_cuid2 } from "@oetzilabs-plaaaner-com/core/src/custom_cuid2";
 import { Notifications, Notify } from "@oetzilabs-plaaaner-com/core/src/entities/notifications";
-import { z } from "zod";
 import { WebsocketCore } from "@oetzilabs-plaaaner-com/core/src/entities/websocket";
+import { ApiHandler, usePathParam } from "sst/node/api";
+import { z } from "zod";
+import { error, getUser, json } from "../utils";
 
 export const main = ApiHandler(async (event) => {
   const user = await getUser();
@@ -36,7 +37,7 @@ export const dismiss = ApiHandler(async (event) => {
     return error("No payload");
   }
 
-  const valid = z.string().uuid().safeParse(nid);
+  const valid = prefixed_cuid2.safeParse(nid);
   if (!valid.success) {
     return error("Invalid payload");
   }

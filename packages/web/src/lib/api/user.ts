@@ -1,9 +1,9 @@
+import { prefixed_cuid2 } from "@oetzilabs-plaaaner-com/core/src/custom_cuid2";
 import { Organization } from "@oetzilabs-plaaaner-com/core/src/entities/organizations";
 import { User } from "@oetzilabs-plaaaner-com/core/src/entities/users";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
 import { action, redirect } from "@solidjs/router";
-import { appendHeader, getCookie, getEvent } from "vinxi/http";
-import { z } from "zod";
+import { appendHeader } from "vinxi/http";
 import { lucia } from "../auth";
 import { getContext } from "../auth/context";
 
@@ -48,12 +48,12 @@ export const setDashboard = action(async (organization_id: string, workspace_id:
   if (!ctx) throw redirect("/auth/login");
   if (!ctx.session) throw redirect("/auth/login");
   if (!ctx.user) throw redirect("/auth/login");
-  const validWorkspace = z.string().uuid().safeParse(workspace_id);
+  const validWorkspace = prefixed_cuid2.safeParse(workspace_id);
   if (!validWorkspace.success) {
     throw new Error("Invalid data");
   }
   const workspaceId = validWorkspace.data;
-  const validOrganization = z.string().uuid().safeParse(organization_id);
+  const validOrganization = prefixed_cuid2.safeParse(organization_id);
   if (!validOrganization.success) {
     throw new Error("Invalid data");
   }
@@ -93,7 +93,7 @@ export const setCurrentOrganization = action(async (id: string) => {
   if (!ctx.session) throw redirect("/auth/login");
   if (!ctx.user) throw redirect("/auth/login");
 
-  const valid = z.string().uuid().safeParse(id);
+  const valid = prefixed_cuid2.safeParse(id);
   if (!valid.success) {
     return new Error("Invalid data");
   }

@@ -1,5 +1,6 @@
 import { Context } from "sst/context/context2.js";
 import { z } from "zod";
+import { prefixed_cuid2 } from "./custom_cuid2";
 
 export const PublicActor = z.object({
   type: z.literal("public"),
@@ -10,7 +11,7 @@ export type PublicActor = z.infer<typeof PublicActor>;
 export const AccountActor = z.object({
   type: z.literal("account"),
   properties: z.object({
-    accountID: z.string().cuid2(),
+    accountID: prefixed_cuid2,
     email: z.string().nonempty(),
   }),
 });
@@ -19,8 +20,8 @@ export type AccountActor = z.infer<typeof AccountActor>;
 export const UserActor = z.object({
   type: z.literal("user"),
   properties: z.object({
-    userID: z.string().uuid(),
-    workspaceID: z.string().uuid(),
+    userID: prefixed_cuid2,
+    workspaceID: prefixed_cuid2,
   }),
 });
 export type UserActor = z.infer<typeof UserActor>;
@@ -28,7 +29,7 @@ export type UserActor = z.infer<typeof UserActor>;
 export const SystemActor = z.object({
   type: z.literal("system"),
   properties: z.object({
-    workspaceID: z.string().uuid(),
+    workspaceID: prefixed_cuid2,
   }),
 });
 export type SystemActor = z.infer<typeof SystemActor>;

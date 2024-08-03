@@ -120,14 +120,8 @@ const TimeSlotChange = (props: {
 
 export default function PlanCreateGeneralPage() {
   const params = useParams();
-  const v = params.id;
-  const isUUID = z.string().uuid().safeParse(v);
 
-  if (!v || !isUUID.success) {
-    return redirect("/404", { status: 404 });
-  }
-
-  const plan = createAsync(() => getPlan(isUUID.data), { deferStream: true });
+  const plan = createAsync(() => getPlan(params.id), { deferStream: true });
   const savePlanTimeAction = useAction(savePlanTimeslots);
   const isSaving = useSubmission(savePlanTimeslots);
 

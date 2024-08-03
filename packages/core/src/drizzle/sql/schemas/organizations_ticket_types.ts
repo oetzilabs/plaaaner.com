@@ -1,21 +1,25 @@
 import { relations } from "drizzle-orm";
-import { uuid } from "drizzle-orm/pg-core";
+import { uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { Entity } from "./entity";
+import { prefixed_cuid2 } from "../../../custom_cuid2";
+import { commonTable, Entity } from "./entity";
 import { organizations } from "./organization";
 import { ticket_types } from "./ticket_types";
 import { schema } from "./utils";
 
-export const organizations_ticket_types = schema.table("organizations_ticket_types", {
-  ...Entity.defaults,
-  organization_id: uuid("organization_id")
-    .references(() => organizations.id, { onDelete: "cascade" })
-    .notNull(),
-  ticket_type_id: uuid("ticket_type_id")
-    .references(() => ticket_types.id, { onDelete: "cascade" })
-    .notNull(),
-});
+export const organizations_ticket_types = commonTable(
+  "organizations_ticket_types",
+  {
+    organization_id: varchar("organization_id")
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .notNull(),
+    ticket_type_id: varchar("ticket_type_id")
+      .references(() => ticket_types.id, { onDelete: "cascade" })
+      .notNull(),
+  },
+  "org_ticket_type",
+);
 
 export const organizations_ticket_types_relation = relations(organizations_ticket_types, ({ many, one }) => ({
   organization: one(organizations, {
@@ -35,5 +39,5 @@ export const OrganizationTicketTypeCreateSchema = createInsertSchema(organizatio
 export const OrganizationTicketTypeUpdateSchema = OrganizationTicketTypeCreateSchema.partial()
   .omit({ createdAt: true, updatedAt: true })
   .extend({
-    id: z.string().uuid(),
+    id: prefixed_cuid2,
   });

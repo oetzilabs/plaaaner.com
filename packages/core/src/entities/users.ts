@@ -1,8 +1,9 @@
 import { eq, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
-import { UserUpdateSchema, users } from "../drizzle/sql/schema";
+import { users, UserUpdateSchema } from "../drizzle/sql/schema";
 
 export * as User from "./users";
 
@@ -54,7 +55,7 @@ export const update = z
       createInsertSchema(users)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
+        .merge(z.object({ id: prefixed_cuid2 })),
     ]),
   )
   .implement(async (input) => {
@@ -66,12 +67,12 @@ export const update = z
     return u;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
 export const updateName = z
-  .function(z.tuple([z.object({ id: z.string().uuid(), name: z.string() })]))
+  .function(z.tuple([z.object({ id: prefixed_cuid2, name: z.string() })]))
   .implement(async (input) => {
     return update({ id: input.id, name: input.name });
   });

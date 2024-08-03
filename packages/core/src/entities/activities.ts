@@ -1,6 +1,7 @@
-import { z } from "zod";
-import { Plans } from "./plans";
 import dayjs from "dayjs";
+import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
+import { Plans } from "./plans";
 import { Posts } from "./posts";
 
 export * as Activities from "./activities";
@@ -19,11 +20,11 @@ export const getByOrganizationWorkspace = z
   .function(
     z.tuple([
       z.object({
-        user_id: z.string().uuid(),
-        workspace_id: z.string().uuid(),
-        organization_id: z.string().uuid(),
+        user_id: prefixed_cuid2,
+        workspace_id: prefixed_cuid2,
+        organization_id: prefixed_cuid2,
       }),
-    ])
+    ]),
   )
   .implement(async (data) => {
     const activities: Activity[] = [];

@@ -1,11 +1,11 @@
+import { prefixed_cuid2 } from "@oetzilabs-plaaaner-com/core/src/custom_cuid2";
 import { WorkspaceCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schemas/workspaces";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { action, cache, redirect, revalidate } from "@solidjs/router";
+import { action, cache, redirect } from "@solidjs/router";
 import { appendHeader, getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { lucia } from "../auth";
 import { getContext } from "../auth/context";
-import { getAuthenticatedSession } from "../auth/util";
 
 const WorkspaceCreateSchemaWithConnect = WorkspaceCreateSchema.extend({
   connect: z.boolean().optional().default(true),
@@ -170,7 +170,7 @@ export const deleteWorkspace = action(async (id: string) => {
   if (!user) {
     throw redirect("/auth/login");
   }
-  const valid = z.string().uuid().safeParse(id);
+  const valid = prefixed_cuid2.safeParse(id);
   if (!valid.success) {
     throw new Error("Invalid data");
   }
@@ -199,7 +199,7 @@ export const setWorkspaceOwner = action(async (id: string) => {
   if (!ctx) throw redirect("/auth/login");
   if (!ctx.session) throw redirect("/auth/login");
   if (!ctx.user) throw redirect("/auth/login");
-  const valid = z.string().uuid().safeParse(id);
+  const valid = prefixed_cuid2.safeParse(id);
   if (!valid.success) {
     return new Error("Invalid data");
   }
@@ -217,7 +217,7 @@ export const setCurrentWorkspace = action(async (data: FormData) => {
   if (!ctx.user) throw redirect("/auth/login");
   // @ts-expect-error
   const data_ = Object.fromEntries(data.entries());
-  const valid = z.string().uuid().safeParse(data_.workspace_id);
+  const valid = prefixed_cuid2.safeParse(data_.workspace_id);
   if (!valid.success) {
     return new Error("Invalid data");
   }

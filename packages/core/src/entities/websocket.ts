@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import { eq, gte, lte } from "drizzle-orm";
 import { Resource } from "sst";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql/index";
 import { websockets } from "../drizzle/sql/schema";
 import { Activity } from "./activities";
@@ -49,7 +50,7 @@ export const connect = z.function(z.tuple([z.string()])).implement(async (connec
   return x;
 });
 
-export const getConnection = z.function(z.tuple([z.string().uuid()])).implement(async (userId) => {
+export const getConnection = z.function(z.tuple([prefixed_cuid2])).implement(async (userId) => {
   const [x] = await db
     .select({ connectionId: websockets.connectionId })
     .from(websockets)
@@ -57,7 +58,7 @@ export const getConnection = z.function(z.tuple([z.string().uuid()])).implement(
   return x;
 });
 
-export const update = z.function(z.tuple([z.string(), z.string().uuid()])).implement(async (connectionId, userId) => {
+export const update = z.function(z.tuple([z.string(), prefixed_cuid2])).implement(async (connectionId, userId) => {
   const [x] = await db
     .update(websockets)
     .set({ updatedAt: new Date(), userId })
@@ -102,7 +103,7 @@ export const sendMessageToConnection = async (message: any, connectionId: string
 };
 
 export const sendMessageToUsersInWorkspace = z
-  .function(z.tuple([z.string(), z.string().uuid(), z.any()]))
+  .function(z.tuple([z.string(), prefixed_cuid2, z.any()]))
   .implement(async (workspaceId, userId, message) => {
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) {
@@ -115,6 +116,9 @@ export const sendMessageToUsersInWorkspace = z
 
     for (let i = 0; i < users.length; i++) {
       const connection = await getConnection(users[i].id);
+      if (!connection) {
+        continue;
+      }
       await sendMessageToConnection(message, connection.connectionId);
     }
     return users;

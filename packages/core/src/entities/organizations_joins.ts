@@ -1,6 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { prefixed_cuid2 } from "../custom_cuid2";
 import { db } from "../drizzle/sql";
 import { OrganizationJoinCreateSchema, OrganizationJoinUpdateSchema, organizations_joins } from "../drizzle/sql/schema";
 import { User } from "./users";
@@ -8,7 +9,7 @@ import { User } from "./users";
 export * as OrganizationJoin from "./organizations_joins";
 
 export const create = z
-  .function(z.tuple([OrganizationJoinCreateSchema, z.string().uuid()]))
+  .function(z.tuple([OrganizationJoinCreateSchema, prefixed_cuid2]))
   .implement(async (userInput, userId) => {
     const [x] = await db
       .insert(organizations_joins)
@@ -37,7 +38,7 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
   });
 });
 
-export const findManyByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (input) => {
+export const findManyByUserId = z.function(z.tuple([prefixed_cuid2])).implement(async (input) => {
   const userOs = await db.query.users.findFirst({
     where: (user, operations) => operations.eq(user.id, input),
     with: {
@@ -78,7 +79,7 @@ export const update = z
       createInsertSchema(organizations_joins)
         .partial()
         .omit({ createdAt: true, updatedAt: true })
-        .merge(z.object({ id: z.string().uuid() })),
+        .merge(z.object({ id: prefixed_cuid2 })),
     ]),
   )
   .implement(async (input) => {
@@ -90,11 +91,11 @@ export const update = z
     return updatedOrganizationJoin;
   });
 
-export const markAsDeleted = z.function(z.tuple([z.object({ id: z.string().uuid() })])).implement(async (input) => {
+export const markAsDeleted = z.function(z.tuple([z.object({ id: prefixed_cuid2 })])).implement(async (input) => {
   return update({ id: input.id, deletedAt: new Date() });
 });
 
-export const findByUserId = z.function(z.tuple([z.string().uuid()])).implement(async (user_id) => {
+export const findByUserId = z.function(z.tuple([prefixed_cuid2])).implement(async (user_id) => {
   const ws = await db.query.organizations_joins.findFirst({
     where: (organizations, operations) =>
       and(operations.eq(organizations.user_id, user_id), isNull(organizations.deletedAt)),

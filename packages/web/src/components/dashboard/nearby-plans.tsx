@@ -4,15 +4,14 @@ import { cn } from "@/lib/utils";
 import { A, createAsync } from "@solidjs/router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { Lightbulb, Notebook } from "lucide-solid";
-import { For, JSXElement, Show } from "solid-js";
+import { Lightbulb, LucideProps, Notebook } from "lucide-solid";
+import { For, JSXElement, Match, Show, Switch } from "solid-js";
 import { buttonVariants } from "../ui/button";
 
 dayjs.extend(relativeTime);
 
 const PlanTypeIcons: Record<string, JSXElement> = {
   event: <Notebook class="size-4" />,
-  unknown: <Notebook class="size-4" />,
   custom: <Lightbulb class="size-4" />,
 };
 
@@ -22,8 +21,8 @@ export const NearbyPlansList = (props: { session: UserSession }) => {
   return (
     <div class="flex flex-col w-full">
       <div class="flex flex-col w-full gap-2">
-        <A href="/nearby-plans" class="flex flex-col w-full font-medium text-sm">
-          Nearby Events
+        <A href="/nearby-plans" class="flex flex-col w-full font-medium text-sm hover:underline underline-offset-2">
+          Nearby Plans
         </A>
         <div class="flex flex-col w-full gap-2">
           <Show when={nearbyPlans()}>
@@ -52,15 +51,9 @@ export const NearbyPlansList = (props: { session: UserSession }) => {
                         {plan.name}
                       </div>
                       <div class="flex flex-row items-center justify-end w-max text-muted-foreground">
-                        <Show
-                          when={plan.type in PlanTypeIcons && PlanTypeIcons[plan.type]}
-                          fallback={PlanTypeIcons.unknown}
-                        >
-                          {(icon) => {
-                            const Icon = icon();
-                            return Icon;
-                          }}
-                        </Show>
+                        <Switch fallback={<Notebook class="size-4" />}>
+                          <Match when={plan.type in PlanTypeIcons}>{PlanTypeIcons[plan.type]}</Match>
+                        </Switch>
                       </div>
                     </div>
                     <div class="flex flex-row w-full text-xs font-normal text-muted-foreground">{plan.description}</div>
