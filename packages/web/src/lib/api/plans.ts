@@ -87,8 +87,8 @@ export const getPlan = cache(async (id: string) => {
 
   // check if the plan is in the user's workspace
   if (!plan.workspaces.some((ws) => ws.workspace_id === ctx.session.workspace_id)) {
-    throw redirect(`/302?error=${encodeURIComponent("You do not have permission to view this plan")}`, {
-      status: 302,
+    throw redirect(`/403?error=${encodeURIComponent("You do not have permission to view this plan")}`, {
+      status: 403,
       statusText: "You do not have permission to view this plan",
     });
   }
@@ -258,35 +258,6 @@ export const getUpcomingThreePlans = cache(async () => {
   });
   return sorted.slice(0, 3);
 }, "upcomingPlans");
-
-export const getPlanLocation = cache(async (id: string) => {
-  "use server";
-  const [ctx, event] = await getContext();
-  if (!ctx) throw redirect("/auth/login");
-  if (!ctx.session) throw redirect("/auth/login");
-  if (!ctx.user) throw redirect("/auth/login");
-
-  const locale = getLocaleSettings(event);
-  dayjs.updateLocale(locale.language, {});
-
-  const plan = await Plans.findById(id);
-
-  if (!plan) {
-    throw new Error("This plan does not exist");
-  }
-
-  // check if the plan is in the user's workspace
-  if (!plan.workspaces.some((ws) => ws.workspace_id === ctx.session.workspace_id)) {
-    throw new Error("You do not have permission to view this plan");
-  }
-  // get the location of the plan
-  const location = await Plans.getLocation(plan.id);
-  if (!location) {
-    throw new Error("This plan does not have a location");
-  }
-
-  return location;
-}, "planLocation");
 
 export const savePlanLocation = action(
   async (data: { plan_id: string; plan: { location: z.infer<typeof ConcertLocationSchema> } }) => {

@@ -24,8 +24,8 @@ importers:
         specifier: 0.6.5
         version: 0.6.5(@ianvs/prettier-plugin-sort-imports@4.3.1(prettier@3.3.3))(prettier@3.3.3)
       sst:
-        specifier: 0.1.76
-        version: 0.1.76(aws-crt@1.21.2)(hono@4.5.3)
+        specifier: 0.1.78
+        version: 0.1.78(aws-crt@1.21.2)(hono@4.5.3)
       typescript:
         specifier: ^5.5.3
         version: 5.5.3
@@ -6424,6 +6424,7 @@ packages:
 
   shikiji-core@0.9.19:
     resolution: {integrity: sha512-AFJu/vcNT21t0e6YrfadZ+9q86gvPum6iywRyt1OtIPjPFe25RQnYJyxHQPMLKCCWA992TPxmEmbNcOZCAJclw==}
+    deprecated: Shikiji is merged back to Shiki v1.0, please migrate over to get the latest updates
 
   shikiji@0.6.13:
     resolution: {integrity: sha512-4T7X39csvhT0p7GDnq9vysWddf2b6BeioiN3Ymhnt3xcy9tXmDcnsEFVxX18Z4YcQgEE/w48dLJ4pPPUcG9KkA==}
@@ -6540,33 +6541,33 @@ packages:
   split2@3.2.2:
     resolution: {integrity: sha512-9NThjpgZnifTkJpzTZ7Eue85S49QwpNhZTq6GRJwObb6jnLFNGB7Qm73V5HewTROPyxD0C29xqmaI68bQtV+hg==}
 
-  sst-darwin-arm64@0.1.76:
-    resolution: {integrity: sha512-9Flk1qxzxm5MCYAzTYAb0kK0Kmndt6XFPfMH6u04Vz9DUVLUrkAGGM8khSLD+2D58z6/UGZsPghzLcuqGB11vg==}
+  sst-darwin-arm64@0.1.78:
+    resolution: {integrity: sha512-eFp5495uttAnKA7rm1PujoQQExplRupNo9afAUH+Y83MQET4QLMsm3YPWitWgltbjxzWL/cV1/XeKCZizb78jw==}
     cpu: [arm64]
     os: [darwin]
 
-  sst-darwin-x64@0.1.76:
-    resolution: {integrity: sha512-vrX97KDmp82GYqd6SQSvIz7ImuPXzHThyOyeHypvOpTbVhr045L+dyi4Nda5Ddk1OTTVNRKlIzJqN4JfNIGetg==}
+  sst-darwin-x64@0.1.78:
+    resolution: {integrity: sha512-Tl6Pm8sCetc2s4FmOwL2PFjYBT0Hju2XFM2spBaIkhRo73RhriM4Ws/LV6SYKlD1+esFTIhJ52YKkhP9JaRkuA==}
     cpu: [x64]
     os: [darwin]
 
-  sst-linux-arm64@0.1.76:
-    resolution: {integrity: sha512-viJDh2Mizqy+/sx0IJlrL3woz4dZv8dfz+xz1p2WVJyDjIZeoDpWRI6nK0yiw5CZYAOo1mAjLY/HqfTOd7hIRg==}
+  sst-linux-arm64@0.1.78:
+    resolution: {integrity: sha512-Vp9uTKG6aCK/mGKE7gkbPoR5M2mmsbizv+bDpCCccq4/Jpa2f8SUGJTgWP0vuNPVFWp+6qA+OkKnNC15UUa/CQ==}
     cpu: [arm64]
     os: [linux]
 
-  sst-linux-x64@0.1.76:
-    resolution: {integrity: sha512-8y4bmCOXQLd/xxaiXG4Y4RtR7eIOsmXNPG4uFwJQkB6iBysRXDmZKys0hnjPsP1YPtR93quz2g5MHIwFcG67mA==}
+  sst-linux-x64@0.1.78:
+    resolution: {integrity: sha512-K7pwuWYmwLFzcfvsZl6OJmAzld0hoaSofRNqB4q1fNlC7R0Sf17GqC/75hzVv0uYlSM7dUaylWkUA+MyVdBK+A==}
     cpu: [x64]
     os: [linux]
 
-  sst-linux-x86@0.1.76:
-    resolution: {integrity: sha512-yILlz1a0givht77lBe9Zib1vjAEunv7CVo7PTbNZZwenCNTIzPiuMnnjWLS14/rfDtLaw8X1hhT3QZE7gd4Qvg==}
+  sst-linux-x86@0.1.78:
+    resolution: {integrity: sha512-UBbeLsdN/wOSQ5FSluX3shgunsedD9SOX0hCESLoxG4CsUZ1qyW+JNZ9tn49qGbyhzszTbTKkMCwCjALQO81yQ==}
     cpu: [x86]
     os: [linux]
 
-  sst@0.1.76:
-    resolution: {integrity: sha512-i2BpXnJML52RWPaKiHIF8nTPPRq93Rjo8NujxaK7Z4NCYasTDJKZnSswXuXKI/aMpFZmKeDvO1I28uwYhEsX2w==}
+  sst@0.1.78:
+    resolution: {integrity: sha512-jwZpDPLrvqEYWvuX1iZwwgMXg4CD8qNs69vzwh2noOxVQnpHg81fvDolecssHmHu7p7K8lI5Vg5NZmkXzWoZJQ==}
     hasBin: true
     peerDependencies:
       hono: 4.x
@@ -15556,22 +15557,22 @@ snapshots:
       readable-stream: 3.6.2
     optional: true
 
-  sst-darwin-arm64@0.1.76:
+  sst-darwin-arm64@0.1.78:
     optional: true
 
-  sst-darwin-x64@0.1.76:
+  sst-darwin-x64@0.1.78:
     optional: true
 
-  sst-linux-arm64@0.1.76:
+  sst-linux-arm64@0.1.78:
     optional: true
 
-  sst-linux-x64@0.1.76:
+  sst-linux-x64@0.1.78:
     optional: true
 
-  sst-linux-x86@0.1.76:
+  sst-linux-x86@0.1.78:
     optional: true
 
-  sst@0.1.76(aws-crt@1.21.2)(hono@4.5.3):
+  sst@0.1.78(aws-crt@1.21.2)(hono@4.5.3):
     dependencies:
       '@aws-sdk/client-lambda': 3.478.0(aws-crt@1.21.2)
       aws4fetch: 1.0.19
@@ -15579,11 +15580,11 @@ snapshots:
       openid-client: 5.6.4
     optionalDependencies:
       hono: 4.5.3
-      sst-darwin-arm64: 0.1.76
-      sst-darwin-x64: 0.1.76
-      sst-linux-arm64: 0.1.76
-      sst-linux-x64: 0.1.76
-      sst-linux-x86: 0.1.76
+      sst-darwin-arm64: 0.1.78
+      sst-darwin-x64: 0.1.78
+      sst-linux-arm64: 0.1.78
+      sst-linux-x64: 0.1.78
+      sst-linux-x86: 0.1.78
     transitivePeerDependencies:
       - aws-crt
 
