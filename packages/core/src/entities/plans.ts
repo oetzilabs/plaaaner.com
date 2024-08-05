@@ -77,6 +77,7 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
       },
       workspaces: true,
       owner: true,
+      times: true,
     },
   });
 });

@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/command";
 import { getAuthenticatedSession, type UserSession } from "@/lib/auth/util";
 import { useColorMode } from "@kobalte/core";
-import { createAsync, useNavigate } from "@solidjs/router";
+import { createAsync, useLocation, useNavigate } from "@solidjs/router";
 import { Search } from "lucide-solid";
-import { createEffect, createSignal, For, onCleanup } from "solid-js";
+import { createEffect, createSignal, For, onCleanup, Show } from "solid-js";
 import { toast } from "solid-sonner";
 
 type Option = {
@@ -25,6 +25,8 @@ type List = {
 };
 
 export const AppSearch = () => {
+  const location = useLocation();
+  const isHome = () => location.pathname === "/";
   const [openSearch, setOpenSearch] = createSignal(false);
   const session = createAsync(() => getAuthenticatedSession());
   const { setColorMode, toggleColorMode, colorMode } = useColorMode();
@@ -132,40 +134,42 @@ export const AppSearch = () => {
 
   return (
     <div class="flex flex-row items-center">
-      <div
-        class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-2.5 h-8 gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-max"
-        onClick={() => setOpenSearch(true)}
-      >
-        <Search class="w-4 h-4" />
-        <div class="sr-only md:min-w-[300px] md:not-sr-only max-w-full text-sm">Search plans...</div>
-      </div>
-      <CommandDialog open={openSearch()} onOpenChange={setOpenSearch}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <For each={data()}>
-            {(list) => (
-              <CommandGroup heading={list.label}>
-                <For each={list.options}>
-                  {(option) => (
-                    <CommandItem
-                      class="flex flex-row items-center gap-2"
-                      onSelect={() => {
-                        const sess = session();
-                        if (!sess) return;
-                        if (!sess.user) return;
-                        option.onSelect(sess);
-                      }}
-                    >
-                      {option.label}
-                    </CommandItem>
-                  )}
-                </For>
-              </CommandGroup>
-            )}
-          </For>
-        </CommandList>
-      </CommandDialog>
+      <Show when={!isHome()}>
+        <div
+          class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-2.5 h-8 gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-max"
+          onClick={() => setOpenSearch(true)}
+        >
+          <Search class="w-4 h-4" />
+          <div class="sr-only md:min-w-[300px] md:not-sr-only max-w-full text-sm">Search plans...</div>
+        </div>
+        <CommandDialog open={openSearch()} onOpenChange={setOpenSearch}>
+          <CommandInput placeholder="Type a command or search..." />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <For each={data()}>
+              {(list) => (
+                <CommandGroup heading={list.label}>
+                  <For each={list.options}>
+                    {(option) => (
+                      <CommandItem
+                        class="flex flex-row items-center gap-2"
+                        onSelect={() => {
+                          const sess = session();
+                          if (!sess) return;
+                          if (!sess.user) return;
+                          option.onSelect(sess);
+                        }}
+                      >
+                        {option.label}
+                      </CommandItem>
+                    )}
+                  </For>
+                </CommandGroup>
+              )}
+            </For>
+          </CommandList>
+        </CommandDialog>
+      </Show>
     </div>
   );
 };

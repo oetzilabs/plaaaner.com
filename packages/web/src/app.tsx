@@ -115,12 +115,12 @@ export default function App() {
               <MetaProvider>
                 <Title>Plaaaner.com</Title>
                 <Suspense
-                  fallback={
-                    <div class="w-full flex flex-col items-center justify-center h-screen bg-background text-muted-foreground gap-2">
-                      <Loader2 class="size-4 animate-spin" />
-                      Loading Page
-                    </div>
-                  }
+                // fallback={
+                //   <div class="w-full flex flex-col items-center justify-center h-screen bg-background text-muted-foreground gap-2">
+                //     <Loader2 class="size-4 animate-spin" />
+                //     Loading Page
+                //   </div>
+                // }
                 >
                   <ColorModeScript storageType={storageManager.type} initialColorMode="system" />
                   <ColorModeProvider storageManager={storageManager}>

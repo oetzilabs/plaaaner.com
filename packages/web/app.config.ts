@@ -3,11 +3,7 @@ import { defineConfig } from "@solidjs/start/config";
 
 export default defineConfig({
   server: {
-    experimental: {
-      // @ts-ignore
-      islands: true,
-    },
-    preset: "aws-lambda",
+    preset: "aws-lambda-streaming",
     esbuild: {
       options: {
         target: "esnext",

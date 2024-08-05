@@ -23,8 +23,8 @@ export const DatePickerTableBody = DatePickerPrimitive.TableBody;
 export const DatePickerClearTrigger = DatePickerPrimitive.ClearTrigger;
 export const DatePickerYearSelect = DatePickerPrimitive.YearSelect;
 export const DatePickerMonthSelect = DatePickerPrimitive.MonthSelect;
-// export const DatePickerContext = DatePickerPrimitive.Context;
-// export const DatePickerRootProvider = DatePickerPrimitive.RootProvider;
+export const DatePickerContext = DatePickerPrimitive.Context;
+export const DatePickerRootProvider = DatePickerPrimitive.RootProvider;
 
 export const DatePicker = (props: DatePickerRootProps) => {
   return (

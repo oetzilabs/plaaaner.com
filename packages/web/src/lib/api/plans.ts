@@ -374,21 +374,25 @@ export const savePlanGeneral = action(
   },
 );
 
+export type TimeSlot = {
+  id?: string;
+  start: Date;
+  end: Date;
+  title: string;
+  information: string;
+};
+
+export type DaySlots = {
+  date: string;
+  slots: TimeSlot[];
+};
+
 export const savePlanTimeslots = action(
   async (data: {
     plan_id: string;
     plan: {
-      days: [Date, Date];
-      time_slots: Record<
-        string,
-        Record<
-          string,
-          {
-            start: Date;
-            end: Date;
-          }
-        >
-      >;
+      days: Date[];
+      timeSlots: DaySlots[];
     };
   }) => {
     "use server";
@@ -430,23 +434,21 @@ export const savePlanTimeslots = action(
       ends_at,
     });
 
-    const time_slots = data.plan.time_slots;
+    const timeSlots: Parameters<typeof Plans.createTimeSlots>[0] = [];
 
-    const timeSlotsObject = Object.values(time_slots);
-    type TS = z.infer<typeof PlanTimesCreateSchema>;
+    const slots = data.plan.timeSlots.map((ts) => ts.slots).flat();
 
-    const tss = timeSlotsObject.map((tso) =>
-      Object.values(tso).map(
-        (ts) =>
-          ({
-            starts_at: ts.start,
-            ends_at: ts.end,
-            plan_id: savedPlan.id,
-          }) as TS,
-      ),
-    );
-
-    const timeSlots = tss.flat();
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      const ts = {
+        plan_id: savedPlan.id,
+        starts_at: slot.start,
+        ends_at: slot.end,
+        title: slot.title,
+        description: slot.information,
+      };
+      timeSlots.push(ts);
+    }
 
     await Plans.createTimeSlots(timeSlots, user.id);
 

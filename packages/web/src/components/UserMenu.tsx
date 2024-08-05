@@ -1,4 +1,4 @@
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,46 +6,20 @@ import {
   DropdownMenuGroupLabel,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserSession } from "@/lib/auth/util";
-import { cn } from "@/lib/utils";
-import { useColorMode } from "@kobalte/core";
 import { A, useAction, useSubmission } from "@solidjs/router";
-import {
-  Cloud,
-  CreditCard,
-  Github,
-  Group,
-  Keyboard,
-  LifeBuoy,
-  LogIn,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Monitor,
-  Moon,
-  Plus,
-  Settings,
-  Sun,
-  User,
-  UserPlus,
-} from "lucide-solid";
-import { Match, Show, Switch } from "solid-js";
+import { Cloud, Keyboard, LifeBuoy, Loader2, LogOut, Settings, User } from "lucide-solid";
+import { Match, Switch } from "solid-js";
 import { logout } from "../utils/api/actions";
 
 export default function UserMenu(props: { user: UserSession["user"] }) {
-  const isLoggingOut = useSubmission(logout);
   const logoutAction = useAction(logout);
-
-  const { setColorMode, colorMode } = useColorMode();
+  const isLoggingOut = useSubmission(logout);
 
   return (
-    <DropdownMenu placement="bottom" gutter={8}>
+    <DropdownMenu placement="bottom-end" gutter={4}>
       <DropdownMenuTrigger
         as={Button}
         variant="default"
@@ -53,17 +27,16 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
       >
         <User class="size-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent class="w-56">
+      <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuGroupLabel>My Account</DropdownMenuGroupLabel>
+          <DropdownMenuGroupLabel class="flex flex-col gap-0.5">
+            <span class="font-bold">My Account</span>
+            <span class="text-xs text-muted-foreground font-normal">{props.user!.email}</span>
+          </DropdownMenuGroupLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem as={A} class="cursor-pointer" href="/profile">
             <User class="size-4" />
             <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem as={A} class="cursor-pointer" href="/profile/settings#billing">
-            <CreditCard class="size-4" />
-            <span>Billing</span>
           </DropdownMenuItem>
           <DropdownMenuItem as={A} class="cursor-pointer" href="/profile/settings">
             <Settings class="size-4" />
@@ -75,79 +48,7 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Group class="size-4" />
-            <span>Workspace</span>
-          </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger class="gap-2">
-              <UserPlus class="size-4" />
-              <span>Invite users</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem>
-                <Mail class="size-4" />
-                <span>Email</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <MessageSquare class="size-4" />
-                <span>Message</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Plus class="size-4" />
-                <span>More...</span>
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuItem>
-            <Plus class="size-4" />
-            <span>New Workpace</span>
-            <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger class="gap-2 items-center">
-            <Show when={colorMode() === "light"} fallback={<Sun class="size-4" />}>
-              <Moon class="size-4" />
-            </Show>
-            <span>Theme</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuItem
-              onSelect={() => {
-                setColorMode("light");
-              }}
-            >
-              <Sun class="size-4" />
-              <span>Light</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => {
-                setColorMode("dark");
-              }}
-            >
-              <Moon class="size-4" />
-              <span>Dark</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => {
-                setColorMode("system");
-              }}
-            >
-              <Monitor class="size-4" />
-              <span>System</span>
-            </DropdownMenuItem>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-        <DropdownMenuItem>
-          <Github class="size-4" />
-          <span>GitHub</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem disabled>
           <LifeBuoy class="size-4" />
           <span>Support</span>
         </DropdownMenuItem>
@@ -156,16 +57,22 @@ export default function UserMenu(props: { user: UserSession["user"] }) {
           <span>API</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-50"
-          disabled={isLoggingOut.pending}
-          onSelect={async () => {
-            await logoutAction();
-          }}
-        >
-          <LogOut class="size-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
+        <form action={logout} method="post">
+          <DropdownMenuItem
+            class="cursor-pointer text-rose-500 hover:!text-rose-500 hover:!bg-rose-50 w-full"
+            disabled={isLoggingOut.pending}
+            as={"button"}
+            closeOnSelect={false}
+            type="submit"
+          >
+            <Switch fallback={<LogOut class="size-4" />}>
+              <Match when={isLoggingOut.pending}>
+                <Loader2 class="size-4 animate-spin" />
+              </Match>
+            </Switch>
+            <span>Log out</span>
+          </DropdownMenuItem>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );
