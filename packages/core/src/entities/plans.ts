@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { prefixed_cuid2 } from "../custom_cuid2";
@@ -75,9 +75,17 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
           user: true,
         },
       },
-      workspaces: true,
+      workspaces: {
+        orderBy(fields, operators) {
+          return operators.desc(fields.createdAt);
+        },
+      },
       owner: true,
-      times: true,
+      times: {
+        orderBy(fields, operators) {
+          return operators.asc(fields.starts_at);
+        },
+      },
     },
   });
 });
@@ -338,13 +346,38 @@ export const getTypeId = z.function(z.tuple([z.string()])).implement(async (t) =
   return et;
 });
 
-export const createTimeSlots = z
+export const upsertTimeSlots = z
   .function(z.tuple([PlanTimesCreateSchema.array(), prefixed_cuid2]))
   .implement(async (timeslots, userId) => {
-    const createdTimeSlots = await db
-      .insert(plan_times)
-      .values(timeslots.map((ts) => ({ ...ts, owner_id: userId })))
-      .returning();
+    // const createdTimeSlots = await db
+    //   .insert(plan_times)
+    //   .values(timeslots.map((ts) => ({ ...ts, owner_id: userId })))
+    //   .returning();
+    // return createdTimeSlots;
+    const existingTimeSlots = await db.query.plan_times.findMany({
+      where: (fields, operators) => {
+        return operators.and(
+          operators.eq(fields.plan_id, timeslots[0].plan_id),
+          operators.inArray(
+            fields.starts_at,
+            timeslots.map((ts) => ts.starts_at),
+          ),
+        );
+      },
+    });
+
+    const toDelete = existingTimeSlots.filter((ets) => !timeslots.some((ts) => ts.starts_at === ets.starts_at));
+
+    await db.delete(plan_times).where(
+      inArray(
+        plan_times.id,
+        toDelete.map((ets) => ets.id),
+      ),
+    );
+
+    const toCreate = timeslots.filter((ts) => !existingTimeSlots.some((ets) => ets.starts_at === ts.starts_at));
+
+    const createdTimeSlots = await db.insert(plan_times).values(toCreate.map((ts) => ({ ...ts, owner_id: userId })));
     return createdTimeSlots;
   });
 

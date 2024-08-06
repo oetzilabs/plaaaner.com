@@ -434,7 +434,7 @@ export const savePlanTimeslots = action(
       ends_at,
     });
 
-    const timeSlots: Parameters<typeof Plans.createTimeSlots>[0] = [];
+    const timeSlots: Parameters<typeof Plans.upsertTimeSlots>[0] = [];
 
     const slots = data.plan.timeSlots.map((ts) => ts.slots).flat();
 
@@ -450,7 +450,7 @@ export const savePlanTimeslots = action(
       timeSlots.push(ts);
     }
 
-    await Plans.createTimeSlots(timeSlots, user.id);
+    await Plans.upsertTimeSlots(timeSlots, user.id);
 
     const updatedPlan = await Plans.findById(savedPlan.id);
     if (!updatedPlan) {
