@@ -23,11 +23,11 @@ export default function PlanPage(props: { children: JSXElement }) {
 
   return (
     <div class="flex flex-col items-start h-full w-full py-10 gap-8 container">
-      <div class="flex flex-col gap-4 w-full">
+      <div class="flex flex-col gap-4 w-full grow">
         <Show when={plan()} keyed>
           {(p) => (
-            <div class="flex flex-col items-start h-full w-full gap-4">
-              <div class="flex flex-col items-start h-full w-full gap-4">
+            <div class="flex flex-col items-start h-min w-full gap-4">
+              <div class="flex flex-col items-start h-min w-full gap-4">
                 <Button
                   as={A}
                   href={`/dashboard/p/${p.id}`}
@@ -52,7 +52,7 @@ export default function PlanPage(props: { children: JSXElement }) {
             </div>
           )}
         </Show>
-        <div class="w-full flex flex-col gap-4">{props.children}</div>
+        <div class="w-full flex flex-col gap-4 grow">{props.children}</div>
       </div>
     </div>
   );

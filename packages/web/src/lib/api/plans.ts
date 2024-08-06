@@ -379,7 +379,7 @@ export type TimeSlot = {
   start: Date;
   end: Date;
   title: string;
-  information: string;
+  information: string | null;
 };
 
 export type DaySlots = {

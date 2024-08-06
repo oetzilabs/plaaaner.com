@@ -136,11 +136,18 @@ export const AppSearch = () => {
     <div class="flex flex-row items-center">
       <Show when={!isHome()}>
         <div
-          class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-2.5 h-8 gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-max"
+          class="flex flex-row items-center justify-between rounded-lg border-transparent border md:border-neutral-200 dark:md:border-neutral-800 px-2.5 pr-1 h-8 gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-muted-foreground bg-background w-max"
           onClick={() => setOpenSearch(true)}
         >
-          <Search class="w-4 h-4" />
-          <div class="sr-only md:min-w-[300px] md:not-sr-only max-w-full text-sm">Search plans...</div>
+          <div class="flex flex-row items-center gap-2">
+            <Search class="size-4" />
+            <div class="sr-only md:min-w-[300px] md:not-sr-only max-w-full text-sm">Commands</div>
+          </div>
+          <div class="flex flex-row items-center gap-2">
+            <kbd class="text-[10px] text-muted-foreground font-semibold leading-[0.5rem] bg-neutral-100 dark:bg-neutral-900 rounded-sm p-2">
+              Ctrl+K
+            </kbd>
+          </div>
         </div>
         <CommandDialog open={openSearch()} onOpenChange={setOpenSearch}>
           <CommandInput placeholder="Type a command or search..." />

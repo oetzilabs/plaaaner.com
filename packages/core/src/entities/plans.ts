@@ -48,7 +48,7 @@ export const create = z
     const plansCreated = await db.insert(plans).values(plansToCreate).returning();
 
     await Promise.all(
-      plansCreated.map((pl) => db.insert(workspaces_plans).values({ plan_id: pl.id, workspace_id }).returning()),
+      plansCreated.map((pl) => db.insert(workspaces_plans).values({ plan_id: pl.id, workspace_id }).returning())
     );
 
     return plansCreated;
@@ -98,7 +98,7 @@ export const findByOptions = z
         workspace_id: prefixed_cuid2.nullable(),
         organization_id: prefixed_cuid2.nullable(),
       }),
-    ]),
+    ])
   )
   .implement(async ({ user_id, organization_id, workspace_id }) => {
     if (!organization_id) {
@@ -208,7 +208,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true, location: true })
         .merge(z.object({ id: prefixed_cuid2, location: ConcertLocationSchema.optional() })),
-    ]),
+    ])
   )
   .implement(async (input) => {
     const [updatedPlan] = await db
@@ -279,8 +279,8 @@ export const findByOrganizationId = z.function(z.tuple([prefixed_cuid2])).implem
             },
           },
         },
-      }),
-    ),
+      })
+    )
   );
   return ps.flat().map((oe) => oe.plan);
 });
@@ -360,24 +360,37 @@ export const upsertTimeSlots = z
           operators.eq(fields.plan_id, timeslots[0].plan_id),
           operators.inArray(
             fields.starts_at,
-            timeslots.map((ts) => ts.starts_at),
-          ),
+            timeslots.map((ts) => ts.starts_at)
+          )
         );
       },
     });
 
     const toDelete = existingTimeSlots.filter((ets) => !timeslots.some((ts) => ts.starts_at === ets.starts_at));
 
-    await db.delete(plan_times).where(
-      inArray(
-        plan_times.id,
-        toDelete.map((ets) => ets.id),
-      ),
+    const removed = await db
+      .delete(plan_times)
+      .where(
+        inArray(
+          plan_times.id,
+          toDelete.map((ets) => ets.id)
+        )
+      )
+      .returning();
+
+    console.log({ removed });
+
+    const toCreate = timeslots.filter(
+      (ts) => !existingTimeSlots.some((ets) => ets.starts_at === ts.starts_at && ts.id === undefined)
     );
 
-    const toCreate = timeslots.filter((ts) => !existingTimeSlots.some((ets) => ets.starts_at === ts.starts_at));
+    console.log({ toCreate });
 
-    const createdTimeSlots = await db.insert(plan_times).values(toCreate.map((ts) => ({ ...ts, owner_id: userId })));
+    const createdTimeSlots = await db
+      .insert(plan_times)
+      .values(toCreate.map((ts) => ({ ...ts, owner_id: userId })))
+      .returning();
+
     return createdTimeSlots;
   });
 
@@ -388,7 +401,7 @@ export const nearbyPlans = z
         lat: z.number(),
         lng: z.number(),
       }),
-    ]),
+    ])
   )
   .implement(async (location) => {
     return Promise.resolve([
