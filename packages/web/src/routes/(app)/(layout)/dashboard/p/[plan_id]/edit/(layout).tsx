@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { getPlan } from "@/lib/api/plans";
 import { getAuthenticatedSession } from "@/lib/auth/util";
 import { A, createAsync, RoutePreloadFuncArgs, useLocation, useParams } from "@solidjs/router";
-import { ArrowLeft } from "lucide-solid";
-import { JSXElement, Show } from "solid-js";
+import { ArrowLeft, Loader2 } from "lucide-solid";
+import { JSXElement, Show, Suspense } from "solid-js";
 
 export const route = {
   preload: async (props: RoutePreloadFuncArgs) => {

@@ -1,4 +1,4 @@
-import { DaySlots } from "@/components/DaySlots";
+import { CalendarDashboard } from "@/components/DaySlots";
 import { getActivities } from "@/lib/api/activity";
 import { getPlan, getUpcomingThreePlans, savePlanTimeslots, TimeSlot, type DaySlots as DS } from "@/lib/api/plans";
 import { getAuthenticatedSession } from "@/lib/auth/util";
@@ -35,18 +35,29 @@ export default function PlanCreateGeneralPage() {
       {(p) => {
         return (
           <div class="flex flex-col gap-4 w-full grow">
-            <DaySlots
+            <CalendarDashboard
               plan={p}
-              onSubmit={async (date, daySlots) => {
+              onSubmit={async (slots) => {
+                // find the start and end dates
+                let start = slots[0].slots[0].start;
+                let end = slots[0].slots[0].end;
+                for (let i = 0; i < slots.length; i++) {
+                  const slot = slots[i];
+                  if (dayjs(slot.slots[0].start).isBefore(start)) {
+                    start = slot.slots[0].start;
+                  }
+                  if (dayjs(slot.slots[0].end).isAfter(end)) {
+                    end = slot.slots[0].end;
+                  }
+                }
+
                 await savePlanTimeAction({
                   plan_id: p.id,
                   plan: {
-                    days: date.map((d) => new Date(Date.parse(d))),
-                    timeSlots: daySlots,
+                    days: [start, end],
+                    timeSlots: slots,
                   },
                 });
-
-                await revalidate([getActivities.key, getUpcomingThreePlans.key, getPlan.keyFor(params.id)]);
               }}
               isSaving={() => savePlanSubmission.pending ?? false}
             />

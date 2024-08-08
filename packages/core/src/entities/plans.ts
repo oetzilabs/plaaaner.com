@@ -48,7 +48,7 @@ export const create = z
     const plansCreated = await db.insert(plans).values(plansToCreate).returning();
 
     await Promise.all(
-      plansCreated.map((pl) => db.insert(workspaces_plans).values({ plan_id: pl.id, workspace_id }).returning())
+      plansCreated.map((pl) => db.insert(workspaces_plans).values({ plan_id: pl.id, workspace_id }).returning()),
     );
 
     return plansCreated;
@@ -63,7 +63,7 @@ export const countAll = z.function(z.tuple([])).implement(async () => {
   return x.count;
 });
 
-export const findById = z.function(z.tuple([z.string()])).implement(async (input) => {
+export const findById = z.function(z.tuple([prefixed_cuid2])).implement(async (input) => {
   return db.query.plans.findFirst({
     where: (plans, operations) => operations.eq(plans.id, input),
     with: {
@@ -82,9 +82,7 @@ export const findById = z.function(z.tuple([z.string()])).implement(async (input
       },
       owner: true,
       times: {
-        orderBy(fields, operators) {
-          return operators.asc(fields.starts_at);
-        },
+        orderBy: (fields, operators) => operators.asc(fields.starts_at),
       },
     },
   });
@@ -98,7 +96,7 @@ export const findByOptions = z
         workspace_id: prefixed_cuid2.nullable(),
         organization_id: prefixed_cuid2.nullable(),
       }),
-    ])
+    ]),
   )
   .implement(async ({ user_id, organization_id, workspace_id }) => {
     if (!organization_id) {
@@ -208,7 +206,7 @@ export const update = z
         .partial()
         .omit({ createdAt: true, updatedAt: true, location: true })
         .merge(z.object({ id: prefixed_cuid2, location: ConcertLocationSchema.optional() })),
-    ])
+    ]),
   )
   .implement(async (input) => {
     const [updatedPlan] = await db
@@ -279,8 +277,8 @@ export const findByOrganizationId = z.function(z.tuple([prefixed_cuid2])).implem
             },
           },
         },
-      })
-    )
+      }),
+    ),
   );
   return ps.flat().map((oe) => oe.plan);
 });
@@ -347,8 +345,8 @@ export const getTypeId = z.function(z.tuple([z.string()])).implement(async (t) =
 });
 
 export const upsertTimeSlots = z
-  .function(z.tuple([PlanTimesCreateSchema.array(), prefixed_cuid2]))
-  .implement(async (timeslots, userId) => {
+  .function(z.tuple([PlanTimesCreateSchema.array(), prefixed_cuid2, prefixed_cuid2]))
+  .implement(async (timeslots, userId, plan_id) => {
     // const createdTimeSlots = await db
     //   .insert(plan_times)
     //   .values(timeslots.map((ts) => ({ ...ts, owner_id: userId })))
@@ -360,35 +358,40 @@ export const upsertTimeSlots = z
           operators.eq(fields.plan_id, timeslots[0].plan_id),
           operators.inArray(
             fields.starts_at,
-            timeslots.map((ts) => ts.starts_at)
-          )
+            timeslots.map((ts) => ts.starts_at),
+          ),
         );
       },
     });
 
-    const toDelete = existingTimeSlots.filter((ets) => !timeslots.some((ts) => ts.starts_at === ets.starts_at));
+    const toUpdate = existingTimeSlots.filter((ets) => timeslots.some((ts) => ts.id === ets.id));
 
-    const removed = await db
-      .delete(plan_times)
-      .where(
-        inArray(
-          plan_times.id,
-          toDelete.map((ets) => ets.id)
-        )
-      )
-      .returning();
+    for (const ts of toUpdate) {
+      await db
+        .update(plan_times)
+        .set({
+          title: ts.title,
+          description: ts.description,
+          ends_at: ts.ends_at,
+        })
+        .where(eq(plan_times.id, ts.id))
+        .returning();
+    }
 
-    console.log({ removed });
-
-    const toCreate = timeslots.filter(
-      (ts) => !existingTimeSlots.some((ets) => ets.starts_at === ts.starts_at && ts.id === undefined)
-    );
-
-    console.log({ toCreate });
+    await db.delete(plan_times).where(eq(plan_times.plan_id, plan_id)).returning();
 
     const createdTimeSlots = await db
       .insert(plan_times)
-      .values(toCreate.map((ts) => ({ ...ts, owner_id: userId })))
+      .values(
+        timeslots.map((ts) => ({
+          owner_id: userId,
+          plan_id: plan_id,
+          title: ts.title,
+          description: ts.description,
+          starts_at: ts.starts_at,
+          ends_at: ts.ends_at,
+        })),
+      )
       .returning();
 
     return createdTimeSlots;
@@ -401,7 +404,7 @@ export const nearbyPlans = z
         lat: z.number(),
         lng: z.number(),
       }),
-    ])
+    ]),
   )
   .implement(async (location) => {
     return Promise.resolve([

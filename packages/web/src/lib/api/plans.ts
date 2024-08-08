@@ -1,12 +1,8 @@
-import { prefixed_cuid2 } from "@oetzilabs-plaaaner-com/core/src/custom_cuid2";
-import { PlanTimesCreateSchema } from "@oetzilabs-plaaaner-com/core/src/drizzle/sql/schema";
 import { ConcertLocationSchema, Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { TicketTypes } from "@oetzilabs-plaaaner-com/core/src/entities/ticket_types";
 import { Workspace } from "@oetzilabs-plaaaner-com/core/src/entities/workspaces";
-import { action, cache, redirect, revalidate } from "@solidjs/router";
+import { action, cache, redirect } from "@solidjs/router";
 import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import updateLocale from "dayjs/plugin/updateLocale";
 import { getCookie, getEvent } from "vinxi/http";
 import { z } from "zod";
 import { CreatePlanFormSchema } from "../../utils/schemas/plan";
@@ -14,9 +10,6 @@ import { lucia } from "../auth";
 import { getContext } from "../auth/context";
 import { getActivities } from "./activity";
 import { getLocaleSettings } from "./locale";
-
-dayjs.extend(isoWeek);
-dayjs.extend(updateLocale);
 
 export const getPreviousPlans = cache(async () => {
   "use server";
@@ -47,9 +40,6 @@ export const getPlans = cache(async () => {
     throw redirect("/auth/login");
   }
 
-  const locale = getLocaleSettings(event);
-  dayjs.updateLocale(locale.language, {});
-
   const plans = await Plans.findByOptions({
     user_id: ctx.user.id,
     workspace_id: ctx.session.workspace_id,
@@ -61,37 +51,26 @@ export const getPlans = cache(async () => {
 export const getPlan = cache(async (id: string) => {
   "use server";
   const [ctx, event] = await getContext();
-  if (!ctx) {
-    throw redirect("/auth/login");
-  }
+  if (!ctx) throw redirect("/auth/login");
+  if (!ctx.session) throw redirect("/auth/login");
 
-  if (!ctx.session) {
-    throw redirect("/auth/login");
-  }
-
-  const locale = getLocaleSettings(event);
-  dayjs.updateLocale(locale.language, {});
-
-  const schema = prefixed_cuid2.safeParse(id);
-  if (schema.success === false) {
-    throw redirect(`/404`, {
-      status: 404,
-    });
-  }
-
-  const plan = await Plans.findById(schema.data);
+  const plan = await Plans.findById(id);
 
   if (!plan) {
-    throw new Error("This plan does not exist");
+    throw redirect("/404", {
+      status: 404,
+      statusText: "This plan does not exist",
+    });
   }
 
   // check if the plan is in the user's workspace
   if (!plan.workspaces.some((ws) => ws.workspace_id === ctx.session.workspace_id)) {
-    throw redirect(`/403?error=${encodeURIComponent("You do not have permission to view this plan")}`, {
+    throw redirect("/403", {
       status: 403,
       statusText: "You do not have permission to view this plan",
     });
   }
+
   return plan;
 }, "plan");
 
@@ -241,8 +220,6 @@ export const getUpcomingThreePlans = cache(async () => {
   if (!ctx) throw redirect("/auth/login");
   if (!ctx.session) throw redirect("/auth/login");
   if (!ctx.user) throw redirect("/auth/login");
-  const locale = getLocaleSettings(event);
-  dayjs.updateLocale(locale.language, {});
 
   const fromDate = dayjs().startOf("day").toDate();
   const plans = await Plans.findByOptions({
@@ -434,30 +411,28 @@ export const savePlanTimeslots = action(
       ends_at,
     });
 
-    const timeSlots: Parameters<typeof Plans.upsertTimeSlots>[0] = [];
+    const slots: Parameters<typeof Plans.upsertTimeSlots>[0] = data.plan.timeSlots
+      .map((ts) =>
+        ts.slots.map((slot) => ({
+          plan_id: savedPlan.id,
+          starts_at: slot.start,
+          ends_at: slot.end,
+          title: slot.title,
+          description: slot.information,
+        })),
+      )
+      .flat();
 
-    const slots = data.plan.timeSlots.map((ts) => ts.slots).flat();
-
-    for (let i = 0; i < slots.length; i++) {
-      const slot = slots[i];
-      const ts = {
-        plan_id: savedPlan.id,
-        starts_at: slot.start,
-        ends_at: slot.end,
-        title: slot.title,
-        description: slot.information,
-      };
-      timeSlots.push(ts);
-    }
-
-    await Plans.upsertTimeSlots(timeSlots, user.id);
+    await Plans.upsertTimeSlots(slots, user.id, savedPlan.id);
 
     const updatedPlan = await Plans.findById(savedPlan.id);
     if (!updatedPlan) {
       throw new Error("This plan does not exist anymore");
     }
 
-    return updatedPlan;
+    throw redirect(`/dashboard/p/${plan.id}/edit/location`, {
+      revalidate: [getPlan.keyFor(plan.id), getActivities.key, getUpcomingThreePlans.key],
+    });
   },
 );
 

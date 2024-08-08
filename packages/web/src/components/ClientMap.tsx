@@ -5,7 +5,17 @@ import { createQuery } from "@tanstack/solid-query";
 import L, { LatLng, LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Loader2 } from "lucide-solid";
-import { Accessor, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import {
+  Accessor,
+  createEffect,
+  createRenderEffect,
+  createSignal,
+  Match,
+  onCleanup,
+  onMount,
+  Show,
+  Switch,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 import { QueryBoundary } from "./QueryBoundary";
 
@@ -33,19 +43,19 @@ const [mapStore, setMapStore] = createStore<Geo>({
 
 const [map, setMap] = createSignal<L.Map | null>(null);
 
-const [darkTile] = createSignal<L.TileLayer>(
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+const [tiles, setTiles] = createStore<{
+  dark: L.TileLayer;
+  light: L.TileLayer;
+}>({
+  dark: L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     subdomains: "abcd",
     maxZoom: 20,
-  })
-);
-
-const [lightTile] = createSignal<L.TileLayer>(
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  }),
+  light: L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
     subdomains: "abcd",
     maxZoom: 20,
-  })
-);
+  }),
+});
 
 function loadMap(
   div: HTMLDivElement,
@@ -58,7 +68,6 @@ function loadMap(
     zoom: number;
     accuracy?: number;
   },
-  themeMode: "dark" | "light"
 ) {
   if (!div) return;
   let m = map();
@@ -125,11 +134,9 @@ export default function ClientMap(props: { query: Accessor<string> }) {
     queryKey: ["lookup", props.query()],
     queryFn: async (params) => {
       const q = params.queryKey[1];
-      if (q.length <= 2) {
-        return null;
-      }
+      if (q.length <= 2) return null;
       const result = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURI(q)}&format=json&addressdetails=1`
+        `https://nominatim.openstreetmap.org/search?q=${encodeURI(q)}&format=json&addressdetails=1`,
       ).then((res) => res.json());
       const m = map();
       if (m) {
@@ -144,7 +151,7 @@ export default function ClientMap(props: { query: Accessor<string> }) {
         const marker = L.marker(coords, {
           icon: L.divIcon({
             html: `<div class="relative flex flex-col items-center justify-center text-blue-500 -translate-x-[50%] -translate-y-[50%] w-[42px] h-[42px]">
-            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
             </div>`,
             className: "bg-transparent",
           }),
@@ -163,7 +170,6 @@ export default function ClientMap(props: { query: Accessor<string> }) {
 
   const { colorMode: theme } = useColorMode();
   const startMap = () => {
-    const t = theme();
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -174,36 +180,32 @@ export default function ClientMap(props: { query: Accessor<string> }) {
           zoom: 13,
           accuracy: position.coords.accuracy ?? 25,
         });
-        loadMap(
-          mapDiv,
-          {
-            coordinates: [latitude, longitude],
-            zoom: 13,
-            accuracy: position.coords.accuracy ?? 25,
-          },
-          t
-        );
+        loadMap(mapDiv, {
+          coordinates: [latitude, longitude],
+          zoom: 13,
+          accuracy: position.coords.accuracy ?? 25,
+        });
       },
       (error) => {
         setMapStore({
           type: "error",
           message: error.message,
         });
-        console.log(error);
-      }
+        // console.log(error);
+      },
     );
   };
 
-  createEffect(() => {
+  createRenderEffect(() => {
     const m = map();
     if (!m) return;
     const themeMode = theme();
     if (themeMode === "dark") {
-      darkTile().addTo(m);
-      lightTile().removeFrom(m);
+      tiles.dark.addTo(m);
+      tiles.light.removeFrom(m);
     } else {
-      lightTile().addTo(m);
-      darkTile().removeFrom(m);
+      tiles.light.addTo(m);
+      tiles.dark.removeFrom(m);
     }
   });
 
@@ -221,30 +223,13 @@ export default function ClientMap(props: { query: Accessor<string> }) {
     });
   });
 
-  createEffect(() => {
-    // store the map in local storage
-    localStorage.setItem("main-map", JSON.stringify(mapStore));
-  });
   return (
-    <div class="w-full flex flex-col gap-4">
-      <div class="border-muted border rounded-md w-full flex flex-col items-center justify-center bg-muted h-[280px] overflow-clip">
+    <div class="w-full flex flex-col gap-4 grow">
+      <div class="border-muted border rounded-md w-full flex flex-col items-center justify-center bg-muted grow min-h-[500px] overflow-clip">
         <Switch>
           <Match when={mapStore.type === "loading"}>
             <div class="items-center justify-center flex flex-col w-full h-full">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="animate-spin"
-              >
-                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-              </svg>
+              <Loader2 class="size-4 animate-spin" />
               <span class="text-neutral-500 text-sm">Loading map...</span>
             </div>
           </Match>
@@ -260,35 +245,24 @@ export default function ClientMap(props: { query: Accessor<string> }) {
               </button>
             </div>
           </Match>
-          <Match when={mapStore.type === "error" && mapStore}>
-            {(x) => <div class="items-center justify-center flex flex-col w-full h-full">{x().message}</div>}
+          <Match when={mapStore.type === "error" && mapStore} keyed>
+            {(map) => <div class="items-center justify-center flex flex-col w-full h-full">{map.message}</div>}
           </Match>
         </Switch>
-        <div
-          ref={mapDiv}
-          id="main-map"
-          style={{
-            position: "relative",
-            "z-index": 10,
-            ...(mapStore.type === "success" && {
-              width: "100%",
-              height: "100%",
-            }),
-            border: "none",
-          }}
-        />
+        <div ref={mapDiv} id="main-map" class="w-full grow z-10 border-none relative" />
       </div>
       <QueryBoundary
         query={lookup}
         loadingFallback={<Loader2 class="size-4 animate-spin" />}
-        errorFallback={<div class="text-xs text-red-500">{JSON.stringify(lookup.error)}</div>}
+        errorFallback={<div class="text-xs text-red-500">{JSON.stringify(lookup.error?.message)}</div>}
         notFoundFallback={<div class="text-sm">Please search for an place.</div>}
       >
         {(d) => (
-          <Show when={d && d.address}>
+          <Show when={d} fallback={<div class="text-sm">Please search for an place.</div>} keyed>
             {(data) => (
               <div class="font-medium text-sm">
-                {data().road} {data().house_number}, {data().postcode} {data().town} - {data().country}
+                {data.address.road} {data.address.house_number}, {data.address.postcode} {data.address.town} -{" "}
+                {data.address.country}
               </div>
             )}
           </Show>

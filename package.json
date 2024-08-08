@@ -19,7 +19,7 @@
     "constructs": "10.3.0",
     "prettier-plugin-tailwindcss": "0.6.5",
     "sst": "0.1.87",
-    "typescript": "^5.5.3"
+    "typescript": "5.5.4"
   },
   "overrides": {
     "nitropack": "npm:nitropack-nightly@latest"

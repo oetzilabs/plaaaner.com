@@ -1,218 +1,92 @@
-import { Popover } from "@kobalte/core/popover";
 import type { Plans } from "@oetzilabs-plaaaner-com/core/src/entities/plans";
 import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import isBetween from "dayjs/plugin/isBetween";
-import tz from "dayjs/plugin/timezone";
-import { Loader2 } from "lucide-solid";
-import { createMemo, createSignal, Index, Match, Show, Switch } from "solid-js";
-import type { DaySlots as DS, TimeSlot } from "../lib/api/plans";
+import { Loader2, Menu, Pencil, Plus, Save, Trash, X } from "lucide-solid";
+import { createMemo, createSignal, For, Index, Match, Show, Switch } from "solid-js";
+import type { DaySlots, TimeSlot } from "../lib/api/plans";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
-import { PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "./ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-dayjs.extend(tz);
 dayjs.extend(advancedFormat);
 dayjs.extend(customParseFormat);
 dayjs.extend(isBetween);
 
-const now = new Date(Date.now());
-
-const getStart = (times: Plans.Frontend["times"]) => {
-  let begining = times[0].starts_at;
-  for (let i = 1; i < times.length; i++) {
-    if (dayjs(times[i].starts_at).isBefore(dayjs(begining))) {
-      begining = times[i].starts_at;
-    }
-  }
-  return begining;
-};
-
-const getEnd = (times: Plans.Frontend["times"]) => {
-  let end = times[0].ends_at;
-  for (let i = 1; i < times.length; i++) {
-    if (dayjs(times[i].ends_at).isAfter(dayjs(end))) {
-      end = times[i].ends_at;
-    }
-  }
-  return end;
-};
-
-const createInitialDaySlots = (times: Plans.Frontend["times"], end: Date) => {
-  const start2 = getStart(times);
-  // const end2 = getEnd(times);
-  const difference = Math.abs(dayjs(start2).diff(dayjs(end), "day")) + 2;
-
-  const list = new Map<string, DS>();
-
-  for (let i = 0; i < difference; i++) {
-    const date = dayjs(start2).add(i, "day").toISOString().split("T")[0];
-    list.set(date, {
-      date,
-      slots: [],
-    });
-  }
-
-  for (let i = 0; i < times.length; i++) {
-    const time = times[i];
-    const date = dayjs(time.starts_at).startOf("day").toISOString().split("T")[0];
-    if (list.has(date)) {
-      list.set(date, {
-        date,
-        slots: [
-          ...(list.get(date)?.slots ?? []),
-          {
-            title: time.title,
-            information: time.description,
-            start: time.starts_at,
-            end: time.ends_at,
-          },
-        ],
-      });
-    } else {
-      list.set(date, {
-        date,
-        slots: [
-          {
-            title: time.title,
-            information: time.description,
-            start: time.starts_at,
-            end: time.ends_at,
-          },
-        ],
-      });
-    }
-  }
-  return Array.from(list.values());
-};
-
-export const DaySlots = (props: {
-  onSubmit: (date: string[], daySlots: DS[]) => void;
+export const CalendarDashboard = (props: {
+  onSubmit: (daySlots: DaySlots[]) => void;
   isSaving: () => boolean;
   plan: Plans.Frontend;
 }) => {
-  const [timezone, setTimeZone] = createSignal("UTC");
-
-  const [daySlots, setDaySlots] = createSignal<DS[]>(createInitialDaySlots(props.plan.times, props.plan.ends_at));
-
-  const groupByDay = createMemo(() =>
-    daySlots().reduce(
-      (acc, daySlot) => {
-        const day = daySlot.date.split("T")[0];
-        if (acc[day] === undefined) {
-          acc[day] = [];
-        }
-        acc[day].push(daySlot);
-        return acc;
-      },
-      {} as Record<string, DS[]>,
-    ),
-  );
-
-  const createWeek = createMemo(() => {
-    const days = 7;
-    const week: DS[] = [];
-    for (let i = 0; i < days; i++) {
-      const date = dayjs(props.plan.starts_at).add(i, "day").toISOString().split("T")[0];
-      week.push({
-        date,
-        slots: [],
-      });
-    }
-
-    for (let i = 0; i < props.plan.times.length; i++) {
-      const time = props.plan.times[i];
-      const date = dayjs(time.starts_at).startOf("day").toISOString().split("T")[0];
-      if (week.find((w) => w.date === date)) {
-        week
-          .find((w) => w.date === date)
-          ?.slots.push({
-            title: time.title,
-            information: time.description,
-            start: time.starts_at,
-            end: time.ends_at,
-          });
-      }
-    }
-
-    return week;
-  });
-
-  const createDay = (slots: TimeSlot[]) => {
-    const hours = 24;
-    const slotsByHours: (TimeSlot | undefined)[] = [];
-
-    for (let i = 0; i < hours; i++) {
-      const slot = slots.find((s) => dayjs(s.start).hour() === i);
-      if (slot) {
-        console.log("slot found", slot);
-        slotsByHours.push(slot);
-      } else {
-        slotsByHours.push(undefined);
-      }
-    }
-    return slotsByHours;
-  };
-
+  const [slots, setSlots] = createSignal(props.plan.times);
   return (
-    <>
-      <div class="flex flex-col gap-4 w-full grow bg-background">
-        <div class="flex flex-col gap-1 w-full grow pr-2">
-          <div class="grid grid-cols-1 lg:grid-cols-7 w-full border border-neutral-200 dark:border-neutral-800 rounded-md overflow-y-auto h-full max-h-[550px]">
-            <Index each={createWeek()}>
-              {(daySlot, index) => (
-                <div
-                  class={cn(
-                    "grow border-r border-neutral-100 dark:border-neutral-900 flex flex-col w-full bg-background",
-                    {
-                      "border-r-0": index === 6,
-                    },
-                  )}
-                >
-                  <div class="w-full items-center justify-center p-2 hidden lg:flex bg-neutral-50 dark:bg-neutral-950">
-                    {dayjs(daySlot().date).format("LL")}
-                  </div>
-                  <div class="grow flex flex-col border-t border-neutral-200 dark:border-neutral-800">
-                    <Index each={createDay(daySlot().slots)}>
-                      {(slot, index) => (
-                        <div
-                          class={cn("grow border-b border-neutral-100 dark:border-neutral-900 flex flex-col h-full", {
-                            "border-b-0": index === 23,
-                          })}
+    <div class="flex flex-col gap-4 w-full grow bg-background">
+      <div class="flex flex-col gap-4 w-full grow">
+        <div class="flex flex-row items-center justify-between">
+          <span class="text-sm font-bold">{props.plan.times.length} Timeslots</span>
+          <div class="flex flex-row gap-2">
+            <Button class="w-full flex flex-row items-center justify-center gap-2" variant="secondary" size="sm">
+              <Plus class="size-4" />
+              Add a new timeslot
+            </Button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full">
+          <Index each={slots()}>
+            {(timeslot) => (
+              <div class="border border-neutral-200 dark:border-neutral-800 flex flex-col w-full bg-background rounded-md p-3 h-max">
+                <div class="flex flex-row items-center justify-between">
+                  <span class="text-lg font-bold">{!!timeslot().title ? timeslot().title : "No title"}</span>
+                  <div class="w-max flex-1 flex flex-row items-center justify-end gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        as={Button}
+                        variant="ghost"
+                        class="flex flex-row items-center justify-center gap-2 size-8"
+                        size="icon"
+                      >
+                        <Menu class="size-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          class="flex flex-row items-center justify-start gap-2 cursor-pointer"
+                          onSelect={() => {}}
                         >
-                          <div class="w-full items-center justify-center min-h-10">
-                            <Show when={slot()} keyed fallback={<div class=""></div>}>
-                              {(slot) => (
-                                <Popover>
-                                  <PopoverTrigger class="flex flex-row items-center justify-center gap-2 w-full h-full">
-                                    <span>{dayjs(slot.start).format("hh:mm")}</span>
-                                  </PopoverTrigger>
-                                  <PopoverContent class="flex flex-col gap-2 p-2">
-                                    <span class="text-xs text-muted-foreground">
-                                      {dayjs(slot.start).format("hh:mm")}
-                                    </span>
-                                    <div class="flex flex-col gap-0.5">
-                                      <span class="font-bold text-lg">{!!slot.title ? slot.title : "No title"}</span>
-                                      <span class="text-sm">
-                                        {!!slot.information ? slot.information : "No description"}
-                                      </span>
-                                    </div>
-                                  </PopoverContent>
-                                </Popover>
-                              )}
-                            </Show>
-                          </div>
-                        </div>
-                      )}
-                    </Index>
+                          <Pencil class="size-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          class="flex flex-row items-center justify-start gap-2 cursor-pointer"
+                          onSelect={() => {
+                            setSlots((s) => s.filter((t) => t.id !== timeslot().id));
+                          }}
+                        >
+                          <Trash class="size-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              )}
-            </Index>
-          </div>
+                <div class="flex flex-col gap-0.5">
+                  <Show
+                    when={timeslot().description}
+                    keyed
+                    fallback={<span class="text-sm text-muted-foreground">No description</span>}
+                  >
+                    {(d) => <span class="text-sm text-muted-foreground">{d}</span>}
+                  </Show>
+                  <span class="text-xs text-muted-foreground italic">
+                    {dayjs(timeslot().starts_at).format("hh:mm A")} - {dayjs(timeslot().ends_at).format("hh:mm A")}
+                  </span>
+                </div>
+              </div>
+            )}
+          </Index>
         </div>
       </div>
       <div class="w-full flex flex-row items-center justify-between gap-2">
@@ -223,7 +97,35 @@ export const DaySlots = (props: {
             size="sm"
             class="w-full flex flex-row items-center justify-center gap-2"
             onClick={async () => {
-              // props.onSubmit(date(), daySlots());
+              const s = slots();
+              const map = new Map<string, DaySlots>();
+              for (let i = 0; i < s.length; i++) {
+                const slot = s[i];
+                const date = dayjs(slot.starts_at).format("YYYY-MM-DD");
+                if (map.has(date)) {
+                  map.get(date)?.slots.push({
+                    start: slot.starts_at,
+                    end: slot.ends_at,
+                    title: slot.title,
+                    information: slot.description,
+                  });
+                } else {
+                  map.set(date, {
+                    date,
+                    slots: [
+                      {
+                        start: slot.starts_at,
+                        end: slot.ends_at,
+                        title: slot.title,
+                        information: slot.description,
+                      },
+                    ],
+                  });
+                }
+              }
+              const ds = Array.from(map.values());
+
+              props.onSubmit(ds);
             }}
           >
             <Switch>
@@ -236,13 +138,8 @@ export const DaySlots = (props: {
               </Match>
             </Switch>
           </Button>
-          <A href={`/dashboard/p/${props.plan.id}/edit/location`}>
-            <Button size="sm" class="w-full flex flex-row items-center justify-center gap-2">
-              <span class="text-sm font-medium leading-none">Next</span>
-            </Button>
-          </A>
         </div>
       </div>
-    </>
+    </div>
   );
 };

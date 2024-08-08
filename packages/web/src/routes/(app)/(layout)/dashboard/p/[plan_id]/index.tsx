@@ -1,15 +1,18 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getPlan } from "@/lib/api/plans";
 import { getAuthenticatedSession } from "@/lib/auth/util";
-import { A, createAsync, RoutePreloadFuncArgs, useParams } from "@solidjs/router";
+import { A, createAsync, redirect, RoutePreloadFuncArgs, useParams } from "@solidjs/router";
 import { Pencil } from "lucide-solid";
 import { Match, Show, Switch } from "solid-js";
-import { Button } from "../../../../../../components/ui/button";
 
 export const route = {
   preload: async (props: RoutePreloadFuncArgs) => {
     const session = await getAuthenticatedSession();
-    const plan = await getPlan(props.params.id);
+    if (!props.params.plan_id) {
+      return redirect("/404");
+    }
+    const plan = await getPlan(props.params.plan_id);
     return { plan, session };
   },
 };
@@ -17,12 +20,12 @@ export const route = {
 export default function PlanPage() {
   const params = useParams();
   const session = createAsync(() => getAuthenticatedSession());
-  const plan = createAsync(() => getPlan(params.id));
+  const plan = createAsync(() => getPlan(params.plan_id));
 
   return (
     <div class="flex flex-col items-start h-full w-full py-10 gap-8 container">
       <div class="flex flex-col gap-1 w-full">
-        <Show when={plan()} keyed>
+        <Show when={plan() && plan()} keyed>
           {(p) => (
             <div class="flex flex-col items-start h-full w-full gap-4">
               <div class="flex flex-row items-center justify-between gap-2 w-full">

@@ -1,6 +1,5 @@
 import type { CreateQueryResult } from "@tanstack/solid-query";
-import type { JSX } from "solid-js";
-import { Match, Suspense, Switch } from "solid-js";
+import { Match, Suspense, Switch, type JSX } from "solid-js";
 import { Button } from "./ui/button";
 
 export interface QueryBoundaryProps<T = unknown> {
@@ -54,11 +53,9 @@ export function QueryBoundary<T>(props: QueryBoundaryProps<T>) {
             </div>
           )}
         </Match>
-
         <Match when={!props.query.isFetching && !props.query.data}>
           {props.notFoundFallback ? props.notFoundFallback : <div>not found</div>}
         </Match>
-
         <Match when={props.query.data !== undefined}>
           {props.children(props.query.data as Exclude<T, null | false | undefined>)}
         </Match>
