@@ -8,14 +8,12 @@ import advancedFormat from "dayjs/plugin/advancedFormat";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import isBetween from "dayjs/plugin/isBetween";
 import tz from "dayjs/plugin/timezone";
-import { createSignal, Show } from "solid-js";
+import { Show } from "solid-js";
 
 dayjs.extend(tz);
 dayjs.extend(advancedFormat);
 dayjs.extend(customParseFormat);
 dayjs.extend(isBetween);
-
-const [timezone, setTimeZone] = createSignal("UTC");
 
 export const route = {
   preload: async (props) => {
@@ -25,14 +23,12 @@ export const route = {
   },
 } satisfies RouteDefinition;
 
-const now = new Date(Date.now());
-
 export default function PlanCreateGeneralPage() {
   const params = useParams();
 
   const plan = createAsync(() => getPlan(params.id));
   const savePlanTimeAction = useAction(savePlanTimeslots);
-  const isSaving = useSubmission(savePlanTimeslots);
+  const savePlanSubmission = useSubmission(savePlanTimeslots);
 
   return (
     <Show when={plan() && plan()} keyed>
@@ -50,10 +46,9 @@ export default function PlanCreateGeneralPage() {
                   },
                 });
 
-                await revalidate(getActivities.key);
-                await revalidate(getUpcomingThreePlans.key);
+                await revalidate([getActivities.key, getUpcomingThreePlans.key, getPlan.keyFor(params.id)]);
               }}
-              isSaving={() => isSaving.pending ?? false}
+              isSaving={() => savePlanSubmission.pending ?? false}
             />
           </div>
         );
