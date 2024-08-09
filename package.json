@@ -18,7 +18,7 @@
     "aws-cdk-lib": "2.132.1",
     "constructs": "10.3.0",
     "prettier-plugin-tailwindcss": "0.6.5",
-    "sst": "0.1.87",
+    "sst": "0.1.90",
     "typescript": "5.5.4"
   },
   "overrides": {

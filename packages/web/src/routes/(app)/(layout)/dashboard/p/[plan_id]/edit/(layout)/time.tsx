@@ -18,15 +18,15 @@ dayjs.extend(isBetween);
 export const route = {
   preload: async (props) => {
     const session = await getAuthenticatedSession();
-    const plan = await getPlan(props.params.id);
+    const plan = await getPlan(props.params.plan_id);
     return { plan, session };
   },
 } satisfies RouteDefinition;
 
 export default function PlanCreateGeneralPage() {
   const params = useParams();
+  const plan = createAsync(() => getPlan(params.plan_id));
 
-  const plan = createAsync(() => getPlan(params.id));
   const savePlanTimeAction = useAction(savePlanTimeslots);
   const savePlanSubmission = useSubmission(savePlanTimeslots);
 

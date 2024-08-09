@@ -23,7 +23,7 @@ export default function PlanPage() {
   const plan = createAsync(() => getPlan(params.plan_id));
 
   return (
-    <div class="flex flex-col items-start h-full w-full py-10 gap-8 container">
+    <div class="flex flex-col items-start h-full w-full py-10 gap-8 container px-0">
       <div class="flex flex-col gap-1 w-full">
         <Show when={plan() && plan()} keyed>
           {(p) => (
@@ -36,20 +36,21 @@ export default function PlanPage() {
                   </div>
                 </div>
                 <div class="flex flex-col gap-1">
-                  <Show when={session() && session()!.user !== null && session()} keyed>
-                    {(s) => (
-                      <div class="flex flex-row items-center gap-2">
-                        <Button
-                          as={A}
-                          href={`/dashboard/p/${p.id}/edit/general`}
-                          size="sm"
-                          class="flex flex-row items-center gap-2"
-                        >
-                          <Pencil class="size-4" />
-                          Edit
-                        </Button>
-                      </div>
-                    )}
+                  <Show
+                    when={session() && session()!.user !== null && session() && p.owner.id === session()!.user!.id}
+                    keyed
+                  >
+                    <div class="flex flex-row items-center gap-2">
+                      <Button
+                        as={A}
+                        href={`/dashboard/p/${p.id}/edit/general`}
+                        size="sm"
+                        class="flex flex-row items-center gap-2"
+                      >
+                        <Pencil class="size-4" />
+                        Edit
+                      </Button>
+                    </div>
                   </Show>
                 </div>
               </div>

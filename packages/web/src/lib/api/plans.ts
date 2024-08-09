@@ -53,6 +53,7 @@ export const getPlan = cache(async (id: string) => {
   const [ctx, event] = await getContext();
   if (!ctx) throw redirect("/auth/login");
   if (!ctx.session) throw redirect("/auth/login");
+  // if (!id) throw redirect("/404", { status: 404, statusText: "This plan does not exist" });
 
   const plan = await Plans.findById(id);
 
@@ -63,13 +64,13 @@ export const getPlan = cache(async (id: string) => {
     });
   }
 
-  // check if the plan is in the user's workspace
-  if (!plan.workspaces.some((ws) => ws.workspace_id === ctx.session.workspace_id)) {
-    throw redirect("/403", {
-      status: 403,
-      statusText: "You do not have permission to view this plan",
-    });
-  }
+  // // check if the plan is in the user's workspace
+  // if (!plan.workspaces.some((ws) => ws.workspace_id === ctx.session.workspace_id)) {
+  //   throw redirect("/403", {
+  //     status: 403,
+  //     statusText: "You do not have permission to view this plan",
+  //   });
+  // }
 
   return plan;
 }, "plan");
@@ -273,7 +274,9 @@ export const savePlanLocation = action(
       throw new Error("This plan does not exist anymore");
     }
 
-    return updatedPlan;
+    throw redirect(`/dashboard/p/${plan.id}`, {
+      revalidate: [getPlan.keyFor(plan.id), getActivities.key, getUpcomingThreePlans.key],
+    });
   },
 );
 
@@ -347,7 +350,9 @@ export const savePlanGeneral = action(
       throw new Error("This plan does not exist anymore");
     }
 
-    return updatedPlan;
+    throw redirect(`/dashboard/p/${plan.id}/edit/time`, {
+      revalidate: [getPlan.keyFor(plan.id), getActivities.key, getUpcomingThreePlans.key],
+    });
   },
 );
 

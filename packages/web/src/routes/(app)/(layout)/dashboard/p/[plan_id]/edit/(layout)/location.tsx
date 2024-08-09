@@ -27,7 +27,7 @@ const ClientMap = clientOnly(() => import("@/components/ClientMap"));
 export const route = {
   preload: async (props) => {
     const session = await getAuthenticatedSession();
-    const plan = await getPlan(props.params.id);
+    const plan = await getPlan(props.params.plan_id);
     return { plan, session };
   },
 } satisfies RouteDefinition;
@@ -53,7 +53,7 @@ const DEFAULT_LOCATION: Record<ConcertLocation["location_type"], ConcertLocation
 
 export default function PlanCreateLocationPage() {
   const params = useParams();
-  const plan = createAsync(() => getPlan(params.id), { deferStream: true });
+  const plan = createAsync(() => getPlan(params.plan_id), { deferStream: true });
 
   return (
     <Show when={plan() && plan()} keyed fallback={<div>Loading...</div>}>
@@ -386,10 +386,8 @@ const Wrapper = (props: { plan: Plans.Frontend }) => {
             class="w-full flex flex-row items-center justify-center gap-2"
             onClick={async () => {
               const l = location();
-              const p = props.plan;
-              if (!p) return;
               await savePlanLocationAction({
-                plan_id: p.id,
+                plan_id: props.plan.id,
                 plan: {
                   location: l,
                 },
@@ -406,11 +404,6 @@ const Wrapper = (props: { plan: Plans.Frontend }) => {
               </Match>
             </Switch>
           </Button>
-          <A href="/dashboard">
-            <Button size="sm" class="w-full flex flex-row items-center justify-center gap-2">
-              <span class="text-sm font-medium leading-none w-max">Go To Dashboard</span>
-            </Button>
-          </A>
         </div>
       </div>
     </>

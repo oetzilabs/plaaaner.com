@@ -1,15 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
 import { getPlan, savePlanGeneral } from "@/lib/api/plans";
-import { A, createAsync, redirect, useAction, useNavigate, useParams, useSubmission } from "@solidjs/router";
+import { getAuthenticatedSession } from "@/lib/auth/util";
+import { A, createAsync, RouteDefinition, useAction, useNavigate, useParams, useSubmission } from "@solidjs/router";
 import { Loader2 } from "lucide-solid";
-import { createDeferred, createEffect, createSignal, Match, Show, Switch } from "solid-js";
-import { z } from "zod";
+import { createSignal, Match, Show, Switch } from "solid-js";
+
+export const route = {
+  preload: async (props) => {
+    const session = await getAuthenticatedSession();
+    const plan = await getPlan(props.params.plan_id);
+    return { plan, session };
+  },
+} satisfies RouteDefinition;
 
 export default function PlanCreateGeneralPage() {
   const params = useParams();
 
-  const plan = createAsync(() => getPlan(params.id), { deferStream: true });
+  const plan = createAsync(() => getPlan(params.plan_id), { deferStream: true });
   const savePlanAction = useAction(savePlanGeneral);
   const isSaving = useSubmission(savePlanGeneral);
 
@@ -19,7 +27,7 @@ export default function PlanCreateGeneralPage() {
   const navigate = useNavigate();
 
   return (
-    <Show when={typeof plan() !== "undefined" && plan()}>
+    <Show when={plan() && plan()}>
       {(p) => {
         const t = p().name;
         const d = p().description ?? "";
@@ -65,11 +73,6 @@ export default function PlanCreateGeneralPage() {
                     </Match>
                   </Switch>
                 </Button>
-                <A href={`/dashboard/p/${p().id}/edit/time`}>
-                  <Button size="sm" class="w-full flex flex-row items-center justify-center gap-2">
-                    <span class="text-sm font-medium leading-none">Next</span>
-                  </Button>
-                </A>
               </div>
             </div>
           </>
