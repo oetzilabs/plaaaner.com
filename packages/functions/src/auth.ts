@@ -1,4 +1,5 @@
 import { User } from "@/core/entities/users";
+import { Validbot_Users } from "@/core/entities/valibot/users";
 import { StatusCodes } from "http-status-codes";
 import { Resource } from "sst";
 import { GoogleAdapter } from "sst/auth/adapter";
@@ -59,12 +60,12 @@ export const handler = auth.authorizer({
             properties: {},
           });
         }
-        let user_ = await User.findByEmail(email);
+        let user_ = await Validbot_Users.findByEmail(email);
         if (!user_) {
-          user_ = await User.create({ email, name });
+          user_ = await Validbot_Users.create({ email, name });
         }
 
-        await User.update({ id: user_.id, deletedAt: null });
+        await Validbot_Users.update({ id: user_.id, deletedAt: null });
 
         return response.session({
           type: "user",

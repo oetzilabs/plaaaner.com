@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "sst bind vitest",
+    "check": "sst shell 'tsx src/test.ts'",
     "typecheck": "tsc -noEmit",
     "generate": "sst shell 'drizzle-kit generate'",
     "migrate": "sst shell 'drizzle-kit migrate'",
