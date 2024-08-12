@@ -24,8 +24,8 @@ importers:
         specifier: 0.6.5
         version: 0.6.5(@ianvs/prettier-plugin-sort-imports@4.3.1(prettier@3.3.3))(prettier@3.3.3)
       sst:
-        specifier: 0.1.90
-        version: 0.1.90(aws-crt@1.21.2)(hono@4.5.3)
+        specifier: 0.1.93
+        version: 0.1.93(aws-crt@1.21.2)(hono@4.5.3)
       typescript:
         specifier: 5.5.4
         version: 5.5.4
@@ -57,11 +57,14 @@ importers:
         specifier: 1.11.12
         version: 1.11.12
       drizzle-orm:
-        specifier: 0.32.1
-        version: 0.32.1(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0)
+        specifier: 0.33.0
+        version: 0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0)
+      drizzle-valibot:
+        specifier: 0.2.0
+        version: 0.2.0(drizzle-orm@0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0))(valibot@0.37.0(typescript@5.5.4))
       drizzle-zod:
         specifier: 0.5.1
-        version: 0.5.1(drizzle-orm@0.32.1(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0))(zod@3.23.8)
+        version: 0.5.1(drizzle-orm@0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0))(zod@3.23.8)
       lucia:
         specifier: ^3.1.1
         version: 3.1.1
@@ -71,6 +74,9 @@ importers:
       oslo:
         specifier: ^1.2.0
         version: 1.2.0
+      valibot:
+        specifier: 0.37.0
+        version: 0.37.0(typescript@5.5.4)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -85,8 +91,8 @@ importers:
         specifier: 9.0.7
         version: 9.0.7
       drizzle-kit:
-        specifier: 0.23.1
-        version: 0.23.1
+        specifier: 0.24.0
+        version: 0.24.0
       vitest:
         specifier: 1.4.0
         version: 1.4.0(@types/node@20.9.0)(terser@5.30.3)
@@ -4890,12 +4896,12 @@ packages:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
 
-  drizzle-kit@0.23.1:
-    resolution: {integrity: sha512-posGQhj8/K4S4CPhk7BO9+IcpNdIh96t0DvcAr/NvMKhPhe5D0MELzmpq9R2MpmSP3fd+Z3upwidtetrw7xnjg==}
+  drizzle-kit@0.24.0:
+    resolution: {integrity: sha512-rUl5Rf5HLOVkAwHEVEi8xgulIRWzoys0q77RHGCxv5e9v8AI3JGFg7Ug5K1kn513RwNZbuNJMUKOXo0j8kPRgg==}
     hasBin: true
 
-  drizzle-orm@0.32.1:
-    resolution: {integrity: sha512-Wq1J+lL8PzwR5K3a1FfoWsbs8powjr3pGA4+5+2ueN1VTLDNFYEolUyUWFtqy8DVRvYbL2n7sXZkgVmK9dQkng==}
+  drizzle-orm@0.33.0:
+    resolution: {integrity: sha512-SHy72R2Rdkz0LEq0PSG/IdvnT3nGiWuRk+2tXZQ90GVq/XQhpCzu/EFT3V2rox+w8MlkBQxifF8pCStNYnERfA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
@@ -4982,6 +4988,12 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drizzle-valibot@0.2.0:
+    resolution: {integrity: sha512-+JTZZN52fFv20kGTXI1KGpysdCiedaTDpWQ6lqnxX2DD5U5tJfGPB2ROjHFjbLzK4XiH98MOhKZf174orBQAew==}
+    peerDependencies:
+      drizzle-orm: '>=0.23.13'
+      valibot: '>=0.20'
 
   drizzle-zod@0.5.1:
     resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
@@ -6839,33 +6851,33 @@ packages:
   split2@3.2.2:
     resolution: {integrity: sha512-9NThjpgZnifTkJpzTZ7Eue85S49QwpNhZTq6GRJwObb6jnLFNGB7Qm73V5HewTROPyxD0C29xqmaI68bQtV+hg==}
 
-  sst-darwin-arm64@0.1.90:
-    resolution: {integrity: sha512-CMPMMfp+fdLzvX9VAoCcAqgJATyTGk3NUjfmaWbB4IuzB1DL6b6Ofy08kT3Nr4pody/vZTqOzUyY9BJE9bMgWg==}
+  sst-darwin-arm64@0.1.93:
+    resolution: {integrity: sha512-xSynGNXOq8BJPpywo2NUbTrTEcExSOhvvrAnBLX3LzRy966dgT9iSlRxJBb1+ypPkzWqQGv+MeEfnYGFd3qNfw==}
     cpu: [arm64]
     os: [darwin]
 
-  sst-darwin-x64@0.1.90:
-    resolution: {integrity: sha512-LevyxyxEOJIu9FkSqyLDEA0WBmB52jB4lW3PIQzXnghpcSTnZXQ3yYm+AWh8iVYIuZzqtmFwAwVViKsQIZ/5rA==}
+  sst-darwin-x64@0.1.93:
+    resolution: {integrity: sha512-DyM4mlvOxwshSnCfg65XbNX7tZdyPZg0tiEgSJi5XAooQltyQ2h90GdcaWki4rTn3IEs05drwzPlCNNZJIADxA==}
     cpu: [x64]
     os: [darwin]
 
-  sst-linux-arm64@0.1.90:
-    resolution: {integrity: sha512-RyBBl8xgeypEJgJIB9YVnK1kkUABTvQUzWJRl4OZ2Km0+I1RG3oNiaXwFRu236E7JMhM66eo+PrrXtt3CQrK5Q==}
+  sst-linux-arm64@0.1.93:
+    resolution: {integrity: sha512-Mo3ymb11kxHeHGM0MUAzpq/qcFCwXDNFp5JxV25AszYLZpIhOXCbwralgOxik2eLQSJe6ynJ591XLpLINlSxPA==}
     cpu: [arm64]
     os: [linux]
 
-  sst-linux-x64@0.1.90:
-    resolution: {integrity: sha512-DKP6RPRpgtEQKGULPKmjmrMu3++YlQ513vpMptyR7LFn9xLlaeC3Ku+FvvBWtkyNlI8kJ2x6wNIcEkfstwrjgA==}
+  sst-linux-x64@0.1.93:
+    resolution: {integrity: sha512-v3QEsr+AE9UHztMhiWUC9Ut6bKgmcTbNFm1FPmQz738snePoZQc0EfeM75tOMMK2m1n+tI7KNT441ZY+vqO+uw==}
     cpu: [x64]
     os: [linux]
 
-  sst-linux-x86@0.1.90:
-    resolution: {integrity: sha512-fh8qTHQT4s3a3EPvhYXiI99Z18x26mARJeOBLn8aAgHZZd5jt01AYOxiwXM+9MwQsQg749n3tHA6aqoxsgKGtA==}
+  sst-linux-x86@0.1.93:
+    resolution: {integrity: sha512-Wjrvxru/yGRagrwKwVqhbaHPC2CvfWv2cnLBln7kj+fCWyOGZKRzLk1jajoXyqe3AGnn3NYI1NAzfiuSYCg9lg==}
     cpu: [x86]
     os: [linux]
 
-  sst@0.1.90:
-    resolution: {integrity: sha512-9zlgpTRoEzTs6XFAbE0A+iNaK4+VkLpzLb0o1e1iCzCInzVfI+vpRooxL0cBvBO7NIFLeB+g3IAVzGlfV46jFg==}
+  sst@0.1.93:
+    resolution: {integrity: sha512-Uxvr1/i/yHX6IkuScXiFFAHGbkTrpnI1MMgu+3z6jeffBjv9t7dksTkXKvTGWZ1+jfI618qbIoA26GKzhLi5pg==}
     hasBin: true
     peerDependencies:
       hono: 4.x
@@ -7288,6 +7300,14 @@ packages:
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
+
+  valibot@0.37.0:
+    resolution: {integrity: sha512-FQz52I8RXgFgOHym3XHYSREbNtkgSjF9prvMFH1nBsRyfL6SfCzoT1GuSDTlbsuPubM7/6Kbw0ZMQb8A+V+VsQ==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   validate-html-nesting@1.2.2:
     resolution: {integrity: sha512-hGdgQozCsQJMyfK5urgFcWEqsSSrK63Awe0t/IMR0bZ0QMtnuaiHzThW81guu3qx9abLi99NEuiaN6P9gVYsNg==}
@@ -14151,7 +14171,7 @@ snapshots:
 
   dotenv@16.4.5: {}
 
-  drizzle-kit@0.23.1:
+  drizzle-kit@0.24.0:
     dependencies:
       '@drizzle-team/brocli': 0.8.2
       '@esbuild-kit/esm-loader': 2.6.5
@@ -14160,7 +14180,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.32.1(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0):
+  drizzle-orm@0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0):
     optionalDependencies:
       '@aws-sdk/client-rds-data': 3.556.0(aws-crt@1.21.2)
       '@neondatabase/serverless': 0.9.4
@@ -14169,9 +14189,14 @@ snapshots:
       kysely: 0.25.0
       react: 18.2.0
 
-  drizzle-zod@0.5.1(drizzle-orm@0.32.1(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0))(zod@3.23.8):
+  drizzle-valibot@0.2.0(drizzle-orm@0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0))(valibot@0.37.0(typescript@5.5.4)):
     dependencies:
-      drizzle-orm: 0.32.1(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0)
+      drizzle-orm: 0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0)
+      valibot: 0.37.0(typescript@5.5.4)
+
+  drizzle-zod@0.5.1(drizzle-orm@0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0))(zod@3.23.8):
+    dependencies:
+      drizzle-orm: 0.33.0(@aws-sdk/client-rds-data@3.556.0(aws-crt@1.21.2))(@neondatabase/serverless@0.9.4)(@types/pg@8.11.6)(@types/react@18.0.25)(kysely@0.25.0)(react@18.2.0)
       zod: 3.23.8
 
   duplexer@0.1.2: {}
@@ -16356,22 +16381,22 @@ snapshots:
       readable-stream: 3.6.2
     optional: true
 
-  sst-darwin-arm64@0.1.90:
+  sst-darwin-arm64@0.1.93:
     optional: true
 
-  sst-darwin-x64@0.1.90:
+  sst-darwin-x64@0.1.93:
     optional: true
 
-  sst-linux-arm64@0.1.90:
+  sst-linux-arm64@0.1.93:
     optional: true
 
-  sst-linux-x64@0.1.90:
+  sst-linux-x64@0.1.93:
     optional: true
 
-  sst-linux-x86@0.1.90:
+  sst-linux-x86@0.1.93:
     optional: true
 
-  sst@0.1.90(aws-crt@1.21.2)(hono@4.5.3):
+  sst@0.1.93(aws-crt@1.21.2)(hono@4.5.3):
     dependencies:
       '@aws-sdk/client-lambda': 3.478.0(aws-crt@1.21.2)
       aws4fetch: 1.0.19
@@ -16379,11 +16404,11 @@ snapshots:
       openid-client: 5.6.4
     optionalDependencies:
       hono: 4.5.3
-      sst-darwin-arm64: 0.1.90
-      sst-darwin-x64: 0.1.90
-      sst-linux-arm64: 0.1.90
-      sst-linux-x64: 0.1.90
-      sst-linux-x86: 0.1.90
+      sst-darwin-arm64: 0.1.93
+      sst-darwin-x64: 0.1.93
+      sst-linux-arm64: 0.1.93
+      sst-linux-x64: 0.1.93
+      sst-linux-x86: 0.1.93
     transitivePeerDependencies:
       - aws-crt
 
@@ -16879,6 +16904,10 @@ snapshots:
   uuid@8.3.2: {}
 
   uuid@9.0.1: {}
+
+  valibot@0.37.0(typescript@5.5.4):
+    optionalDependencies:
+      typescript: 5.5.4
 
   validate-html-nesting@1.2.2: {}
 

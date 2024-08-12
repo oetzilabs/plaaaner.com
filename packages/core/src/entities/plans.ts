@@ -142,6 +142,7 @@ export const findByOptions = z
             },
             owner: true,
             workspaces: true,
+            times: true,
           },
         },
       },
@@ -250,6 +251,7 @@ export const findByUserId = z.function(z.tuple([prefixed_cuid2])).implement(asyn
         },
       },
       workspaces: true,
+      times: true,
     },
   });
   return ws;
@@ -274,6 +276,7 @@ export const findByOrganizationId = z.function(z.tuple([prefixed_cuid2])).implem
               },
               owner: true,
               workspaces: true,
+              times: true,
             },
           },
         },
@@ -303,6 +306,7 @@ export const lastCreatedByUser = z.function(z.tuple([prefixed_cuid2])).implement
       },
       owner: true,
       workspaces: true,
+      times: true,
     },
   });
   return ws;
@@ -330,6 +334,7 @@ export const notConnectedToUserById = z.function(z.tuple([prefixed_cuid2])).impl
       },
       owner: true,
       workspaces: true,
+      times: true,
     },
   });
   return orgs;
